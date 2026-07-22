@@ -1,10 +1,12 @@
 # Generated experiment outputs
+results/
 manifold_results/
 path_finder_results/
 das/
 _out/
 **/_out/
-
+results_smoke_pod/
+smoke2/
 # Python
 __pycache__/
 *.py[cod]
