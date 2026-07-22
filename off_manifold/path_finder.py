@@ -119,5 +119,10 @@ def find_path(
     if "Gaussian" in mode:
         sites["Gaussian"] = gauss_sites
     if "DAS" in mode:
-        sites["DAS"] = str_sites + gauss_sites
+        # union, deduped: a site top-ranked by both scans appears once (else it
+        # would be DAS-trained twice downstream)
+        seen = {s.id for s in str_sites}
+        sites["DAS"] = str_sites + [s for s in gauss_sites if s.id not in seen]
     return sites
+
+

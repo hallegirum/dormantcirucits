@@ -225,8 +225,7 @@ def create_contextual_prompts(
     ``trace[var]``.
 
     DESIGN — call twice (["entity"] then ["number"]) for the two-axis scheme.
-    Member pooling is uniform-random per prompt; for balanced coverage of small
-    classes raise ``n_per_context`` (or enumerate members explicitly).
+     classes raise ``n_per_context`` (or enumerate members explicitly).
     """
     rng = random.Random(seed)
 
@@ -339,6 +338,7 @@ def _make_counterfactual(
     def _target_differs(t: CausalTrace) -> bool:
         return t[target_variable] != base_target
 
+    print("in_context_datasets.py, category:", category)
     if category == "context_matched":
         # Same context (all conditioning vars pinned to base), free vars chosen so
         # the target differs. On-contextual: source lies on base's context slice.
