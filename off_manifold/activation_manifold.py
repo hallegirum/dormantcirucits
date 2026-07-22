@@ -2,8 +2,23 @@
 import os
 os.environ.setdefault("PYTORCH_ENABLE_MPS_FALLBACK", "1")  # linalg.householder_product not implemented on MPS
 import json
+import logging
 import math
 import random
+
+
+# causalab logs the (harmless, caught) categorical-viz failures — "could not
+# convert string to float: 'Saturday'" — as WARNINGs with full tracebacks, which
+# floods the log. Drop ONLY those records (keeps all other logs, incl. the Step-3b
+# decoding line) by filtering the two loggers that emit them.
+class _DropVizFailures(logging.Filter):
+    def filter(self, record):  # noqa: A003
+        return "visualization failed" not in record.getMessage().lower()
+
+
+for _viz_logger in ("causalab.analyses.subspace._visualization",
+                    "causalab.analyses.activation_manifold.fitting_pipeline"):
+    logging.getLogger(_viz_logger).addFilter(_DropVizFailures())
 
 import numpy as np
 import torch

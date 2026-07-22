@@ -20,8 +20,11 @@ DECODING="${DECODING:---decoding-eval}"   # set DECODING="" to disable the tier-
 echo "model=$MODEL  seeds=${SEEDS[*]}  num_examples=$NUM_EXAMPLES  num_sites=$NUM_SITES  k=$K_FEATURES  decoding='$DECODING'"
 
 for s in "${SEEDS[@]}"; do
-  echo "================  seed $s  ================"
-  OFFDIST_RESULTS_DIR="results/seed_${s}" \
+  outdir="results/seed_${s}"
+  logf="${outdir}/run.log"
+  mkdir -p "$outdir"
+  echo "================  seed $s  (logging to $logf)  ================"
+  OFFDIST_RESULTS_DIR="$outdir" \
     python -m activation_manifold \
       --model-name "$MODEL" \
       --device cuda \
@@ -30,7 +33,7 @@ for s in "${SEEDS[@]}"; do
       --num-examples "$NUM_EXAMPLES" \
       --num-sites "$NUM_SITES" \
       --k-features "$K_FEATURES" \
-      $DECODING
-  echo "seed $s done -> results/seed_${s}"
+      $DECODING > "$logf" 2>&1
+  echo "seed $s done (exit $?) -> $outdir  (log: $logf)"
 done
 echo "ALL SEEDS DONE"

@@ -226,7 +226,7 @@ def intrinsic_distribution_metrics(points, manifold, n_bins=None):
 def behaviour_divergence(combinations, modes,
                          results_dir=PATCHED_DISTS,
                          experiment_root=BEHAVIOUR_MANIFOLD,
-                         output_manifold_sub="spline_s0.0",
+                         output_manifold_sub="spline_s0.0/result",  # causalab appends the target-variable subdir
                          save_to=None):
     """The paper's E_BC, single-position (no path integral): per site, the mean
     Bhattacharyya distance from each patched-run output distribution to the

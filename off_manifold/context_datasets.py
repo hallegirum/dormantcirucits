@@ -338,7 +338,6 @@ def _make_counterfactual(
     def _target_differs(t: CausalTrace) -> bool:
         return t[target_variable] != base_target
 
-    print("in_context_datasets.py, category:", category)
     if category == "context_matched":
         # Same context (all conditioning vars pinned to base), free vars chosen so
         # the target differs. On-contextual: source lies on base's context slice.

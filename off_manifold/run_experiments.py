@@ -110,6 +110,38 @@ def _print_behaviour(results, modes):
         print("  " + row)
 
 
+def render_behaviour_manifold(results_dir, out_path):
+    """Static 3D PNG of the behaviour manifold M_y (causalab only saves the
+    interactive HTML for it). Belief spline + 7 class centroids, projected to 3D
+    via the saved Hellinger PCA. From artifacts only — no model."""
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    import torch
+    from causalab.methods.spline.belief_fit import load_output_manifold
+    from causalab.io.sklearn_pca import load_pca
+
+    root = os.path.join(results_dir, "output_manifolds", "behaviour_manifold")
+    spline, centroids_h = load_output_manifold(root, "spline_s0.0/result")
+    pca = load_pca(os.path.join(root, "output_manifold"), "hellinger_pca")
+
+    period = float(spline._periods[0]) if spline._periods else 1.0
+    u = torch.linspace(0, period, 200).unsqueeze(-1)
+    curve3d = pca.transform(spline.decode(u).detach().numpy())
+    cent3d = pca.transform(centroids_h.detach().numpy())
+
+    fig = plt.figure(figsize=(6, 5))
+    ax = fig.add_subplot(111, projection="3d")
+    ax.plot(curve3d[:, 0], curve3d[:, 1], curve3d[:, 2], "-", lw=1.5, alpha=0.85, label="M_y (belief spline)")
+    ax.scatter(cent3d[:, 0], cent3d[:, 1], cent3d[:, 2], s=60, marker="D", label="class centroids")
+    ax.set_title("Behaviour manifold M_y (Hellinger PCA)")
+    ax.legend(fontsize=8)
+    fig.tight_layout()
+    fig.savefig(out_path, dpi=120)
+    plt.close(fig)
+    print("saved behaviour-manifold PNG ->", out_path)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--results-dir", default="results_smoke_pod",
@@ -130,6 +162,11 @@ def main():
     _print_activation(act, args.modes)
     _plot_by_layer(act, args.modes,
                    os.path.join(args.results_dir, "projection_by_layer.png"))
+    try:
+        render_behaviour_manifold(args.results_dir,
+                                  os.path.join(args.results_dir, "behaviour_manifold_3d.png"))
+    except Exception as e:
+        print(f"[behaviour-manifold PNG skipped] {type(e).__name__}: {e}")
 
     try:
         beh = oda.behaviour_divergence(
