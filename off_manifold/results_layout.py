@@ -46,13 +46,51 @@ INTERVENED_REPS = os.path.join(RESULTS_DIR, "intervened_reps")
 OUTPUT_MANIFOLDS = os.path.join(RESULTS_DIR, "output_manifolds")
 BEHAVIOUR_MANIFOLD = os.path.join(OUTPUT_MANIFOLDS, "behaviour_manifold")
 PATCHED_DISTS = os.path.join(OUTPUT_MANIFOLDS, "patched_output_distributions")
+# Path-finding outputs ({method}_top_sites.json, site_provenance.json). Kept OUT
+# of intervened_reps/ because path-finding runs before the data is split into
+# contexts — mixing context-less ranking files into the context-suffixed reps
+# dirs made the analysis's dir-scan mis-parse them.
+SITE_RANKINGS = os.path.join(RESULTS_DIR, "site_rankings")
 
 DELIM = "__"
 
 
-def label_category_dir(root, label, category):
-    """{root}/{label}__{category} — for intervened_reps and patched_output_distributions."""
-    return os.path.join(root, f"{label}{DELIM}{category}")
+def site_rankings_dir(label, category):
+    """{site_rankings}/{label}__{category} — path-finding rankings (no context;
+    site selection is per (label, category), shared across contexts/modes)."""
+    return os.path.join(SITE_RANKINGS, f"{label}{DELIM}{category}")
+
+
+def label_category_dir(root, label, category, context=None):
+    """{root}/{label}__{category}[__{context}] — intervened_reps / patched dists.
+
+    With `context`, the reps/dists for each manifold context (e.g. "wrap" /
+    "no_wrap") live in their own dir, so each file holds ONLY that context's
+    examples and can be compared against that context's own manifold
+    (the "respective" comparison). Without it, the old flat layout.
+    """
+    name = f"{label}{DELIM}{category}"
+    if context is not None:
+        name += f"{DELIM}{context}"
+    return os.path.join(root, name)
+
+
+def iter_label_category_contexts(root):
+    """Yield (label, category, context) parsed from dir names under `root`, but
+    ONLY for dirs that actually hold data (a .safetensors file). This ignores any
+    stray ranking/metadata-only dirs so they can't be mis-parsed as a context."""
+    import glob
+    if not os.path.isdir(root):
+        return
+    for entry in sorted(os.listdir(root)):
+        d = os.path.join(root, entry)
+        if not os.path.isdir(d) or not glob.glob(os.path.join(d, "*.safetensors")):
+            continue
+        parts = entry.split(DELIM)
+        if len(parts) == 3:
+            yield parts[0], parts[1], parts[2]
+        elif len(parts) == 2:
+            yield parts[0], parts[1], None
 
 
 def site_context_dir(site_id, context):

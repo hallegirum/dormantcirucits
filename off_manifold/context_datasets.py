@@ -262,6 +262,7 @@ def create_counterfactual_dataset(
     categories: tuple[str, ...] = ("context_matched", "context_mismatched", "cross_task"),
     related_models: list[CausalModel] | None = None,
     target_variable: str = "result",
+    context_predicate: Callable[[CausalTrace], bool] | None = None,
 ) -> list[dict[str, Any]]:
     """Build a paired, category-labelled counterfactual dataset.
 
@@ -311,11 +312,14 @@ def create_counterfactual_dataset(
                 rng=rng,
                 related_models=related_models,
                 related_rngs=related_rngs,
+                base_trace=base,
+                context_predicate=context_predicate,
             )
             examples.append(
                 CounterfactualExample(input = base, counterfactual_inputs=[cf])
     
             )
+            print("counterfactul working", example["counterfactual_inputs"][0] != example["input"])
     return examples
 
 
@@ -330,6 +334,8 @@ def _make_counterfactual(
     rng: random.Random,
     related_models: list[CausalModel] | None,
     related_rngs: list[random.Random],
+    base_trace: CausalTrace | None = None,
+    context_predicate: Callable[[CausalTrace], bool] | None = None,
 ) -> CausalTrace:
     """Construct one counterfactual source trace for the given category."""
 
@@ -337,6 +343,20 @@ def _make_counterfactual(
     # example carries no causal signal.
     def _target_differs(t: CausalTrace) -> bool:
         return t[target_variable] != base_target
+
+    # PREDICATE-DEFINED CONTEXT (e.g. wrapping). The context is a derived joint
+    # property of (entity, number), not a pinned variable, so matched/mismatched
+    # are expressed by the predicate's truth value rather than by fixing vars.
+    # Nothing is pinned — the source may change entity AND/OR number to flip the
+    # regime (option 2), which keeps every base feasible; pinning the entity would
+    # be unsatisfiable for Sunday, which can never be non-wrapping.
+    if context_predicate is not None and category in ("context_matched", "context_mismatched"):
+        base_side = context_predicate(base_trace)
+        want = base_side if category == "context_matched" else (not base_side)
+        return _sample_input_fixed(
+            model, {}, rng,
+            predicate=lambda t: (context_predicate(t) == want) and _target_differs(t),
+        )
 
     if category == "context_matched":
         # Same context (all conditioning vars pinned to base), free vars chosen so
@@ -371,6 +391,56 @@ def _make_counterfactual(
 
     raise ValueError(f"Unknown category: {category!r}")
 
+def wrap_predicate(model: CausalModel) -> Callable[[CausalTrace], bool]:
+    """Return ``wraps(trace)`` for a cyclic natural-domain task.
+
+    ``result = (entity_index + number_int) % modulus``, so an example *wraps*
+    exactly when that sum crosses the modulus::
+
+        wraps  <=>  entity_index + number_int >= modulus
+
+    (Note this is NOT a condition on ``result % modulus`` — the modulo has
+    already been applied, so it carries no information about crossing.)
+
+    Index/int/modulus are read off the model (``embeddings`` expose the same
+    maps the mechanism uses; ``periods`` gives the modulus), so this works
+    unchanged for months (modulus 12) as well as weekdays (7).
+    """
+    ent_idx = model.embeddings["entity"]
+    num_int = model.embeddings["number"]
+    modulus = int(model.periods["result"])
+
+    def wraps(trace: CausalTrace) -> bool:
+        return int(ent_idx(trace["entity"])[0]) + int(num_int(trace["number"])[0]) >= modulus
+
+    return wraps
+
+
+def create_wrap_prompts(
+    model: CausalModel,
+    wrapping: bool,
+    n: int,
+    seed: int = 42,
+) -> list[CounterfactualExample]:
+    """Base prompts restricted to the wrapping (or non-wrapping) regime.
+
+    The wrap regime is a JOINT property of (entity, number), so unlike
+    create_contextual_prompts we can't pin a variable — we pass a predicate to
+    ``_sample_input_fixed``, which enumerates and filters exactly.
+
+    Feasibility note (weekdays, numbers 1..7, entity 0..6): wrap-availability is
+    entity-dependent — Sunday ALWAYS wraps (6+1>=7) and Monday wraps only with
+    "seven". The non-wrapping regime also never produces result="Monday" (the
+    sum is >=1), so it has 6 class centroids vs 7 for wrapping.
+    """
+    wraps = wrap_predicate(model)
+    predicate = wraps if wrapping else (lambda t: not wraps(t))
+    rng = random.Random(seed)
+    out = []
+    for _ in range(n):
+        t = _sample_input_fixed(model, {}, rng, predicate)
+        out.append(CounterfactualExample(input=t, counterfactual_inputs=[t]))
+    return out
 
 # --------------------------------------------------------------------------- #
 # Optional: aggregation helper for cyclic natural-domain tasks                 #
@@ -397,5 +467,43 @@ def modclass_groups(model: CausalModel, var: str) -> dict[int, list[Any]]:
     for i, v in enumerate(values):
         groups.setdefault(i % modulus, []).append(v)
     return groups
+
+
+def create_ioi_counterfactual_dataset(
+    traces: list[dict[str, Any]],
+    seed: int = 42,
+    categories: tuple[str, ...] = ("context_matched", "context_mismatched"),
+    context_var: str = "template_type",
+) -> list[dict[str, Any]]:
+    """IOI counterfactuals — the same category-labelled, paired shape as
+    :func:`create_counterfactual_dataset`, but sources come from an existing pool of
+    IOIDataset traces (no CausalModel.sample_input to draw from).
+
+    Each ``trace`` is a dict carrying at least ``raw_input`` and ``context_var``
+    (e.g. ``template_type`` = "ABBA"/"BABA"). For each base trace and category:
+        context_matched    -> a source with the SAME context_var value
+        context_mismatched -> a source with a DIFFERENT context_var value
+    Returns ``[{"input": trace, "counterfactual_inputs": [src], "category": cat}, …]``.
+    """
+    rng = random.Random(seed)
+    by_ctx: dict[Any, list[dict]] = {}
+    for t in traces:
+        by_ctx.setdefault(t[context_var], []).append(t)
+    others = {
+        k: [v for kk, vs in by_ctx.items() if kk != k for v in vs] for k in by_ctx
+    }
+    ds: list[dict[str, Any]] = []
+    for t in traces:
+        same = by_ctx[t[context_var]]
+        diff = others[t[context_var]]
+        for cat in categories:
+            if cat == "context_matched":
+                src = rng.choice(same)
+            elif cat == "context_mismatched":
+                src = rng.choice(diff) if diff else rng.choice(same)
+            else:
+                continue
+            ds.append({"input": t, "counterfactual_inputs": [src], "category": cat})
+    return ds
 
 

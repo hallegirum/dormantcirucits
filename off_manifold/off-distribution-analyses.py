@@ -74,14 +74,15 @@ from results_layout import (
 )
 
 GLOBAL_CONTEXT = "global"
+WRAP_CVAR = "wrapping"  # must match activation_manifold.WRAP_CVAR (predicate-based context)
 
 
 # --------------------------------------------------------------------------- #
 #  Loading (paths mirror the writers in activation_manifold.py exactly)       #
 # --------------------------------------------------------------------------- #
-def load_intervened_reps(label, category, mode, results_dir=INTERVENED_REPS):
-    """Returns {site_id: (N, d_model) float tensor}."""
-    rep_path = os.path.join(label_category_dir(results_dir, label, category),
+def load_intervened_reps(label, category, mode, results_dir=INTERVENED_REPS, context=None):
+    """Returns {site_id: (N, d_model) float tensor} for one (label, category, context)."""
+    rep_path = os.path.join(label_category_dir(results_dir, label, category, context),
                             f"{mode}_intervened_reps.safetensors")
     if not os.path.exists(rep_path):
         raise FileNotFoundError(
@@ -91,20 +92,38 @@ def load_intervened_reps(label, category, mode, results_dir=INTERVENED_REPS):
     return {k: v.float() for k, v in load_file(rep_path).items()}
 
 
+def contexts_for(label, category, root=INTERVENED_REPS):
+    """Which contexts this (label, category) has reps for, read off the dir names
+    ({label}__{category}__{context}). Returns [None] for the old flat layout."""
+    from results_layout import iter_label_category_contexts
+    found = [ctx for lab, cat, ctx in iter_label_category_contexts(root)
+             if lab == str(label) and cat == str(category)]
+    return found or [None]
+
+
 def list_contexts(site_id, manifold_cvars):
     """The context strings that have a fitted manifold for this site AND belong
-    to THIS label's conditioning variables. Manifold dirs are named
-    {site_id}__{context} with context = str(context_key(ex, m_cvars)), e.g.
-    "(('entity', 'Monday'),)". Since the dir name carries no label, a site shared
-    by several labels accumulates contexts from all of them — we keep only those
-    whose variable set == m_cvars (so "entity" doesn't pick up "number")."""
+    to THIS label's conditioning.
+
+    Two context flavours are stored as {site_id}__{context}:
+      * VARIABLE-based (e.g. m_vars=["entity"]) -> context is a tuple repr like
+        "(('entity', 'Monday'),)". A site shared by several labels accumulates
+        contexts from all of them, so we keep only those whose variable set ==
+        m_cvars (so "entity" doesn't pick up "number").
+      * PREDICATE-based (e.g. m_vars=["wrapping"]) -> context is a plain word like
+        "wrap" / "no_wrap" (no tuple structure to parse). These aren't
+        ast-parseable, so we take every non-global plain-word context as belonging
+        to this label's split.
+    """
     wanted = set(manifold_cvars)
     out = []
     for c in iter_site_contexts(site_id):
         if c == GLOBAL_CONTEXT:
             continue
-        vars_in_ctx = {var for var, _val in ast.literal_eval(c)}  # ("entity","Monday") -> "entity"
-        if vars_in_ctx == wanted:
+        if c.startswith("("):  # variable-based tuple context -> filter by variable set
+            if {var for var, _val in ast.literal_eval(c)} == wanted:
+                out.append(c)
+        elif manifold_cvars == [WRAP_CVAR]:  # plain-word context, and THIS is the predicate label
             out.append(c)
     return out
 
@@ -241,18 +260,19 @@ def behaviour_divergence(combinations, modes,
     results = {}
     for label, combo in combinations.items():
         for category in combo["categories"]:
-            for mode in modes:
-                dist_path = os.path.join(label_category_dir(results_dir, label, category),
-                                         f"{mode}_output_dists.safetensors")
-                if not os.path.exists(dist_path):
-                    raise FileNotFoundError(
-                        f"{dist_path} not found — run collect_behaviour.py main() first."
-                    )
-                dists = load_file(dist_path)  # {site_id: (N, W) concept-slice probs}
-                results[(label, category, mode)] = {
-                    site_id: compute_score_single_path(p, belief_spline)
-                    for site_id, p in dists.items()
-                }
+            for context in contexts_for(label, category, results_dir):
+                for mode in modes:
+                    dist_path = os.path.join(
+                        label_category_dir(results_dir, label, category, context),
+                        f"{mode}_output_dists.safetensors")
+                    if not os.path.exists(dist_path):  # partial run — skip, don't abort
+                        print(f"  [skip] no patched dists for {label} / {category} / {context} / {mode}")
+                        continue
+                    dists = load_file(dist_path)  # {site_id: (N, W) concept-slice probs}
+                    results[(label, category, context, mode)] = {
+                        site_id: compute_score_single_path(p, belief_spline)
+                        for site_id, p in dists.items()
+                    }
     if save_to:
         os.makedirs(os.path.dirname(save_to) or ".", exist_ok=True)
         with open(save_to, "w") as f:
@@ -316,26 +336,45 @@ def divergence_metrics(combinations, modes,
       m_cvars == []  (global label)     -> the single "global" manifold.
       m_cvars != []  (contextual label) -> the union over context manifolds.
 
-    Returns {(label, category, mode): {site_id: {...}}} where the inner dict is
-    {"global": {...}} for a global label, or {"contexts": {...}, "union": {...}}
-    for a contextual one.
+    Reps are now stored per context ({label}__{category}__{context}), so for a
+    contextual label each site gets THREE views:
+      "respective" : vs the rep's OWN context manifold — "is it where it should
+                     be for its context?"  (the dormant-pathway test)
+      "union"      : min over ALL context manifolds — "is it near SOME natural
+                     manifold at all?"     (the null / plausibility check)
+      "gap"        : respective - union. ~0 means it sits on its own manifold;
+                     LARGE means it's on a manifold but the WRONG one — i.e. the
+                     intervention pushed it into another context's representation.
+    A global label ({} m_cvars) has one manifold, so respective == union == global.
+
+    Returns {(label, category, context, mode): {site_id: {...}}}.
     """
     results = {}
     for label, combo in combinations.items():
         m_cvars = combo["m_vars"]
         for category in combo["categories"]:
-            for mode in modes:
-                reps = load_intervened_reps(label, category, mode, results_dir)
-                per_site = {}
-                for site_id, R in reps.items():
-                    if m_cvars:
-                        per_site[site_id] = _union_over_contexts(
-                            R, site_id, m_cvars, n_manifold_samples)
-                    else:
-                        to_space, manifold = load_manifold(site_id, GLOBAL_CONTEXT)
-                        _, m = _metrics_vs_manifold(R, to_space, manifold, n_manifold_samples)
-                        per_site[site_id] = {"global": m}
-                results[(label, category, mode)] = per_site
+            for context in contexts_for(label, category, results_dir):
+                for mode in modes:
+                    try:  # partial/interrupted runs: analyse what exists, skip the rest
+                        reps = load_intervened_reps(label, category, mode, results_dir, context)
+                    except FileNotFoundError:
+                        print(f"  [skip] no reps for {label} / {category} / {context} / {mode}")
+                        continue
+                    per_site = {}
+                    for site_id, R in reps.items():
+                        if not m_cvars:  # single global manifold
+                            to_space, manifold = load_manifold(site_id, GLOBAL_CONTEXT)
+                            _, m = _metrics_vs_manifold(R, to_space, manifold, n_manifold_samples)
+                            per_site[site_id] = {"global": m}
+                            continue
+                        # RESPECTIVE: this context's own manifold
+                        to_space, manifold = load_manifold(site_id, context)
+                        _, resp = _metrics_vs_manifold(R, to_space, manifold, n_manifold_samples)
+                        # UNION: nearest of ALL this site's context manifolds
+                        union = _union_over_contexts(R, site_id, m_cvars, n_manifold_samples)["union"]
+                        gap = {k: resp[k] - union[k] for k in _METRIC_KEYS}
+                        per_site[site_id] = {"respective": resp, "union": union, "gap": gap}
+                    results[(label, category, context, mode)] = per_site
 
     if save_to:
         os.makedirs(os.path.dirname(save_to) or ".", exist_ok=True)

@@ -25,7 +25,9 @@ import torch
 from safetensors.torch import load_file, save_file
 
 from causalab.tasks.natural_domains_arithmetic.config import NaturalDomainConfig
-from context_datasets import create_contextual_prompts, create_global_prompts, create_counterfactual_dataset, _context_of
+from context_datasets import (create_contextual_prompts, create_global_prompts,
+                              create_counterfactual_dataset, _context_of,
+                              create_wrap_prompts, wrap_predicate)
 from causalab.tasks.natural_domains_arithmetic.causal_models import create_causal_model
 from causalab.tasks.loader import load_task
 from causalab.io.pipelines import load_pipeline
@@ -38,15 +40,16 @@ from causalab.analyses.subspace.das import find_das_subspace
 from causalab.analyses.subspace.pca import find_pca_subspace
 from causalab.methods.metric import string_equality_checker, compute_reference_distributions
 from causalab.runner.helpers import get_output_token_ids, resolve_intervention_metric
-from results_layout import INTERVENED_REPS, PATCHED_DISTS, label_category_dir, site_context_dir
+from results_layout import (INTERVENED_REPS, PATCHED_DISTS, label_category_dir,
+                            site_context_dir, site_rankings_dir)
 from collect_behaviour import build_behaviour_manifold, collect_patched_distributions
 
 
 # combinations: label -> (contextual_vars, manifold_conditioning_vars, cf_conditioning_vars)
 # contextual_vars        : how the base prompts are grouped when generating counterfactuals
-#   cf_conditioning_vars   : how each counterfactual is built from its base (must be
+# cf_conditioning_vars   : how each counterfactual is built from its base (must be
 #                            non-empty for context_matched / context_mismatched).
-#   manifold_conditioning  : how the base prompts are grouped when fitting the manifold
+# manifold_conditioning  : how the base prompts are grouped when fitting the manifold
 #                            ([] = one global manifold).
 def cyclic_embedding(values):
     # map an ordered cyclic variable to points on a circle: value -> [cos, sin].
@@ -82,12 +85,16 @@ POSITION_FOR = {"result": "last_token", "entity": "entity", "number": "number"}
 # dataset (create_counterfactual_dataset emits one cf per type per base).
 # cross_task adds a 3rd pass and needs related_models (set up below) — drop it
 # from the list for a faster first run.
-_CATEGORIES = [("context_matched", "context_mismatched"),("context_matched",), ("context_mismatched",), ("cross_task",)]
+_CATEGORIES = [("context_matched","context_mismatched", ),("cross_task", )]
+WRAP_CVAR = "wrapping"  # sentinel m_vars entry: context is the wrap regime
+
 DEFAULT_COMBINATIONS = {
     "global_result": {"variable": "result", "cf_vars": ["entity"], "m_vars": [],
-                      "categories": _CATEGORIES},
-    "global_entity": {"variable": "entity", "cf_vars": ["entity"], "m_vars": [],
-                      "categories": _CATEGORIES},
+                "categories": _CATEGORIES},
+    # "global_entity": {"variable": "entity", "cf_vars": ["entity"], "m_vars": [],
+    #                 "categories": _CATEGORIES },
+    "contextual_wrapping" : {"variable": "result", "cf_vars":[], "m_vars":[WRAP_CVAR], 
+                             "categories":[("context_matched", ),("context_mismatched", )] }
 }
 
 
@@ -126,7 +133,13 @@ def create_dataset_sequential(domain, num_examples, model_name, task_name, mode,
         combo_position = POSITION_FOR[combo.get("variable", "result")]  # position derived from the class variable
         # base prompts: grouped contextual set if the manifold is conditioned, else global
         print(f"Creating base prompts for {label} (variable={combo.get('variable','result')}, m_vars={m_cvars}, position={combo_position})...")
-        if m_cvars:
+        # WRAP CONTEXT: half the bases from each regime, and a predicate (not a
+        # pinned var) defines matched/mismatched downstream.
+        ctx_predicate = wrap_predicate(causal_model) if m_cvars == [WRAP_CVAR] else None
+        if ctx_predicate is not None:
+            bases = (create_wrap_prompts(causal_model, True, num_examples // 2, seed=seed)
+                     + create_wrap_prompts(causal_model, False, num_examples - num_examples // 2, seed=seed))
+        elif m_cvars:
             grouped = create_contextual_prompts(causal_model, conditioning_vars=m_cvars,
                                                 n_per_context=num_per_context, seed=seed,
                                                 group_by=combo.get("group_by"))
@@ -138,19 +151,28 @@ def create_dataset_sequential(domain, num_examples, model_name, task_name, mode,
             cf = create_counterfactual_dataset(
                     causal_model, bases, cf_cvars, n=len(bases), seed=seed, categories=category,
                     related_models=related_models if "cross_task" in category else None,
+                    context_predicate=ctx_predicate,
                 )
             # path-finding only RANKS sites, so a subset of counterfactuals suffices;
             # the full `cf` is still stored for manifold fitting + intervened reps.
             cf_pathfind = cf[:n_pathfind] if n_pathfind else cf
             sites = find_path(model_name, task_name, domain, cf_pathfind, mode, combo_position, device, dtype,
                                 num_sites, batch_size, pipeline=pipeline, layers=layers,
-                                output_dir=label_category_dir(INTERVENED_REPS, label, category))
+                                output_dir=site_rankings_dir(label, category))
             out[(label, category)] = (cf, sites)
     return out
 
 
-def context_key(ex, manifold_cvars):
-    # an example's manifold-context key; names the manifold output dirs.
+
+
+def context_key(ex, manifold_cvars, wraps=None):
+    """An example's manifold-context key; names the manifold output dirs.
+
+    m_vars == [WRAP_CVAR] -> context is the derived wrap regime ("wrap"/"no_wrap"),
+    so we call the predicate instead of reading variables off the trace.
+    """
+    if manifold_cvars == [WRAP_CVAR]:
+        return "wrap" if wraps(ex["input"]) else "no_wrap"
     return tuple(sorted(_context_of(ex["input"], manifold_cvars).items())) if manifold_cvars else "global"
 
 
@@ -187,9 +209,10 @@ def generate_activation_manifold(target_sites, cf_dataset, manifold_cvars, pipel
 
     # group the flat counterfactual dataset by the base's context so we fit one
     # manifold per context (per site). Empty manifold_cvars -> one global group.
+    wraps = wrap_predicate(causal_model) if manifold_cvars == [WRAP_CVAR] else None
     groups = {}
     for ex in cf_dataset:
-        groups.setdefault(context_key(ex, manifold_cvars), []).append(ex)
+        groups.setdefault(context_key(ex, manifold_cvars, wraps), []).append(ex)
 
     # embeddings map the causal variable to intrinsic coords for parameter extraction /
     # visualization; default to the ones the NDA causal model already defines. Pass
@@ -290,7 +313,10 @@ def get_intervened_representations(target_sites, counterfactual_dataset, pipelin
         reps = {s.id: src[s.id] for s in units}
     elif mode == "Gaussian":
         base = collect([ex["input"] for ex in counterfactual_dataset])
-        reps = {s.id: base[s.id] + sigma * torch.randn_like(base[s.id]) for s in units}
+        # noise ~ N(0, sigma*std(base)) — scalar std, same definition as
+        # run_gaussian_scan.add_noise (here std is over the full N examples).
+        reps = {s.id: base[s.id] + sigma * base[s.id].std() * torch.randn_like(base[s.id])
+                for s in units}
     elif mode == "DAS":
         base = collect([ex["input"] for ex in counterfactual_dataset])
         src = collect([ex["counterfactual_inputs"][0] for ex in counterfactual_dataset])
@@ -383,26 +409,77 @@ def main():
     manifolds, intervened, output_dists = {}, {}, {}
     for (label, category), (cf, sites_by_mode) in datasets.items():
         print(f"Generating manifolds, intervened reps and patched dists for {label}/{category}...")
-        print("Sites:", [s.id for s in sites_by_mode["STR"]])
         combo = DEFAULT_COMBINATIONS[label]
         m_cvars = combo["m_vars"]
-        for mode_name, sites in sites_by_mode.items():
-            if mode_name != "DAS":  # manifolds are mode-independent; DAS sites ⊆ STR∪Gaussian
-                manifolds[(label, category, mode_name)] = generate_activation_manifold(
-                    sites, cf, m_cvars, pipeline, causal_model, k_features=args.k_features,
-                    intervention_variable=combo.get("variable", "result"), seed=args.seed,
-                    task=task, decoding_eval=args.decoding_eval)
-            # get_intervened_representations FIRST: for DAS it trains + installs the
-            # subspace featurizer on the site objects, which collect_patched_distributions
-            # then reuses (so DAS is trained once and both sides use the same rotation).
-            intervened[(label, category, mode_name)] = get_intervened_representations(
-                sites, cf, pipeline, mode_name, causal_model=causal_model,
-                k_features=args.k_features,
-                output_dir=label_category_dir(INTERVENED_REPS, label, category))
-            output_dists[(label, category, mode_name)] = collect_patched_distributions(
-                sites, cf, pipeline, task, mode_name, causal_model=causal_model,
-                k_features=args.k_features,
-                output_dir=label_category_dir(PATCHED_DISTS, label, category))
+
+        # SPLIT THE DATASET BY MANIFOLD CONTEXT UP FRONT. Every downstream artifact
+        # (manifold, intervened reps, patched dists) is then produced per context and
+        # stored under {label}__{category}__{context}, so each reps file holds only
+        # its own context's examples and can be compared against that context's own
+        # manifold — the "respective" comparison. (A union comparison stays possible
+        # by simply loading the other contexts' manifolds at analysis time.)
+        wraps = wrap_predicate(causal_model) if m_cvars == [WRAP_CVAR] else None
+        groups = {}
+        for ex in cf:
+            groups.setdefault(context_key(ex, m_cvars, wraps), []).append(ex)
+        print(f"  contexts: { {k: len(v) for k, v in groups.items()} }")
+
+        # EVALUATE ALL MODES AT A COMMON SITE SET = the STR∪Gaussian union (which
+        # find_path already returns as sites_by_mode["DAS"]). Each scan ranks by a
+        # different objective (STR = interchange success, Gaussian = corruption
+        # importance), so per-mode sites made the cross-mode comparison confounded
+        # by site choice. With the union, modes differ only by the intervention.
+        union_sites = sites_by_mode.get("DAS")
+        if union_sites is None:  # DAS not requested — build the union ourselves
+            union_sites, seen = [], set()
+            for m in ("STR", "Gaussian"):
+                for s in sites_by_mode.get(m, []):
+                    if s.id not in seen:
+                        seen.add(s.id)
+                        union_sites.append(s)
+
+        # by_scan: which sites each scan selected. Saved so the analysis can label
+        # every union site by the scan(s) that found it (membership test), and to
+        # quantify the STR/Gaussian overlap.
+        by_scan = {m: sorted(s.id for s in sites_by_mode.get(m, [])) for m in ("STR", "Gaussian")}
+        str_ids, g_ids = set(by_scan["STR"]), set(by_scan["Gaussian"])
+        print(f"  union sites: {len(union_sites)}  (STR-only {len(str_ids - g_ids)}, "
+              f"Gaussian-only {len(g_ids - str_ids)}, both {len(str_ids & g_ids)})")
+        # site-selection metadata lives with the rankings (per label/category, not
+        # per context), next to the *_top_sites.json find_path wrote.
+        rank_dir = site_rankings_dir(label, category)
+        os.makedirs(rank_dir, exist_ok=True)
+        with open(os.path.join(rank_dir, "site_provenance.json"), "w") as f:
+            json.dump(by_scan, f, indent=2)
+
+        # Everything below is produced PER CONTEXT, into {label}__{category}__{context}.
+        for context, cf_ctx in groups.items():
+            print(f"  -- context {context!r}: {len(cf_ctx)} examples --")
+            rep_dir = label_category_dir(INTERVENED_REPS, label, category, context)
+            dist_dir = label_category_dir(PATCHED_DISTS, label, category, context)
+            os.makedirs(rep_dir, exist_ok=True)
+
+            # manifolds are mode-independent -> fit once per (context, site). Passing
+            # the already-split cf_ctx means generate_activation_manifold's internal
+            # grouping yields exactly this one context.
+            manifolds[(label, category, context)] = generate_activation_manifold(
+                union_sites, cf_ctx, m_cvars, pipeline, causal_model, k_features=args.k_features,
+                intervention_variable=combo.get("variable", "result"), seed=args.seed,
+                task=task, decoding_eval=args.decoding_eval)
+
+            # NOTE: we iterate the mode NAMES only and pass `union_sites` to each — the
+            # per-mode site lists in sites_by_mode are deliberately NOT used here, so
+            # e.g. STR reps are computed at Gaussian-found sites too.
+            for mode_name in args.mode:
+                # get_intervened_representations FIRST: for DAS it trains + installs the
+                # subspace featurizer on the site objects, which collect_patched_distributions
+                # then reuses (so DAS is trained once and both sides use the same rotation).
+                intervened[(label, category, context, mode_name)] = get_intervened_representations(
+                    union_sites, cf_ctx, pipeline, mode_name, causal_model=causal_model,
+                    k_features=args.k_features, output_dir=rep_dir)
+                output_dists[(label, category, context, mode_name)] = collect_patched_distributions(
+                    union_sites, cf_ctx, pipeline, task, mode_name, causal_model=causal_model,
+                    k_features=args.k_features, output_dir=dist_dir)
     return intervened, manifolds, output_dists
 
 

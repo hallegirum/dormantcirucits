@@ -15,6 +15,59 @@ from causalab.methods.metric import make_causal_metric, score_intervention_outpu
 from causalab.neural.activations.interpolate import run_interpolation_interventions
 
 
+# patch_at -> (mlp site, attn site). "corr" (default) = where hl_ll_corr stores each
+# variable and where dormancy is a representation-level signal; "write" = residual
+# writes (d_model, consistent, for the direction analysis); "internal" = attn hook_z.
+_PATCH_SITES = {
+    "corr": ("mlp_activation", "attn_result"),
+    "write": ("mlp_output", "attn_result"),
+    "internal": ("mlp_activation", None),
+}
+
+
+def build_grid(pipeline, task, component, layers, positions=None, heads=None, patch_at="corr"):
+    """Guard: build a (layer x position/head) grid of interchange targets of ONE
+    component type. Generalises build_targets_for_grid (which is residual-only).
+
+        component : "residual" | "mlp" | "attention"
+        patch_at  : "corr" (default) -> mlp.hook_post + attn.hook_result (correspondence)
+                    "write"          -> mlp_output   + attn.hook_result (residual writes)
+                    "internal"       -> mlp.hook_post + attn.hook_z
+
+    Returns {key -> InterchangeTarget} (keys (layer,pos_id) or (layer,head)), same
+    shape build_targets_for_grid / the scans expect.
+    """
+    from causalab.neural.activations.targets import (
+        build_residual_stream_targets,
+        build_mlp_targets,
+        build_attention_head_targets,
+    )
+
+    mlp_loc, attn_loc = _PATCH_SITES[patch_at]
+    tp_lookup = task.create_token_positions(pipeline)
+    token_positions = (
+        [tp_lookup[n] for n in positions] if positions else list(tp_lookup.values())
+    )
+
+    if component == "residual":
+        return build_residual_stream_targets(
+            pipeline, layers, token_positions,
+            mode="one_target_per_unit", target_output=(patch_at != "internal"),
+        )
+    if component == "mlp":
+        return build_mlp_targets(
+            pipeline, layers, token_positions, mode="one_target_per_unit", location=mlp_loc,
+        )
+    if component == "attention":
+        if heads is None:
+            heads = list(range(int(pipeline.model.cfg.n_heads)))
+        return build_attention_head_targets(
+            pipeline, layers, heads, token_positions[0], mode="one_target_per_unit",
+            location=attn_loc,
+        )
+    raise ValueError(f"unknown component {component!r} (residual|mlp|attention)")
+
+
 def _top_sites(scores, targets, num_sites):
     # scores: {(layer, pos): float}; return the num_sites highest-scoring units.
     ranked = sorted(scores, key=lambda k: scores[k], reverse=True)[:num_sites]
@@ -42,7 +95,10 @@ def run_gaussian_scan(targets, dataset, pipeline, batch_size, causal_model, sigm
     # (identity featurizer), then score how often the answer still matches. A site
     # ENCODES the variable when noising it BREAKS the answer, so importance = 1 - acc.
     def add_noise(f_base, f_src, **_):
-        return f_base + sigma * torch.randn_like(f_base)
+        # GN baseline: noise ~ N(0, sigma*std(base)) — a scalar std over the
+        # activations ("3 times the standard deviation of the ... from the
+        # textset"), NOT a flat sigma. f_src is unused: noising ignores the source.
+        return f_base + sigma * f_base.std() * torch.randn_like(f_base)
 
     raw_results = {}
     for key, target in targets.items():
@@ -63,7 +119,32 @@ def run_gaussian_scan(targets, dataset, pipeline, batch_size, causal_model, sigm
     )
     return {k: 1.0 - v for k, v in acc.items()}
 
+def compute_patching_scores(grid, cf_dataset, pipeline, causal_model, modes, batch_size):
+    """Per-site 'apparent circuit' score — the same interchange-accuracy the scans
+    in find_path use, but kept for ALL sites (no top-k). A HIGH score means the
+    patching method identifies the site as in-circuit. Compared to hl_ll_corr, a
+    high score at a site NOT in the true circuit is exactly a dormancy false positive
+    (see correlate_divergences' `dormancy` flag).
 
+    Returns {mode: {key -> score}} keyed like the grid. Needs a causal_model that the
+    metric can score against (the interpbench CausalModel does; the IOI shim does
+    not yet — the caller guards this)."""
+    from causalab.methods.interchange.layer_scan import run_layer_scan
+    from causalab.methods.metric import make_causal_metric
+    from path_finder import run_gaussian_scan
+
+    scores = {}
+    if "STR" in modes:
+        scores["STR"] = run_layer_scan(
+            interchange_targets=grid, dataset=cf_dataset, pipeline=pipeline,
+            batch_size=batch_size, metric=make_causal_metric(), causal_model=causal_model,
+        )
+    if "Gaussian" in modes:
+        scores["Gaussian"] = run_gaussian_scan(
+            grid, cf_dataset, pipeline, batch_size, causal_model,
+        )
+    return scores
+ 
 def find_path(
     model_name: str,
     task_name: str,

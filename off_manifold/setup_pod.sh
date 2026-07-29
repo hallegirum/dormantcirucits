@@ -10,7 +10,8 @@
 #   4. (pod) huggingface-cli login          # or export HF_TOKEN=... before step 2
 #   5. (pod) cd /workspace/off_manifold && ./run_sweep.sh
 set -euo pipefail
-
+apt update
+apt install -y tmux
 ROOT="${ROOT:-/workspace}"
 export HF_HOME="${HF_HOME:-$ROOT/hf}"      # model cache — persists if $ROOT is a network volume
 mkdir -p "$HF_HOME"

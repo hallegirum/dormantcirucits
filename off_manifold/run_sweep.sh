@@ -13,14 +13,20 @@ set -euo pipefail
 MODEL="${MODEL:-meta-llama/Llama-3.1-8B-Instruct}"
 SEEDS=(${SEEDS:-0 1 2 3 4})
 NUM_EXAMPLES="${NUM_EXAMPLES:-700}"
-NUM_SITES="${NUM_SITES:-10}"
+NUM_SITES="${NUM_SITES:-8}"
 K_FEATURES="${K_FEATURES:-64}"
-DECODING="${DECODING:---decoding-eval}"   # set DECODING="" to disable the tier-C test
+N_PATHFIND="${N_PATHFIND:-256}"           # subsample for site RANKING only (full set still used for manifolds/reps)
+LAYERS="${LAYERS:-4 6 10 16 20 22 24 26 28 30}"                       # e.g. LAYERS="8 12 16 20 24 28" to scan a subset; empty = all layers
+DECODING="${DECODING:-}"   # empty = tier-C off; set DECODING="--decoding-eval" to enable
 
-echo "model=$MODEL  seeds=${SEEDS[*]}  num_examples=$NUM_EXAMPLES  num_sites=$NUM_SITES  k=$K_FEATURES  decoding='$DECODING'"
+layers_arg=""; [ -n "$LAYERS" ] && layers_arg="--layers $LAYERS"
+echo "model=$MODEL seeds=${SEEDS[*]} num_examples=$NUM_EXAMPLES num_sites=$NUM_SITES k=$K_FEATURES n_pathfind=$N_PATHFIND layers='${LAYERS:-all}' decoding='$DECODING'"
+
+RESULTS_ROOT="${RESULTS_ROOT:-results}"   # RESULTS_ROOT=results_v2 to start clean without deleting old runs
+failed=()
 
 for s in "${SEEDS[@]}"; do
-  outdir="results/seed_${s}"
+  outdir="${RESULTS_ROOT}/seed_${s}"
   logf="${outdir}/run.log"
   mkdir -p "$outdir"
   echo "================  seed $s  (logging to $logf)  ================"
@@ -33,7 +39,23 @@ for s in "${SEEDS[@]}"; do
       --num-examples "$NUM_EXAMPLES" \
       --num-sites "$NUM_SITES" \
       --k-features "$K_FEATURES" \
-      $DECODING > "$logf" 2>&1
-  echo "seed $s done (exit $?) -> $outdir  (log: $logf)"
+      --n-pathfind "$N_PATHFIND" \
+      $layers_arg \
+      $DECODING > "$logf" 2>&1 || rc=$?
+  rc=${rc:-0}
+  if [ "$rc" -ne 0 ]; then
+    # Don't let one bad seed kill the sweep (set -e would abort otherwise).
+    failed+=("$s")
+    echo "seed $s FAILED (exit $rc) -> $logf   last lines:"
+    tail -n 20 "$logf" | sed 's/^/    | /'
+  else
+    echo "seed $s done -> $outdir  (log: $logf)"
+  fi
+  unset rc
 done
-echo "ALL SEEDS DONE"
+
+if [ ${#failed[@]} -gt 0 ]; then
+  echo "ALL SEEDS DONE — FAILED: ${failed[*]} (see <root>/seed_<s>/run.log)"
+else
+  echo "ALL SEEDS DONE — all succeeded"
+fi

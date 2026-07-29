@@ -96,7 +96,8 @@ def collect_patched_distributions(target_sites, counterfactual_dataset, pipeline
         target = InterchangeTarget([[site]])
         if mode == "Gaussian":
             def add_noise(f_base, f_src, **_):
-                return f_base + sigma * torch.randn_like(f_base)
+                # same GN definition as path_finder.run_gaussian_scan: N(0, sigma*std(base))
+                return f_base + sigma * f_base.std() * torch.randn_like(f_base)
             raw = run_interpolation_interventions(
                 pipeline=pipeline, counterfactual_dataset=counterfactual_dataset,
                 interchange_target=target, fn=add_noise, params={},
