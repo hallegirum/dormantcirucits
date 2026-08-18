@@ -38,7 +38,7 @@ import random
 from typing import Any, Callable, Iterable
 
 from causalab.causal.causal_model import CausalModel
-from causalab.causal.trace import CausalTrace
+from causalab.causal.trace import CausalTrace, Mechanism, input_var
 from causalab.causal.counterfactual_dataset import CounterfactualExample
  
 # --------------------------------------------------------------------------- #
@@ -263,6 +263,7 @@ def create_counterfactual_dataset(
     related_models: list[CausalModel] | None = None,
     target_variable: str = "result",
     context_predicate: Callable[[CausalTrace], bool] | None = None,
+    max_enumerate: int = 50_000,
 ) -> list[dict[str, Any]]:
     """Build a paired, category-labelled counterfactual dataset.
 
@@ -284,6 +285,12 @@ def create_counterfactual_dataset(
         context as base; context_mismatched = graded one-knob context change,
         same task; cross_task = a related but different task (weekdays vs months).
     related_models : sources for cross_task (required iff "cross_task" active).
+    max_enumerate : threshold below which _sample_input_fixed enumerates the free
+        input space exactly (else it rejection-samples). For SYMBOLIC causal models
+        (weekdays: new_trace is arithmetic) the 50k default is cheap. For InterpBench
+        tracr models new_trace runs a full HL-transformer FORWARD, so enumerating the
+        space is catastrophic (millions of forwards) — pass a SMALL value there to force
+        cheap rejection sampling (the "target differs" predicate is easily satisfied).
     """
     if "cross_task" in categories and not related_models:
         raise ValueError("cross_task category requires related_models (>=1).")
@@ -314,12 +321,11 @@ def create_counterfactual_dataset(
                 related_rngs=related_rngs,
                 base_trace=base,
                 context_predicate=context_predicate,
+                max_enumerate=max_enumerate,
             )
             examples.append(
-                CounterfactualExample(input = base, counterfactual_inputs=[cf])
-    
+                CounterfactualExample(input=base, counterfactual_inputs=[cf])
             )
-            print("counterfactul working", example["counterfactual_inputs"][0] != example["input"])
     return examples
 
 
@@ -336,6 +342,7 @@ def _make_counterfactual(
     related_rngs: list[random.Random],
     base_trace: CausalTrace | None = None,
     context_predicate: Callable[[CausalTrace], bool] | None = None,
+    max_enumerate: int = 50_000,
 ) -> CausalTrace:
     """Construct one counterfactual source trace for the given category."""
 
@@ -356,13 +363,15 @@ def _make_counterfactual(
         return _sample_input_fixed(
             model, {}, rng,
             predicate=lambda t: (context_predicate(t) == want) and _target_differs(t),
+            max_enumerate=max_enumerate,
         )
 
     if category == "context_matched":
         # Same context (all conditioning vars pinned to base), free vars chosen so
         # the target differs. On-contextual: source lies on base's context slice.
         return _sample_input_fixed(
-            model, dict(base_ctx), rng, predicate=_target_differs
+            model, dict(base_ctx), rng, predicate=_target_differs,
+            max_enumerate=max_enumerate,
         )
 
     if category == "context_mismatched":
@@ -378,7 +387,8 @@ def _make_counterfactual(
             )
         fixed = dict(base_ctx)
         fixed[flip_var] = rng.choice(alt_values)
-        return _sample_input_fixed(model, fixed, rng, predicate=_target_differs)
+        return _sample_input_fixed(model, fixed, rng, predicate=_target_differs,
+                                   max_enumerate=max_enumerate)
 
     if category == "cross_task":
         # Off-global: a valid prompt from a *related* task. Run through the base
@@ -469,41 +479,301 @@ def modclass_groups(model: CausalModel, var: str) -> dict[int, list[Any]]:
     return groups
 
 
+# --------------------------------------------------------------------------- #
+# IOI: causal model + trace pool (observational, not generative)              #
+# --------------------------------------------------------------------------- #
+# IOI is OBSERVATIONAL: the sentences are FIXED data from the IOIDataset, not sampled from
+# a causal model (there's no tracr program to run). So — unlike the tracr/natural-domain
+# helpers above, which SAMPLE model.values — create_ioi_causal_model builds the variable
+# SCHEMA and the traces straight from the data in ONE pass. The traces are real
+# CausalTraces (so the spline fitter's trace._values works), with raw_input modelled as an
+# INPUT (the token ids are given, not computed) — no dict intermediates, no _values hacks.
+def ioi_name_ids(clean: Any) -> set[int]:
+    """Single-token name ids (GPT-2 names are one token, usually with a leading space)."""
+    tok = clean.tokenizer
+    name_ids: set[int] = set()
+    for nm in clean.names:
+        for variant in (" " + nm, nm):
+            enc = tok.encode(variant)
+            if len(enc) == 1:
+                name_ids.add(enc[0])
+    return name_ids
+
+
+def _ioi_records(clean: Any) -> list[dict[str, Any]]:
+    """Per-example IOI facts derived from the token pattern (there's no metadata field).
+
+    Returns ``[{template_type, IO, S, result, raw_input}]``. S (the repeated subject) is
+    the 3rd name occurrence; the sentence is ABBA when S sits in the 2nd name slot (IO =
+    1st name), else BABA (IO = 2nd name). ``result`` is the IO's token id (the one-hot
+    target's last-position argmax), and ``raw_input`` is the token-id list.
+    """
+    import torch
+
+    inputs = clean.get_inputs()      # (N, seq) token ids — fetch ONCE
+    targets = clean.get_targets()    # list of (seq, d_vocab_out) one-hots — ONCE
+    name_ids = ioi_name_ids(clean)
+
+    records: list[dict[str, Any]] = []
+    for i in range(len(inputs)):
+        toks = inputs[i].tolist() if torch.is_tensor(inputs[i]) else list(inputs[i])
+        occ = [t for t in toks if t in name_ids]  # name occurrences in order
+        if len(occ) < 3:
+            raise ValueError(
+                f"IOI example {i}: expected 3 name occurrences, got {len(occ)} in {toks} "
+                f"— some names may be multi-token; widen name_ids."
+            )
+        slot1, slot2, s_id = occ[0], occ[1], occ[2]
+        ttype = "ABBA" if s_id == slot2 else "BABA"
+        io_id = slot1 if s_id == slot2 else slot2
+        tgt = targets[i]
+        result = int(tgt[-1].argmax()) if hasattr(tgt, "argmax") else io_id
+        records.append({"template_type": ttype, "IO": io_id, "S": s_id,
+                        "result": result, "raw_input": toks})
+    return records
+
+
+def create_ioi_causal_model(clean: Any) -> tuple[CausalModel, dict[str, list]]:
+    """Build the IOI ``CausalModel`` AND its per-order trace pool in ONE pass — the IOI
+    counterpart to a tracr task's ``create_causal_model``.
+
+    Variables
+        IO             indirect-object name id  (the answer; the fitted manifold parameter)
+        S              subject name id          (the repeated name)
+        template_type  ABBA / BABA              (context axis -> one manifold per value)
+        raw_input      the token ids            (an INPUT, provided per example — the
+                                                 sentence is data, so it's set, not computed)
+        result         = IO
+        raw_output     = result
+
+    Returns ``(causal_model, pool)`` with ``pool = {template_type: [CausalTrace]}`` ready
+    for :func:`create_ioi_counterfactual_dataset`. Because ``raw_input`` is an input the
+    traces are built directly by ``new_trace`` — no post-hoc ``_values`` surgery.
+    """
+    from collections import defaultdict
+
+    records = _ioi_records(clean)
+    io_ids = sorted({r["result"] for r in records})
+    s_ids = sorted({r["S"] for r in records})
+    orders = sorted({r["template_type"] for r in records})
+
+    mechanisms = {
+        "IO": input_var(io_ids),
+        "S": input_var(s_ids),
+        "template_type": input_var(orders),
+        # raw_input is an INPUT (parent-less): provided per example, never sampled. compute
+        # returns None only as a guard; new_trace always sets it from the data. This is
+        # what lets the traces be built directly, with no _values injection.
+        "raw_input": Mechanism(parents=[], compute=lambda t: None),
+        "result": Mechanism(parents=["IO"], compute=lambda t: t["IO"]),
+        "raw_output": Mechanism(parents=["result"], compute=lambda t: t["result"]),
+    }
+    values = {"IO": io_ids, "S": s_ids, "template_type": orders,
+              "raw_input": None, "result": io_ids, "raw_output": io_ids}
+    idx = {v: i for i, v in enumerate(io_ids)}
+    embeddings = {"result": (lambda v, _m=idx: [float(_m[v])])}
+    causal_model = CausalModel(mechanisms, values, id="ioi", embeddings=embeddings)
+
+    pool: dict[str, list] = defaultdict(list)
+    for r in records:
+        trace = causal_model.new_trace({
+            "IO": r["IO"], "S": r["S"],
+            "template_type": r["template_type"], "raw_input": r["raw_input"],
+        })
+        pool[r["template_type"]].append(trace)
+    print(f"[IOI] causal model + pool: { {k: len(v) for k, v in pool.items()} } "
+          f"| {len(io_ids)} IO ids, orders {orders}")
+    return causal_model, dict(pool)
+
+
 def create_ioi_counterfactual_dataset(
-    traces: list[dict[str, Any]],
+    pool: dict[str, list],
+    n: int | None = None,
     seed: int = 42,
     categories: tuple[str, ...] = ("context_matched", "context_mismatched"),
     context_var: str = "template_type",
-) -> list[dict[str, Any]]:
-    """IOI counterfactuals — the same category-labelled, paired shape as
-    :func:`create_counterfactual_dataset`, but sources come from an existing pool of
-    IOIDataset traces (no CausalModel.sample_input to draw from).
+) -> list[CounterfactualExample]:
+    """Pair real traces into a flat, category-labelled counterfactual dataset — the
+    observational analogue of :func:`create_counterfactual_dataset`. Generic over the
+    context axis: IOI passes ``context_var="template_type"`` (ABBA/BABA), the polysemantic
+    benchmark passes ``context_var="task"`` (which case's algorithm), so context_matched =
+    WITHIN-task and context_mismatched = CROSS-task with no code change.
 
-    Each ``trace`` is a dict carrying at least ``raw_input`` and ``context_var``
-    (e.g. ``template_type`` = "ABBA"/"BABA"). For each base trace and category:
-        context_matched    -> a source with the SAME context_var value
-        context_mismatched -> a source with a DIFFERENT context_var value
-    Returns ``[{"input": trace, "counterfactual_inputs": [src], "category": cat}, …]``.
+    IOI sentences are fixed real data (the causal model can't generate them), so we PAIR
+    from the pool rather than sampling the model. For each base trace, emit one CF per
+    active category, all sharing the base:
+
+        context_matched     source shares the base's TEMPLATE (ABBA->ABBA), different IO
+                            -> a WITHIN-context patch.
+        context_mismatched  source from the OTHER template (ABBA->BABA), different IO
+                            -> an OUT-of-context patch.
+
+    Each example is a ``CounterfactualExample`` (a dict) with two extra keys the
+    interchange machinery ignores but the analysis reads: ``category`` and
+    ``context={"template_type": base_template}``. The template label also lives on the
+    base trace itself, so downstream grouping by ``manifold_cvars=["template_type"]`` fits
+    and patches ONE manifold per template — the "two sets per context" you wanted, without
+    a second dataset.
+
+    The patch POSITION (subject vs result) is ORTHOGONAL to this dataset: the SAME pairs
+    drive every position; where you patch is chosen later in ``build_grid``.
     """
     rng = random.Random(seed)
-    by_ctx: dict[Any, list[dict]] = {}
-    for t in traces:
-        by_ctx.setdefault(t[context_var], []).append(t)
-    others = {
-        k: [v for kk, vs in by_ctx.items() if kk != k for v in vs] for k in by_ctx
-    }
-    ds: list[dict[str, Any]] = []
-    for t in traces:
-        same = by_ctx[t[context_var]]
-        diff = others[t[context_var]]
+    contexts = list(pool.keys())
+    bases = [t for ts in pool.values() for t in ts]
+    if n is not None:
+        rng.shuffle(bases)
+        bases = bases[:n]
+
+    examples: list[CounterfactualExample] = []
+    for base in bases:
+        ctx = base[context_var]
+        other = [x for x in contexts if x != ctx]
         for cat in categories:
             if cat == "context_matched":
-                src = rng.choice(same)
+                src_pool = pool[ctx]
             elif cat == "context_mismatched":
-                src = rng.choice(diff) if diff else rng.choice(same)
+                if not other:
+                    continue  # only one context present -> no cross-context pairs
+                src_pool = pool[rng.choice(other)]
             else:
+                raise ValueError(f"unknown category {cat!r}")
+            # source with a DIFFERENT result so the patch actually flips the answer
+            cands = [s for s in src_pool if s["result"] != base["result"]]
+            if not cands:
                 continue
-            ds.append({"input": t, "counterfactual_inputs": [src], "category": cat})
-    return ds
+            src = rng.choice(cands)
+            ex = CounterfactualExample(input=base, counterfactual_inputs=[src])
+            ex["category"] = cat
+            ex["context"] = {context_var: ctx}
+            examples.append(ex)
+
+    matched = sum(e["category"] == "context_matched" for e in examples)
+    print(f"[cf {context_var}] {len(examples)} pairs | matched {matched} | "
+          f"mismatched {len(examples) - matched} | contexts {contexts}")
+    return examples
+
+
+def create_directed_pairs(pool, base_task, target_task, n=None, seed=42, context_var="task"):
+    """DIRECTED counterfactual pairs: base ∈ pool[base_task], source ∈ pool[target_task],
+    source result != base result. Same inner pairing as create_ioi_counterfactual_dataset but
+    with BOTH ends pinned (vs source = a random OTHER task), so every (base_task -> target_task)
+    direction is a clean, separately-labelled scan — the axis the interaction regression needs.
+
+    base_task == target_task -> within-task (the control/diagonal). Each example carries
+    base_task / target_task / category / context so downstream rows are self-describing.
+    """
+    rng = random.Random(seed)
+    bases = list(pool[base_task])
+    if n is not None:
+        rng.shuffle(bases)
+        bases = bases[:n]
+    src_pool = pool[target_task]
+    category = "context_matched" if base_task == target_task else "context_mismatched"
+    examples: list[CounterfactualExample] = []
+    for base in bases:
+        cands = [s for s in src_pool if s["result"] != base["result"] and s is not base]
+        if not cands:
+            continue
+        src = rng.choice(cands)
+        ex = CounterfactualExample(input=base, counterfactual_inputs=[src])
+        ex["category"] = category
+        ex["context"] = {context_var: base[context_var]}
+        ex["base_task"] = base_task
+        ex["target_task"] = target_task
+        examples.append(ex)
+    return examples
+
+
+# --------------------------------------------------------------------------- #
+# Polysemantic benchmark: observational, task-keyed (structurally == IOI)      #
+# --------------------------------------------------------------------------- #
+# A poly SIIT model routes on the TASK token at position 0; raw_input is
+# [task, BOS, tok_0…tok_{L-1}], output is a per-position class, and the studied `result` is
+# the class at target_pos (last non-PAD by default). Inputs are FIXED dataset sequences
+# (can't be sampled — the union vocab causes OOV replacement), so — exactly like IOI — we
+# build a real-trace POOL keyed by `task` and PAIR from it. context_matched = within-task,
+# context_mismatched = CROSS-task (patch a component with the OTHER task's activation, the
+# dormancy probe for shared/overlapping components).
+def poly_records(inputs, labels, target_pos: int = -1) -> list[dict[str, Any]]:
+    """Per-example poly facts from the dataset tensors.
+    inputs : LongTensor [N, n_ctx] — task id at pos 0, BOS(=0) at pos 1, tokens after; PAD=1
+             fills the tail. labels : per-position class [N, n_ctx] (argmax'd if one-hot).
+    Returns [{task, raw_input (token-id list), result (class at target_pos), target_pos}].
+    target_pos=-1 -> the last NON-PAD content position (>=2, token != PAD)."""
+    import torch
+    lab = labels.argmax(-1) if getattr(labels, "ndim", labels.dim()) == 3 else labels
+    records: list[dict[str, Any]] = []
+    for i in range(len(inputs)):
+        toks = inputs[i].tolist() if torch.is_tensor(inputs[i]) else list(inputs[i])
+        content = [p for p, t in enumerate(toks) if p >= 2 and t != 1]  # skip task, BOS, PAD
+        tp = content[-1] if (target_pos == -1 and content) else (target_pos % len(toks))
+        row_lab = lab[i].tolist() if torch.is_tensor(lab[i]) else list(lab[i])
+        records.append({"task": int(toks[0]), "raw_input": toks,
+                        "result": int(row_lab[tp]), "target_pos": tp})
+    return records
+
+
+def create_poly_causal_model(inputs, labels, target_pos: int = -1
+                             ) -> tuple[CausalModel, dict[int, list]]:
+    """Build the polysemantic ``CausalModel`` + its per-task trace pool in one pass — the
+    poly counterpart to ``create_ioi_causal_model``.
+
+    Variables
+        task        which case's algorithm runs (position-0 router; the CONTEXT axis)
+        raw_input   the token ids [task, BOS, tok…]   (an INPUT, provided per example)
+        result      the studied per-position output class at target_pos   (fitted parameter)
+        raw_output  = result
+
+    Returns ``(causal_model, pool)`` with ``pool = {task: [CausalTrace]}`` for
+    :func:`create_ioi_counterfactual_dataset(..., context_var="task")``."""
+    from collections import defaultdict
+
+    records = poly_records(inputs, labels, target_pos)
+    tasks = sorted({r["task"] for r in records})
+    results = sorted({r["result"] for r in records})
+
+    mechanisms = {
+        "task": input_var(tasks),
+        "raw_input": Mechanism(parents=[], compute=lambda t: None),   # provided per example
+        "result": input_var(results),
+        "raw_output": Mechanism(parents=["result"], compute=lambda t: t["result"]),
+    }
+    values = {"task": tasks, "raw_input": None, "result": results, "raw_output": results}
+    idx = {v: i for i, v in enumerate(results)}
+    embeddings = {"result": (lambda v, _m=idx: [float(_m[v])])}
+    causal_model = CausalModel(mechanisms, values, id="poly", embeddings=embeddings)
+
+    pool: dict[int, list] = defaultdict(list)
+    for r in records:
+        trace = causal_model.new_trace({"task": r["task"], "result": r["result"]})
+        trace._values["raw_input"] = r["raw_input"]
+        pool[r["task"]].append(trace)
+    print(f"[poly] causal model + pool: { {k: len(v) for k, v in pool.items()} } "
+          f"| tasks {tasks}, {len(results)} result classes")
+    return causal_model, dict(pool)
+
+
+def ioi_subject_position_spec(name_ids: set[int]) -> Callable[[dict], dict]:
+    """A DYNAMIC token-position spec for the IOI subject (S2), for injection via
+    ``Task.template``. IOI templates differ in length, so S2 is NOT a fixed absolute
+    index — this returns a per-example spec that scans ``raw_input`` for the 3rd name
+    occurrence (= the repeated subject). Pair with ``build_grid(positions=["subject"])``
+    to patch the s-inhibition / duplicate-token inputs instead of the last token.
+    """
+    def spec_func(input_sample: dict) -> dict:
+        toks = input_sample["raw_input"]
+        toks = toks.tolist() if hasattr(toks, "tolist") else list(toks)
+        occ = [i for i, t in enumerate(toks) if t in name_ids]
+        if len(occ) < 3:
+            raise ValueError(f"IOI subject position: <3 name occurrences in {toks}")
+        return {"type": "index", "position": occ[2]}  # S2 = 3rd name occurrence
+    return spec_func
+
+
+
+
+ 
+ 
 
 

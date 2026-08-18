@@ -68,6 +68,50 @@ def build_grid(pipeline, task, component, layers, positions=None, heads=None, pa
     raise ValueError(f"unknown component {component!r} (residual|mlp|attention)")
 
 
+def build_full_grid(pipeline, task, layers, positions=None, patch_at="corr",
+                    include_residual=True):
+    """The WHOLE patchable universe at circuit granularity, keyed by ``site.id``.
+
+    One grid over ALL components — every MLP (per layer) + every attention head (per
+    layer x head) + [optional] BOTH residual streams per layer — instead of one component
+    type per run. Two reasons:
+
+    * dormancy is scored by a SINGLE top-k ranking across the whole model, so every
+      component must be ranked together (per-component runs can't share a cutoff), and the
+      full universe gives the per-(mode,context) correlation a usable N.
+    * matching hl_ll_corr's FULL spec set: the IOI correspondence maps to heads, an MLP,
+      AND both residual streams (all_nodes_hook -> resid_pre = block_input; hook_out ->
+      resid_post = block_output). So residual is built in BOTH directions (target_output
+      False and True), independent of ``patch_at``.
+
+    Keyed by ``site.id`` (unique across component types), the shape compute_patching_scores,
+    the reps, and the membership map all key on downstream.
+    """
+    from causalab.neural.activations.targets import build_residual_stream_targets
+
+    grid: dict = {}
+
+    def _add(sub):
+        for target in sub.values():
+            grid[target.flatten()[0].id] = target
+
+    _add(build_grid(pipeline, task, "mlp", layers, positions=positions, patch_at=patch_at))
+    _add(build_grid(pipeline, task, "attention", layers, positions=positions, patch_at=patch_at))
+    if include_residual:
+        tp_lookup = task.create_token_positions(pipeline)
+        token_positions = (
+            [tp_lookup[n] for n in positions] if positions else list(tp_lookup.values())
+        )
+        # both residual sites, so the full correspondence matches (resid_pre=block_input,
+        # resid_post=block_output). _site_to_spec keeps the two distinct.
+        for target_output in (False, True):
+            _add(build_residual_stream_targets(
+                pipeline, layers, token_positions,
+                mode="one_target_per_unit", target_output=target_output,
+            ))
+    return grid
+
+
 def _top_sites(scores, targets, num_sites):
     # scores: {(layer, pos): float}; return the num_sites highest-scoring units.
     ranked = sorted(scores, key=lambda k: scores[k], reverse=True)[:num_sites]
@@ -119,32 +163,125 @@ def run_gaussian_scan(targets, dataset, pipeline, batch_size, causal_model, sigm
     )
     return {k: 1.0 - v for k, v in acc.items()}
 
-def compute_patching_scores(grid, cf_dataset, pipeline, causal_model, modes, batch_size):
-    """Per-site 'apparent circuit' score — the same interchange-accuracy the scans
-    in find_path use, but kept for ALL sites (no top-k). A HIGH score means the
-    patching method identifies the site as in-circuit. Compared to hl_ll_corr, a
-    high score at a site NOT in the true circuit is exactly a dormancy false positive
-    (see correlate_divergences' `dormancy` flag).
+def compute_patching_scores(grid, cf_dataset, pipeline, modes, batch_size, target_pos=-1,
+                            metric="flip"):
+    """Per-site 'apparent circuit' score, tracr-native. ``metric`` chooses the readout:
 
-    Returns {mode: {key -> score}} keyed like the grid. Needs a causal_model that the
-    metric can score against (the interpbench CausalModel does; the IOI shim does
-    not yet — the caller guards this)."""
-    from causalab.methods.interchange.layer_scan import run_layer_scan
-    from causalab.methods.metric import make_causal_metric
-    from path_finder import run_gaussian_scan
+      'flip' (default, coarse/binary):
+        STR      -> fraction where patching flips the argmax answer to the SOURCE's result.
+        Gaussian -> fraction where noising BREAKS the base answer (argmax != base).
+        Cheap, but insensitive to graded effects — it under-reports circuits with backup /
+        redundancy (e.g. IOI), because a component can shift the margin without flipping argmax.
 
-    scores = {}
-    if "STR" in modes:
-        scores["STR"] = run_layer_scan(
-            interchange_targets=grid, dataset=cf_dataset, pipeline=pipeline,
-            batch_size=batch_size, metric=make_causal_metric(), causal_model=causal_model,
-        )
-    if "Gaussian" in modes:
-        scores["Gaussian"] = run_gaussian_scan(
-            grid, cf_dataset, pipeline, batch_size, causal_model,
-        )
+      'logit_diff' (continuous, standard IOI-style):
+        the causal effect on the logit gap LD = logit[base_result] - logit[src_result]:
+        score = mean_i (LD_clean_i - LD_patched_i). Patching a circuit component erodes the
+        base's preference for its OWN answer over the source's, so a high score = in-circuit.
+        Needs one clean (unpatched) pass. Requires INTEGER result indices (IOI token ids /
+        class indices); for label-valued tracr results use 'flip'.
+
+    High score = the method calls the site in-circuit; high at a site NOT in hl_ll_corr = a
+    dormancy false positive. Returns {mode: {key -> score}}."""
+    from causalab.neural.activations.interchange_mode import run_interchange_interventions
+    from causalab.neural.featurizer import Featurizer
+
+    # the interchange must swap RAW activations — reset any fitted manifold/subspace
+    # featurizer left on the sites (by generate_activation_manifold) to identity, else
+    # featurize() runs the slab through the spline manifold and shape-mismatches.
+    for target in grid.values():
+        for unit in target.flatten():
+            unit.set_featurizer(Featurizer())
+
+    base_r = [ex["input"]["result"] for ex in cf_dataset]
+    src_r = [ex["counterfactual_inputs"][0]["result"] for ex in cf_dataset]
+
+    if metric == "logit_diff":
+        return _logit_diff_scores(grid, cf_dataset, pipeline, modes, batch_size,
+                                  target_pos, base_r, src_r)
+    if metric != "flip":
+        raise ValueError(f"unknown metric {metric!r} (flip | logit_diff)")
+
+    def _answers(raw):
+        # raw["string"]: per-batch list; each batch = list of per-example decoded
+        # (each decoded = per-position label list). Flatten, take target_pos.
+        out = []
+        for batch in raw.get("string", []):
+            for ex in (batch if isinstance(batch, list) else [batch]):
+                out.append(ex[target_pos] if isinstance(ex, (list, tuple)) else ex)
+        return out
+
+    def add_noise(f_base, f_src, **_):
+        return f_base + 3.0 * f_base.std() * torch.randn_like(f_base)
+
+    scores: dict = {}
+    for mode in modes:
+        scores[mode] = {}
+        for key, target in grid.items():
+            if mode == "STR":
+                raw = run_interchange_interventions(
+                    pipeline, cf_dataset, target, batch_size=batch_size, output_scores=False)
+                ans = _answers(raw)
+                scores[mode][key] = sum(a == s for a, s in zip(ans, src_r)) / max(1, len(ans))
+            elif mode == "Gaussian":
+                raw = run_interpolation_interventions(
+                    pipeline, cf_dataset, target, fn=add_noise, params={},
+                    batch_size=batch_size, output_scores=False)
+                ans = _answers(raw)
+                scores[mode][key] = sum(a != b for a, b in zip(ans, base_r)) / max(1, len(ans))
     return scores
- 
+
+
+def _logit_diff_scores(grid, cf_dataset, pipeline, modes, batch_size, target_pos, base_r, src_r):
+    """Continuous IOI-style logit-difference apparent-circuit score (see compute_patching_scores).
+    score[mode][site] = mean_i (LD_clean_i - LD_patched_i), LD = logit[base_result] - logit[src_result]."""
+    from causalab.neural.activations.interchange_mode import run_interchange_interventions
+
+    def _col(v):  # result value -> logit column (IOI token id / class index used directly)
+        if isinstance(v, bool) or not isinstance(v, (int,)) and not hasattr(v, "__index__"):
+            raise ValueError(
+                f"metric='logit_diff' needs INTEGER result indices, got {v!r}. Use metric='flip' "
+                f"for label-valued (tracr) results, or map labels to logit columns first.")
+        return int(v)
+
+    base_col = torch.tensor([_col(v) for v in base_r])
+    src_col = torch.tensor([_col(v) for v in src_r])
+    idx = torch.arange(len(cf_dataset))
+
+    def _logits_at(score_batches):
+        # list of per-batch (b, pos, vocab) -> (N, vocab) at target_pos
+        L = torch.cat([s if torch.is_tensor(s) else torch.as_tensor(s) for s in score_batches], 0)
+        return L[:, target_pos, :].float()
+
+    def _ld(L):
+        return L[idx, base_col] - L[idx, src_col]
+
+    # clean (unpatched) logits, batched over the base inputs
+    base_inputs = [ex["input"] for ex in cf_dataset]
+    clean = [pipeline.generate(base_inputs[i:i + batch_size])["scores"]
+             for i in range(0, len(base_inputs), batch_size)]
+    LD_clean = _ld(_logits_at(clean))
+
+    def add_noise(f_base, f_src, **_):
+        return f_base + 3.0 * f_base.std() * torch.randn_like(f_base)
+
+    scores: dict = {}
+    for mode in modes:
+        scores[mode] = {}
+        for key, target in grid.items():
+            if mode == "STR":
+                raw = run_interchange_interventions(
+                    pipeline, cf_dataset, target, batch_size=batch_size, output_scores=True)
+            elif mode == "Gaussian":
+                raw = run_interpolation_interventions(
+                    pipeline, cf_dataset, target, fn=add_noise, params={},
+                    batch_size=batch_size, output_scores=True)
+            else:
+                raise ValueError(f"logit_diff supports STR|Gaussian, not {mode!r}")
+            LD_patched = _ld(_logits_at(raw["scores"]))
+            scores[mode][key] = float((LD_clean - LD_patched).mean())
+    return scores
+
+
 def find_path(
     model_name: str,
     task_name: str,

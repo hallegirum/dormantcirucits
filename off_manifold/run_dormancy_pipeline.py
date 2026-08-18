@@ -1,23 +1,28 @@
 """
 run_dormancy_pipeline.py
 ========================
-End-to-end InterpBench dormancy pipeline, one file:
+InterpBench dormancy pipeline — the WRITER. Produces every artifact the dormancy
+correlation needs, into the results_layout tree (results/{case}/...):
 
-    PrepareData(case).generate()      -> cf_dataset (+ context labels), causal_model,
-                                          manifold_cvars, hl_ll_corr, task, pipeline
-    build_grid(...)                   -> grid of interchange targets (residual|mlp|attention)
-    for mode in modes:
-        generate_activation_manifold(...)     [reused] fit manifold per (site, context)
-        get_intervened_representations(...)   [reused] h_intervened per site
-        collect_patched_distributions(...)    [reused, optional] behaviour side
-    correlate_divergences(...)        -> per-site off-manifold divergence x circuit membership
+    PrepareData(case).generate()      -> cf_dataset (+ category/context labels),
+                                          causal_model, manifold_cvars, hl_ll_corr, task, pipeline
+    build_full_grid(...)              -> ONE grid over the WHOLE universe (all mlp + all
+                                          heads + both residual streams), keyed by site.id
+    circuit_specs(hl_ll_corr)         -> circuit.json (true membership per site + top-k cutoff)
+    split cf by (category, context)
+    generate_activation_manifold(global)      + per-context      -> activation_manifolds/{site}__{ctx}/
+    get_intervened_representations(per mode)                     -> intervened_reps/{case}__{cat}__{ctx}/
+    compute_patching_scores(per mode, per ctx) -> apparent_scores.json (the continuous dormancy signal)
 
-Only the two ends are new (data in / correlation out) + a couple of tracr shims;
-the manifold/rep middle is your existing code, unchanged.
+The CORRELATION is a separate READER step (off-distribution-analyses.dormancy_analysis),
+which reuses load_manifold / load_intervened_reps / projection+EMD and does the top-k
+FP/FN + off-manifold-vs-apparent correlations per (mode, context). Run per case, then
+optionally pool across cases (same full-grid granularity).
 
-Run in the ib-venv (needs circuits_benchmark + forked causalab):
-    python run_dormancy_pipeline.py --case 18 --component mlp --patch-at write
-    python run_dormancy_pipeline.py --case ioi --component attention --patch-at write
+Run in the ib-venv (needs circuits_benchmark + forked causalab); one --position per run:
+    python run_dormancy_pipeline.py --case 18  --patch-at corr --position last_token
+    python run_dormancy_pipeline.py --case ioi --patch-at corr --position subject
+    OFFDIST_RESULTS_DIR=results/18 python off-distribution-analyses.py --case 18
 """
 
 from __future__ import annotations
@@ -29,45 +34,134 @@ import os
 import sys
 from types import SimpleNamespace
 from pathlib import Path
-from circuits_benchmark.utils.ll_model_loader.ll_model_loader_factory import (
-        get_ll_model_loader,
-    )
+
 import torch
-from path_finder import compute_patching_scores
+
 # --- make sibling modules importable (off_manifold here, interp_bench alongside) ---
 _HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(_HERE))                      # off_manifold/*
 sys.path.insert(0, str(_HERE.parent / "interp_bench"))  # interp_bench/*
 
+
+# per-case results tree. results_layout freezes its paths from OFFDIST_RESULTS_DIR AT
+# IMPORT, and site_ids repeat across models (two tracr models both have "L0_mlp..."), so we
+# scope every artifact to results/{case}. This both stops manifolds colliding AND keeps each
+# model's outputs — hence its dormancy correlation — separate. Must run BEFORE the
+# activation_manifold/results_layout imports below.
+def _prearg(flag, default):
+    for i, a in enumerate(sys.argv):
+        if a == flag and i + 1 < len(sys.argv):
+            return sys.argv[i + 1]
+        if a.startswith(flag + "="):
+            return a.split("=", 1)[1]
+    return default
+
+
+_case_arg = str(_prearg("--case", "18"))
+# poly runs share the case name "poly" but differ by which HF model -> namespace by poly_comb
+# so results/poly_cases_0+1 and results/poly_cases_1+2 don't collide.
+_tree = (f"poly_{_prearg('--poly-comb', 'cases_0+1')}" if _case_arg.lower() == "poly" else _case_arg)
+os.environ.setdefault("OFFDIST_RESULTS_DIR", os.path.join("results", _tree))
+
 # reused middle (off_manifold)
 from activation_manifold import (
     generate_activation_manifold,
     get_intervened_representations,
+    context_key,
 )
-from collect_behaviour import collect_patched_distributions
-from path_finder import build_grid
-from results_layout import site_context_dir
+from path_finder import build_full_grid, compute_patching_scores
+from results_layout import INTERVENED_REPS, label_category_dir, dormancy_dir
 
 # dataset builders (one place, all cases)
 from context_datasets import (
     create_global_prompts,
     create_counterfactual_dataset,
+    create_ioi_causal_model,
     create_ioi_counterfactual_dataset,
+    create_poly_causal_model,
+    ioi_name_ids,
+    ioi_subject_position_spec,
 )
 
 # InterpBench glue (interp_bench)
 import importlib
-from interpbench_loading import build_pipelines, circuit_specs
-from causalab.tasks.interpbench.causal_models import CASES, create_interpbench_causal_model
+from interpbench_loading import build_pipelines, build_poly_pipeline, circuit_specs, poly_membership
+from causalab.tasks.loader import load_task, Task
 
 
 def load_case(case: str, device: str):
-    """Load the case's task, correspondence, and low-level HookedTransformer."""
-    mod = importlib.import_module(f"circuits_benchmark.benchmark.cases.case_{case}")
-    task = getattr(mod, f"Case{case}")()
+    """Load the case's task, correspondence, and low-level HookedTransformer.
+
+    The case class name isn't uniform (numeric -> Case18, ioi -> CaseIOI), so we
+    find the Case* class defined in the module rather than format it."""
+    # lazy: circuits_benchmark only imports on the pod's ib-venv (torch<2.4); keeps
+    # this module importable elsewhere (iit breaks on torch>=2.4 at import time).
+    from circuits_benchmark.utils.ll_model_loader.ll_model_loader_factory import (
+        get_ll_model_loader,
+    )
+
+    modname = f"circuits_benchmark.benchmark.cases.case_{str(case).lower()}"
+    mod = importlib.import_module(modname)
+    cls = next(
+        obj
+        for n in dir(mod)
+        if n.startswith("Case")
+        for obj in [getattr(mod, n)]
+        if isinstance(obj, type) and getattr(obj, "__module__", "") == modname
+    )
+    task = cls()
     loader = get_ll_model_loader(task, interp_bench=True)
     hl_ll_corr, model = loader.load_ll_model_and_correspondence(device=device)
     return task, hl_ll_corr, model
+
+
+def load_poly_case(poly_comb: str, device: str):
+    """Load a polysemantic-benchmark SIIT model + its correspondence DIRECTLY from HF (the
+    trained weights — no training). ``poly_comb`` is an HF folder name, e.g. 'cases_0+1'.
+
+    Returns ``(inputs, labels, hl_ll_corr, corr_mapping, ll_model, hl_model, n_tasks)``:
+      inputs/labels  the dataset tensors used to build the trace pool (observational);
+      hl_ll_corr     PolyHLModel.get_correspondence() — same LLNode(name,index) shape as
+                     InterpBench's hl_ll_corr, so circuit_specs() works unchanged;
+      corr_mapping   per-component per-task membership (shared vs disjoint circuits).
+    """
+    # lazy: poly_bench + evanhanders/iit only exist in the poly-venv (transformers 4.44,
+    # a DIFFERENT iit fork than circuits_benchmark's) — keeps this module importable elsewhere.
+    from poly_bench.io import load_from_hf
+    from poly_bench.poly_hl_model import PolyModelDataset  # noqa: F401  (dataset builder)
+    import torch
+
+    ll_model, hl_model, dset_classes = load_from_hf(model_name=poly_comb, benchmarks_file="cases.json")
+    ll_model = ll_model.to(device)
+    hl_ll_corr = hl_model.get_correspondence()
+    corr_mapping = hl_model.corr_mapping  
+    n_tasks = len(getattr(hl_model, "n_ctx_list", [None]))  # one entry per combined case
+
+    # dataset tensors (task at pos 0, per-position labels). ADAPT this accessor to the exact
+    # poly_bench API in your notebook — this is the observational source for the trace pool.
+    inputs, labels = _poly_dataset_tensors(hl_model, dset_classes, device)
+    return inputs, labels, hl_ll_corr, corr_mapping, ll_model, hl_model, n_tasks
+
+ 
+def _poly_dataset_tensors(hl_model, dset_classes, device, n_samples=800, seed=0):
+    """Best-effort extraction of (inputs, labels) LongTensors for the loaded poly combo.
+    VERIFY against the exact poly_bench dataset API you used in the load notebook — the base
+    inputs and per-position labels are what feed create_poly_causal_model."""
+    from poly_bench.poly_hl_model import PolyModelDataset
+    import torch
+    n_ctx = int(hl_model.cfg.n_ctx)
+    # PolyModelDataset prepends the task-id token at pos 0 and REQUIRES each component
+    # dataset's own n_ctx to be strictly LESS than the combined n_ctx (it pads
+    # `n_ctx - dataset.n_ctx - 1` positions, which goes negative if they're equal). So the
+    # component datasets are built at n_ctx-1 and the FULL n_ctx goes to the wrapper. The
+    # colab's bare `n_ctx` passed to the dataset classes is cfg.n_ctx-1, not cfg.n_ctx —
+    # that's why the colab writes `dsetcase(n_ctx=n_ctx)` but `PolyModelDataset(n_ctx=cfg.n_ctx)`.
+    dsets = [C(N_samples=n_samples, n_ctx=n_ctx - 1, seed=seed) for C in dset_classes]
+    poly_dataset = PolyModelDataset(dsets, n_ctx=n_ctx)
+    dataset = poly_dataset.dataset
+    inputs = torch.tensor(dataset.inputs, dtype=torch.int, device=device)   # [batch, seq]
+    labels = torch.tensor(dataset.targets, dtype=torch.int, device=device) # [batch, seq, vocab] or [batch, seq]
+    return inputs, labels 
 
 
 # --------------------------------------------------------------------------- #
@@ -109,38 +203,63 @@ class PrepareData:
     (samples the CausalModel), IOI via create_ioi_counterfactual_dataset (pairs an
     existing IOIDataset pool by template)."""
 
-    def __init__(self, case: str, n: int = 400, seed: int = 42, device: str = "cpu"):
+    def __init__(self, case: str, n: int = 400, seed: int = 42, device: str = "cpu",
+                 position: str = "last_token", poly_comb: str = "cases_0+1",
+                 target_pos: int = -1):
         self.case = case
         self.n = n
         self.seed = seed
         self.device = device
+        # WHERE the study patches. For IOI this selects a named token position
+        # (last_token | subject | pos_k); it does NOT change the counterfactual dataset
+        # (the same pairs drive every position — only build_grid's site moves).
+        self.position = position
+        self.poly_comb = poly_comb      # which HF poly model (cases_0+1, cases_1+2, …)
+        self.target_pos = target_pos    # per-position output slot studied (-1 = last non-PAD)
 
     # -- load model + correspondence + pipeline (shared by all cases) --
+    # ib_task is the circuits_benchmark task (loads model / get_clean_data). The
+    # causalab Task (with create_token_positions + causal_model) is built per case.
     def _load(self):
-        task, hl_ll_corr, model = load_case(self.case, self.device)
-        ll_pipeline, hl_pipeline, bos, hl_fn = build_pipelines(model, task, device=self.device)
+        ib_task, hl_ll_corr, model = load_case(self.case, self.device)
+        ll_pipeline, hl_pipeline, bos, hl_fn, vocab, out_vocab = build_pipelines(
+            model, ib_task, device=self.device)
         _attach_hf_config(ll_pipeline.model)
-        return task, hl_ll_corr, model, ll_pipeline, bos, hl_fn
+        return ib_task, hl_ll_corr, model, ll_pipeline, bos, hl_fn, vocab, out_vocab
 
     def generate(self):
-        return self._generate_ioi() if self.case == "ioi" else self._generate_tracr()
+        c = str(self.case).lower()
+        if c == "poly":
+            return self._generate_poly()
+        if c == "ioi":
+            return self._generate_ioi()
+        return self._generate_tracr()
 
     # ----------------------- tracr cases (18, etc.) ----------------------- #
     def _generate_tracr(self):
         """No natural contexts -> one global manifold (manifold_cvars=[]). Paired,
         category-labelled counterfactuals via create_counterfactual_dataset."""
-        task, hl_ll_corr, model, ll_pipeline, bos, hl_fn = self._load()
+        ib_task, hl_ll_corr, model, ll_pipeline, bos, hl_fn, vocab, out_vocab = self._load()
         n_ctx = int(model.cfg.n_ctx)
-        cfg = dataclasses.replace(
-            CASES[self.case], bos=bos, seq_len=n_ctx - (1 if bos is not None else 0), hl_fn=hl_fn,
-        )
-        causal_model = create_interpbench_causal_model(cfg)
-        # embeddings for the output variable (label -> index) so manifolds can fit
-        causal_model.embeddings = {**(causal_model.embeddings or {}), **_result_embeddings(cfg.out_vocab)}
+        seq_len = n_ctx - (1 if bos is not None else 0)
+        # causalab Task: create_token_positions works, and causal_model (with the result
+        # embedding) is built by CREATE_CAUSAL_MODEL. The ENTIRE config is model-derived
+        # and passed via task_cfg (no CASES registry entry needed for a new case):
+        # vocab/out_vocab from the tracr encoders, seq_len from n_ctx, hl_fn from the HL
+        # program. target_pos defaults to -1 (add it here to study another position).
+        task = load_task("interpbench", task_cfg={
+            "case": self.case, "vocab": vocab, "out_vocab": out_vocab,
+            "seq_len": seq_len, "bos": bos, "hl_fn": hl_fn,
+        })
+        causal_model = task.causal_model
         base_prompts = create_global_prompts(causal_model, n=self.n, seed=self.seed)
         cf_dataset = create_counterfactual_dataset(
             causal_model, base_prompts, conditioning_vars=[], n=self.n, seed=self.seed,
             categories=("context_matched",), target_variable="result",
+            # tracr new_trace runs an HL-transformer FORWARD, so enumerating the input
+            # space (default 50k) is millions of forwards (the case-13 hang). Force cheap
+            # rejection sampling — "target differs" is easily satisfied by a random input.
+            max_enumerate=64,
         )
         return dict(
             task=task, pipeline=ll_pipeline, causal_model=causal_model, hl_ll_corr=hl_ll_corr,
@@ -150,26 +269,27 @@ class PrepareData:
 
     # ------------------------------ IOI ---------------------------------- #
     def _generate_ioi(self):
-        """Two context axes: template_type (ABBA/BABA) and category. The HL model
-        is position/template dependent, so these are real contexts. Paired,
-        category-labelled counterfactuals via create_ioi_counterfactual_dataset.
-
-        NOTE: the IOIDataset fields (template_type, category, IO name) must be read
-        off the real object on the pod — the accessors below are the intended shape."""
-        task, hl_ll_corr, model, ll_pipeline, bos, hl_fn = self._load()
-        clean = task.get_clean_data(max_samples=self.n)
-        inputs = clean.get_inputs()
-        traces = []
-        for i in range(len(inputs)):
-            meta = _ioi_meta(clean, i)  # {"template_type","category","result"}
-            traces.append({
-                "raw_input": _ioi_raw_input(inputs, i),
-                "template_type": meta["template_type"],
-                "category": meta["category"],
-                "result": meta["result"],
-            })
-        cf_dataset = create_ioi_counterfactual_dataset(traces, seed=self.seed)
-        causal_model = _ioi_causal_model_shim(traces)  # .embeddings/.periods/.values
+        """Context axis = template_type (ABBA/BABA). The HL model is position/template
+        dependent, so this is a real context. create_ioi_causal_model builds the schema +
+        the per-template POOL of real CausalTraces in one pass; create_ioi_counterfactual_dataset
+        pairs it into ONE flat, context-labelled cf_dataset (context_matched = same template,
+        context_mismatched = cross-template). Downstream, manifold_cvars=["template_type"]
+        splits that ONE dataset into a manifold per template — no second dataset needed."""
+        ib_task, hl_ll_corr, model, ll_pipeline, bos, hl_fn, _vocab, _out_vocab = self._load()
+        clean = ib_task.get_clean_data(max_samples=self.n)
+        # ONE call: the IOI CausalModel (schema + result embedding) AND the per-template
+        # pool of real CausalTraces, built straight from the fixed IOIDataset sentences.
+        causal_model, pool = create_ioi_causal_model(clean)    # {template: [CausalTrace]}
+        cf_dataset = create_ioi_counterfactual_dataset(pool, seed=self.seed)
+        # IOI adds the subject (S2) as a DYNAMIC token position (its index varies per
+        # sentence), injected via template so build_grid(positions=["subject"]) can patch
+        # it; last_token / pos_k are built in. The cf_dataset is position-INDEPENDENT —
+        # self.position only chooses build_grid's site downstream, not the pairs.
+        extra_positions = {"subject": ioi_subject_position_spec(ioi_name_ids(clean))}
+        if self.position not in ("last_token", "subject") and not self.position.startswith("pos_"):
+            print(f"   [warn] IOI position {self.position!r} unknown (last_token|subject|pos_k)")
+        task = Task(name="interpbench", causal_model=causal_model,
+                    intervention_variable="result", template=extra_positions)
         return dict(
             task=task, pipeline=ll_pipeline, causal_model=causal_model, hl_ll_corr=hl_ll_corr,
             cf_dataset=cf_dataset, manifold_cvars=["template_type"],  # add "category" for axis 2
@@ -177,98 +297,42 @@ class PrepareData:
             n_ctx=int(model.cfg.n_ctx), n_layers=int(model.cfg.n_layers), n_heads=int(model.cfg.n_heads),
         )
 
+    # -------------------- POLYSEMANTIC benchmark (poly) ------------------- #
+    def _generate_poly(self):
+        """Context axis = task (which case's algorithm runs; the position-0 router). Loaded
+        DIRECTLY from HF (trained weights, no training). Structurally == IOI: build a
+        per-task pool of real CausalTraces from the dataset, then pair within-task
+        (context_matched) vs CROSS-task (context_mismatched) via the SAME
+        create_ioi_counterfactual_dataset, keyed on `task`. Downstream,
+        manifold_cvars=["task"] fits one manifold per task. The correspondence comes from
+        PolyHLModel (== hl_ll_corr shape) plus corr_mapping for shared-vs-disjoint labels."""
+        inp, lab, hl_ll_corr, corr_mapping, ll_model, hl_model, n_tasks = load_poly_case(
+            self.poly_comb, self.device)
+        _attach_hf_config(ll_model)
+        ll_pipeline = build_poly_pipeline(ll_model, device=self.device)
 
-# ---- IOI helpers (confirm field names on the pod) ------------------------- #
-# The accessors below are guesses at the IOIDataset / TracrEncodedDataset API.
-# They print the real structure once (i == 0) so you can read off the true field
-# names on the pod and fix the accessors, rather than guessing blind.
-def _ioi_meta(clean, i):  # pragma: no cover - pod-only
-    md = getattr(clean, "metadata", None)
-    if i == 0:
-        print("\n[IOI introspect] clean =", type(clean).__name__)
-        print("[IOI introspect]   public attrs:",
-              [a for a in dir(clean) if not a.startswith("_")])
-        print("[IOI introspect]   metadata type:", type(md).__name__ if md is not None else None)
-        if md is not None:
-            print("[IOI introspect]   metadata[0]:", md[0])
-            if hasattr(md[0], "keys"):
-                print("[IOI introspect]   metadata[0] keys:", list(md[0].keys()))
-    tmpl = (md[i].get("template_type") if md is not None else None) or "ABBA"
-    return {"template_type": tmpl, "category": "names", "result": _ioi_io_name(clean, i)}
-
-
-def _ioi_raw_input(inputs, i):  # pragma: no cover
-    x = inputs[i]
-    if i == 0:
-        print("[IOI introspect] inputs =", type(inputs).__name__, "len", len(inputs))
-        print("[IOI introspect]   inputs[0] type:", type(x).__name__, "value:", repr(x)[:160])
-    return x.tolist() if torch.is_tensor(x) else list(x)
-
-
-def _ioi_io_name(clean, i):  # pragma: no cover
-    tgt = clean.get_targets()
-    if i == 0:
-        print("[IOI introspect] targets =", type(tgt).__name__,
-              "| targets[0]:", repr(tgt[0])[:120], "\n")
-    return int(tgt[i]) if torch.is_tensor(tgt) else tgt[i]
-
-
-def _ioi_causal_model_shim(traces):  # pragma: no cover
-    names = sorted({t["result"] for t in traces})
-    idx = {v: i for i, v in enumerate(names)}
-    return SimpleNamespace(
-        embeddings={"result": (lambda v, _m=idx: [float(_m[v])])},
-        periods={},
-        values={"result": names},
-    )
+        causal_model, pool = create_poly_causal_model(inp, lab, target_pos=self.target_pos)
+        cf_dataset = create_ioi_counterfactual_dataset(pool, n=self.n, seed=self.seed,
+                                                       context_var="task")  # within vs cross task
+        task = Task(name="interpbench", causal_model=causal_model,
+                    intervention_variable="result", template=None)
+        return dict(
+            task=task, pipeline=ll_pipeline, causal_model=causal_model, hl_ll_corr=hl_ll_corr,
+            cf_dataset=cf_dataset, manifold_cvars=["task"], intervention_variable="result",
+            n_ctx=int(ll_model.cfg.n_ctx), n_layers=int(ll_model.cfg.n_layers),
+            n_heads=int(ll_model.cfg.n_heads),
+            # poly-only extras: per-component shared/disjoint membership (with the per-task
+            # 'tasks' list) for the richer analysis, and the task-keyed trace POOL + task ids
+            # so interaction_effects can rebuild DIRECTED (base_task -> target_task) pairs and
+            # fit a clean manifold per task (create_directed_pairs / per-task clouds).
+            poly_membership=(poly_membership(corr_mapping, n_tasks)),
+            pool=pool, tasks=sorted(pool.keys()),
+        )
 
 
 # --------------------------------------------------------------------------- #
-#  correlate: off-manifold divergence x apparent circuit x true circuit
+#  writer helpers (dormancy is CORRELATED downstream in off-distribution-analyses)
 # --------------------------------------------------------------------------- #
-def correlate_divergences(grid, reps_by_mode, patching_scores, causal_model, cf_dataset,
-                          manifold_cvars, hl_ll_corr, out_path, apparent_thresh=0.5):
-    """The dormancy table: one row per site joining THREE things —
-      is_circuit      : true membership (hl_ll_corr)
-      apparent_{mode} : the patching method's own score (compute_patching_scores)
-      offmanifold_{mode}: the intervention's off-manifold magnitude
-    and the derived `dormancy_{mode}` = (apparent high) AND (NOT is_circuit) — a
-    component the patching method calls in-circuit that actually isn't. The
-    off-manifold characteristics are what should PREDICT that flag."""
-    circuit = circuit_specs(hl_ll_corr)
-    rows = []
-    for key, target in grid.items():
-        site = target.flatten()[0]
-        spec = _site_to_spec(site)
-        row = {"site": site.id, "key": list(key), "layer": spec[0], "component": spec[1],
-               "head": spec[2], "is_circuit": spec in circuit}
-        for mode, reps in reps_by_mode.items():
-            row[f"offmanifold_{mode}"] = _offmanifold(site, reps[site.id], cf_dataset, manifold_cvars)
-            score = float(patching_scores.get(mode, {}).get(key, float("nan")))
-            row[f"apparent_{mode}"] = score
-            row[f"dormancy_{mode}"] = bool(score >= apparent_thresh and not row["is_circuit"])
-        rows.append(row)
-    with open(out_path, "w") as f:
-        json.dump(rows, f, indent=2)
-    n_circ = sum(r["is_circuit"] for r in rows)
-    n_dorm = sum(any(r.get(f"dormancy_{m}") for m in reps_by_mode) for r in rows)
-    print(f"correlate: {len(rows)} sites ({n_circ} true-circuit) | "
-          f"{n_dorm} dormancy false-positives -> {out_path}")
-    return rows
-
-
-def _offmanifold(site, rep, cf_dataset, manifold_cvars) -> float:
-    """Off-manifold magnitude of h_intervened for one site.
-
-    TODO(pod): replace the norm placeholder with the residual against the fitted
-    manifold. The pieces exist: import load_manifold + the projection from
-    off-distribution-analyses.py (hyphenated -> importlib), group reps by
-    context_key(ex, manifold_cvars), project through that context's manifold, and
-    return the mean residual norm. Until then this returns ||rep|| so the table and
-    membership join are exercised end-to-end."""
-    return float(rep.float().norm(dim=-1).mean())
-
-
 def _site_to_spec(site):
     """AtomicModelUnit -> (layer, comp, head|None) matching circuit_specs' keys."""
     ct = site.component_type
@@ -279,72 +343,140 @@ def _site_to_spec(site):
     return (site.layer, "block_output" if "output" in ct else "block_input", None)
 
 
+def _split_by_category_context(cf_dataset, manifold_cvars):
+    """{(category, context): [examples]}. Two orthogonal axes:
+      category = ex['category'] — the SOURCE relationship (context_matched / mismatched).
+      context  = context_key(ex, manifold_cvars) — the MANIFOLD axis ('global' for a tracr
+                 case with no context; the ABBA/BABA tuple for IOI).
+    Each (category, context) gets its own reps dir + apparent scores, so dormancy is
+    reported per (mode, context) exactly as the analysis expects."""
+    groups: dict = {}
+    for ex in cf_dataset:
+        category = ex.get("category", "context_matched")
+        context = context_key(ex, manifold_cvars)
+        groups.setdefault((category, context), []).append(ex)
+    return groups
+
+
+def _save_circuit(is_circuit, in_circuit, k):
+    """circuit.json (per case, context-independent): true membership per grid site + the
+    top-k cutoff k = |circuit ∩ grid|. dormancy_analysis reads this to label FP/FN."""
+    os.makedirs(dormancy_dir(), exist_ok=True)
+    with open(os.path.join(dormancy_dir(), "circuit.json"), "w") as f:
+        json.dump({"k": k, "in_circuit": in_circuit, "is_circuit": is_circuit}, f, indent=2)
+
+
+def _save_apparent(label, category, context, scores):
+    """apparent_scores.json next to the reps: {mode: {site_id: apparent_score}} — the
+    CONTINUOUS dormancy signal for this (category, context)."""
+    rep_dir = label_category_dir(INTERVENED_REPS, label, category, context)
+    os.makedirs(rep_dir, exist_ok=True)
+    with open(os.path.join(rep_dir, "apparent_scores.json"), "w") as f:
+        json.dump(scores, f, indent=2)
+
+
 # --------------------------------------------------------------------------- #
-#  orchestration
+#  orchestration — WRITER. Emits reps + manifolds + apparent/circuit json into the
+#  results_layout tree; the dormancy correlation runs afterwards in
+#  off-distribution-analyses.dormancy_analysis(case=...).
 # --------------------------------------------------------------------------- #
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--case", default="18")
-    ap.add_argument("--component", default="mlp", choices=["residual", "mlp", "attention"])
+    ap.add_argument("--case", default="18",
+                    help="tracr case id (e.g. 18), 'ioi', or 'poly' (polysemantic benchmark)")
+    ap.add_argument("--poly-comb", default="cases_0+1",
+                    help="poly only: which HF model to load (cases_0+1, cases_1+2, cases_0+1+2+3, …)")
+    ap.add_argument("--target-pos", type=int, default=-1,
+                    help="poly only: which per-position output slot to study (-1 = last non-PAD)")
     ap.add_argument("--patch-at", default="corr", choices=["corr", "write", "internal"])
-    ap.add_argument("--modes", nargs="+", default=["STR", "Gaussian"])
-    ap.add_argument("--position", default="last_token")
+    ap.add_argument("--modes", nargs="+", default=["STR", "Gaussian"],
+                    help="STR/Gaussian only — DAS has no ground-truth circuit to score")
+    ap.add_argument("--position", default="last_token",
+                    help="run-level: WHERE to patch (last_token|subject|pos_k). One per run "
+                         "— sweep positions across runs, each into its own results tree.")
     ap.add_argument("--layers", nargs="*", type=int, default=None)
     ap.add_argument("--n", type=int, default=400)
-    ap.add_argument("--device", default="cpu")
+    ap.add_argument("--device", default="cuda")
     ap.add_argument("--batch-size", type=int, default=32)
-    ap.add_argument("--out", default="results_v2/dormancy")
-    ap.add_argument("--behaviour", action="store_true", help="also run the behaviour side")
+    ap.add_argument("--k-features", type=int, default=64)
+    ap.add_argument("--metric", default="flip", choices=["flip", "logit_diff"],
+                    help="apparent-circuit readout: flip=argmax flip (coarse, tracr-friendly); "
+                         "logit_diff=continuous logit[base]-logit[src] causal effect (IOI-style, "
+                         "sensitive to backup/graded effects; needs integer result indices)")
+    ap.add_argument("--seed", type=int, default=42,
+                    help="seeds counterfactual sampling + Gaussian noise + manifold fit; "
+                         "sweep it (into separate result trees) for seed-variance error bars")
+    ap.add_argument("--no-residual", dest="include_residual", action="store_false",
+                    help="drop residual sites (default: INCLUDE, for the full hl_ll_corr "
+                         "correspondence — resid_pre/resid_post are real circuit nodes). For "
+                         "TRACR cases pass this: residual is the carrier bus, not a labelled node")
+    ap.set_defaults(include_residual=True)
     args = ap.parse_args()
-    os.makedirs(args.out, exist_ok=True)
+    if any(m.upper() == "DAS" for m in args.modes):
+        raise SystemExit("DAS excluded: no ground-truth circuit for DAS. Use --modes STR Gaussian.")
 
-    print(f"== 1. prepare data (case {args.case}) ==")
-    d = PrepareData(args.case, n=args.n, device=args.device).generate()
+    from activation_manifold import set_seed
+    set_seed(args.seed)  # python/np/torch — covers Gaussian noise + any fit randomness
+
+    label = str(args.case)
+    print(f"== 1. prepare data (case {label}, seed {args.seed}) | results -> {os.environ['OFFDIST_RESULTS_DIR']} ==")
+    d = PrepareData(args.case, n=args.n, seed=args.seed, device=args.device,
+                    position=args.position, poly_comb=args.poly_comb,
+                    target_pos=args.target_pos).generate()
     task, pipeline, causal_model = d["task"], d["pipeline"], d["causal_model"]
+    m_cvars, ivar = d["manifold_cvars"], d["intervention_variable"]
 
-    print(f"== 2. build {args.component} grid (patch_at={args.patch_at}) ==")
+    print(f"== 2. build FULL grid (all mlp + heads"
+          f"{' + residual' if args.include_residual else ''}, patch_at={args.patch_at}, "
+          f"position={args.position}) ==")
     layers = args.layers if args.layers is not None else list(range(d["n_layers"]))
-    grid = build_grid(pipeline, task, args.component, layers,
-                      positions=[args.position], patch_at=args.patch_at)
-    target_sites = [t.flatten()[0] for t in grid.values()]  # flat list[AtomicModelUnit]
-    print(f"   {len(target_sites)} sites")
+    grid = build_full_grid(pipeline, task, layers, positions=[args.position],
+                           patch_at=args.patch_at, include_residual=args.include_residual)
+    union_sites = [t.flatten()[0] for t in grid.values()]
+    print(f"   {len(union_sites)} sites")
 
-    print("== 3. fit manifolds (once, mode-independent) ==")
+    # true circuit membership per site (context-INDEPENDENT) + top-k cutoff
+    circuit = circuit_specs(d["hl_ll_corr"])
+    is_circuit = {s.id: (_site_to_spec(s) in circuit) for s in union_sites}
+    in_circuit = [sid for sid, yes in is_circuit.items() if yes]
+    k = len(in_circuit)
+    print(f"   circuit sites in grid (k={k}): {in_circuit}")
+    _save_circuit(is_circuit, in_circuit, k)
+
+    print("== 3. split cf by (category, context) ==")
+    groups = _split_by_category_context(d["cf_dataset"], m_cvars)
+    print(f"   groups: { {f'{cat}/{ctx}': len(v) for (cat, ctx), v in groups.items()} }")
+
+
+
+    print("== 4. fit GLOBAL manifold (all bases, one per site) ==")
     generate_activation_manifold(
-        target_sites, d["cf_dataset"], d["manifold_cvars"], pipeline, causal_model,
-        batch_size=args.batch_size, intervention_variable=d["intervention_variable"], task=task,
-    )
+        union_sites, d["cf_dataset"], [], pipeline, causal_model,
+        batch_size=args.batch_size, k_features=args.k_features,
+        intervention_variable=ivar, task=task, seed=args.seed)
 
-    print("== 4. intervened reps + (opt) behaviour, per mode ==")
-    reps_by_mode = {}
-    for mode in args.modes:
-        reps_by_mode[mode] = get_intervened_representations(
-            target_sites, d["cf_dataset"], pipeline, mode,
-            causal_model=causal_model, batch_size=args.batch_size, output_dir=args.out,
-        )
-        if args.behaviour:
-            collect_patched_distributions(
-                target_sites, d["cf_dataset"], pipeline, task, mode,
-                causal_model=causal_model, batch_size=args.batch_size, output_dir=args.out,
-            )
+    print("== 5. per (category, context): contextual manifold + reps + apparent scores ==")
+    for (category, context), cf_ctx in groups.items():
+        print(f"  -- {category} / {context}: {len(cf_ctx)} examples --")
+        if m_cvars:  # contextual manifold (IOI ABBA/BABA); a global-only case skips this
+            generate_activation_manifold(
+                union_sites, cf_ctx, m_cvars, pipeline, causal_model,
+                batch_size=args.batch_size, k_features=args.k_features,
+                intervention_variable=ivar, task=task, seed=args.seed)
+        rep_dir = label_category_dir(INTERVENED_REPS, label, category, context)
+        os.makedirs(rep_dir, exist_ok=True)
+        for mode in args.modes:
+            get_intervened_representations(
+                union_sites, cf_ctx, pipeline, mode, causal_model=causal_model,
+                k_features=args.k_features, batch_size=args.batch_size, output_dir=rep_dir)
+        # apparent-circuit scores (the continuous dormancy signal), per mode, per context
+        scores = compute_patching_scores(grid, cf_ctx, pipeline, args.modes, args.batch_size,
+                                          metric=args.metric)
+        _save_apparent(label, category, context, scores)
 
-    print("== 5. apparent-circuit scan (IIT interchange score, full grid) ==")
-    try:
-        patching_scores = compute_patching_scores(
-            grid, d["cf_dataset"], pipeline, causal_model, args.modes, args.batch_size,
-        )
-    except Exception as e:  # IOI shim can't score yet; keep the divergence table
-        print(f"   [warn] patching scan skipped ({type(e).__name__}: {e}); "
-              f"apparent_/dormancy_ columns will be NaN. Needs an HL-model-based "
-              f"metric for this case.")
-        patching_scores = {}
-
-    print("== 6. correlate: divergence x apparent x true circuit ==")
-    correlate_divergences(
-        grid, reps_by_mode, patching_scores, causal_model, d["cf_dataset"],
-        d["manifold_cvars"], d["hl_ll_corr"], os.path.join(args.out, "dormancy_table.json"),
-    )
-    print("DONE.")
+    print(f"DONE (writer). Correlate with:\n"
+          f"  OFFDIST_RESULTS_DIR={os.environ['OFFDIST_RESULTS_DIR']} "
+          f"python off-distribution-analyses.py --case {label}")
 
 
 if __name__ == "__main__":

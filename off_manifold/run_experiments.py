@@ -340,7 +340,7 @@ def main():
     ap.add_argument("--aggregate", metavar="PARENT_DIR",
                     help="skip per-seed analysis; instead average the existing "
                          "PARENT_DIR/seed_*/divergence_*.json across seeds")
-    ap.add_argument("--side", default="activation", choices=["activation", "behaviour"],
+    ap.add_argument("--side", default="activation", choices=["activation", "behaviour","health"],
                     help="activation = projection/emd/bhatt vs manifold; behaviour = E_BC vs M_y")
     ap.add_argument("--view", default="respective", choices=["respective", "union", "gap", "global"],
                     help="activation side only")
@@ -359,7 +359,8 @@ def main():
     from activation_manifold import DEFAULT_COMBINATIONS
     oda = importlib.import_module("off-distribution-analyses")
 
-    manifold_health(args.results_dir)
+    if args.side == "health":
+        return manifold_health(args.results_dir)
 
     # Analyse what the run ACTUALLY produced, not what the local file declares.
     combos = discover_combinations(args.results_dir, DEFAULT_COMBINATIONS)

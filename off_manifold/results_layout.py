@@ -93,6 +93,32 @@ def iter_label_category_contexts(root):
             yield parts[0], parts[1], None
 
 
+INTERACTION = os.path.join(RESULTS_DIR, "interaction")
+
+
+def interaction_dir(component_id, strategy, push_site, direction="input", alpha=None):
+    """{results}/interaction/{component_id}/{strategy}/{push_site}/{direction}[/a{alpha}]
+    — one INT scan's row (int.json) for this component. Component-major so a
+    component's strategies/directions list side by side (the borrowed-circuit /
+    calibration view). ``direction`` = '{base}-{target}' for a directed scan (or
+    'input'/'self' legacy); ``alpha`` in the path so the strength sweep does NOT
+    overwrite itself, and ``direction`` so (base,target) cells don't collide — the
+    two bugs that flattened the earlier runs. push_site: a site_id (mediation),
+    'self' (self-push), or 'input' (swap). RESULTS_DIR is case-scoped."""
+    safe = lambda s: str(s).replace(os.sep, "-")
+    parts = [INTERACTION, str(component_id), str(strategy), safe(push_site), safe(direction)]
+    if alpha is not None:
+        parts.append(f"a{alpha:g}")
+    return os.path.join(*parts)
+
+
+def dormancy_dir():
+    """{results}/dormancy — per-case circuit.json (true membership + top-k cutoff) and the
+    dormancy_analysis output. RESULTS_DIR is per-case (OFFDIST_RESULTS_DIR=results/{case}),
+    so this is case-scoped and won't collide across models."""
+    return os.path.join(RESULTS_DIR, "dormancy")
+
+
 def site_context_dir(site_id, context):
     """{activation_manifolds}/{site_id}__{context} — one fitted manifold."""
     return os.path.join(ACT_MANIFOLDS, f"{site_id}{DELIM}{context}")
