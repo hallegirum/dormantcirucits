@@ -129,7 +129,8 @@ def _scan(prep, grid, gt, mem, home, clouds, args, **mk):
     """One make_counterfactual + run_layer_scans, threading the shared labels/clouds."""
     spec = make_counterfactual(prep, n=args.n, seed=args.seed, **mk)
     return run_layer_scans(prep, grid, spec, batch_size=args.batch_size,
-                           gt_labels=gt, poly_mem=mem, home_tasks=home, clouds=clouds)
+                           gt_labels=gt, poly_mem=mem, home_tasks=home, clouds=clouds,
+                           graddrop_k=getattr(args, "graddrop", 0))
 
 
 # --------------------------------------------------------------------------- #
@@ -190,6 +191,8 @@ def main():
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--device", default="cuda")
     ap.add_argument("--batch-size", type=int, default=32)
+    ap.add_argument("--graddrop", type=int, default=0,
+                    help="AtP* GradDrop passes for the gap measure (0 = raw AtP; ~5 de-cancels)")
     ap.add_argument("--no-residual", dest="include_residual", action="store_false")
     ap.set_defaults(include_residual=False)  # INT is a component story; residual = the bypass
     args = ap.parse_args()

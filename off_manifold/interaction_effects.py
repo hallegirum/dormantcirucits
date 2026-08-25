@@ -360,8 +360,36 @@ def component_int(pipeline, spec: CFSpec, target, readout: Callable,
     pie = float((Yap - phi_d).mean())
     return {"NIE": nie, "PIE": pie, "INT": nie - pie,
             "TE": float((Yap - Ya).mean()),
+            # abs-INSIDE full noising effect: mean_i |Phi_n_i - Ya_i| (matches AtP's abs
+            # convention so gap = full - AtP isolates region-crossing, not sign cancellation)
+            "NIE_absmean": float((phi_n - Ya).abs().mean()),
             "phi_noise": float(phi_n.mean()), "phi_denoise": float(phi_d.mean()),
             "Ya": float(Ya.mean()), "Yap": float(Yap.mean())}
+
+
+def component_xint(pipeline, bases, readout: Callable, Ya: torch.Tensor,
+                   c_units, partners, hp: dict, nie_by_site: dict, pos,
+                   batch_size: int = 32) -> dict:
+    """Cross-interaction of a candidate c with every partner N (Curse of Multiple
+    Mediators, sec.4):  xINT(c,N) = NIE(c,N) - NIE(c) - NIE(N).  NIE(c,N) is the JOINT
+    noising patch (both mediators set to their corrupted reps at once) — pipeline.patch
+    already writes a LIST of units in one forward, so the joint term is one patch call;
+    the marginals NIE(c), NIE(N) are looked up from nie_by_site (already computed for the
+    whole grid). hp = {site_id: (N,D)} corrupted (gathered) reps. Returns {N.id: xINT}."""
+    c_id = c_units[0].id
+    writes_c = [(u, hp[u.id], pos) for u in c_units]
+    nie_c = nie_by_site.get(c_id, 0.0)
+    out = {}
+    for p_units in partners:
+        pid = p_units[0].id
+        if pid == c_id:
+            out[pid] = 0.0
+            continue
+        writes = writes_c + [(u, hp[u.id], pos) for u in p_units]
+        phi_j = readout(pipeline.patch(bases, writes, push=None, batch_size=batch_size))
+        nie_joint = float((phi_j - Ya).mean())
+        out[pid] = nie_joint - nie_c - nie_by_site.get(pid, 0.0)
+    return out
 
 
 def build_task_clouds(pipeline, pool, units, batch_size: int = 32, pad: int = 1) -> dict:
@@ -380,12 +408,136 @@ def build_task_clouds(pipeline, pool, units, batch_size: int = 32, pad: int = 1)
 
 
 # --------------------------------------------------------------------------- #
+#  gap(c): full patch  vs  AtP linear (Kramar et al. 2024, "AtP*", arXiv:2403.00745)
+# --------------------------------------------------------------------------- #
+def atp_gradients(pipeline, bases, readout: Callable, units, positions,
+                  batch_size: int = 32, graddrop_k: int = 0, drop_p: float = 0.5,
+                  seed: int = 0) -> dict:
+    """AtP linear gradients (AtP* Eq.4): d(Phi)/d(h_c) at the CLEAN activation, gathered
+    at `positions`, for EVERY site in one forward + backward. The caller dots these with
+    the divergence delta_c to get the first-order (AtP) estimate of the patch, whose gap
+    to the exact NIE is AtP*'s SATURATION term = a downstream gate crossing = Type-G.
+
+    Returns {unit.id: grad (N, D_eff)} for raw AtP (graddrop_k=0), or {unit.id:
+    (K, N, D_eff)} when graddrop_k>0: K passes, each ZEROING the backward through a random
+    subset of sites (AtP* GradDrop, drop prob drop_p). GradDrop de-cancels — the gap caller
+    takes max_k |<delta, grad_k>|, so a node whose direct+indirect effects cancel in the
+    plain gradient is still recovered and does NOT masquerade as a (false) large gap."""
+    import random
+    from tracr_pipeline import hook_name, _slab
+    model = pipeline.model
+    names = sorted({hook_name(u) for u in units})
+    n = len(bases)
+    tp = torch.as_tensor(readout.target_pos)
+    pcol, ncol = readout.pos_col, readout.neg_col
+    K = max(1, graddrop_k)
+    rng = random.Random(seed)
+    chunks = {u.id: [[] for _ in range(K)] for u in units}
+
+    for i in range(0, n, batch_size):
+        sl = slice(i, i + batch_size)
+        tokens = pipeline.load(bases[sl])["tokens"]
+        posb = positions[sl] if torch.as_tensor(positions).dim() > 0 else positions
+        for k in range(K):
+            drop = {nm for nm in names if graddrop_k and rng.random() < drop_p}
+            store = {}
+
+            def _mk(nm):
+                def _hook(value, hook):
+                    value.retain_grad()
+                    store[nm] = value
+                    if nm in drop:                       # cut backprop through this site
+                        value.register_hook(lambda g: torch.zeros_like(g))
+                    return value
+                return _hook
+
+            model.zero_grad(set_to_none=True)
+            with torch.enable_grad():
+                logits = model.run_with_hooks(tokens, fwd_hooks=[(nm, _mk(nm)) for nm in names])
+                m = logits.shape[0]
+                idx = torch.arange(m)
+                rowsL = logits[idx, int(tp), :] if tp.dim() == 0 else logits[idx, tp[sl].long(), :]
+                phi = rowsL[idx, pcol[sl].long()] - rowsL[idx, ncol[sl].long()]
+                phi.sum().backward()
+            for u in units:
+                g = _slab(u, store[hook_name(u)].grad)   # (m, S, D_eff)
+                chunks[u.id][k].append(_gather(g, posb).detach().cpu())
+
+    out = {}
+    for uid, passes in chunks.items():
+        stacks = [torch.cat(ch, 0) for ch in passes]     # each (N, D_eff)
+        out[uid] = stacks[0] if not graddrop_k else torch.stack(stacks, 0)
+    return out
+
+
+def atp_grad_corrupt(pipeline, corrupt_input, readout: Callable, unit, write_val,
+                     positions, push=None, batch_size: int = 32):
+    """Gradient d(Phi)/d(h_c) at the CORRUPT-bypass, CLEAN-mediator point — the denoising
+    cell's configuration. Runs the corrupt-bypass forward (the source input for a swap, or
+    the base input WITH the push active for a two-site push) while OVERWRITING c with
+    write_val (its clean h_c) as a DIFFERENTIABLE leaf via _write_hook, then reads that
+    leaf's gradient. This is AtP for the PIE cell; grad_clean - grad_corrupt (dotted with
+    delta_c) is INT_linear, the smooth part of the interaction. Per-component (each c must
+    be the one restored to clean). Returns (N, D_eff)."""
+    model = pipeline.model
+    n = len(corrupt_input)
+    tp = torch.as_tensor(readout.target_pos)
+    pcol, ncol = readout.pos_col, readout.neg_col
+    p_all = pipeline._norm_pos(positions, n)
+    chunks = []
+    for i in range(0, n, batch_size):
+        sl = slice(i, i + batch_size)
+        tokens = pipeline.load(corrupt_input[sl])["tokens"]
+        wv = torch.as_tensor(write_val)[sl].detach().clone().float().requires_grad_(True)   # (m, D) leaf
+        hooks = pipeline._push_hooks_for(push, sl, n)
+        hooks.append(pipeline._write_hook(unit, wv.unsqueeze(1), p_all[sl]))
+        model.zero_grad(set_to_none=True)
+        with torch.enable_grad():
+            logits = model.run_with_hooks(tokens, fwd_hooks=hooks)
+            m = logits.shape[0]
+            idx = torch.arange(m)
+            rowsL = logits[idx, int(tp), :] if tp.dim() == 0 else logits[idx, tp[sl].long(), :]
+            phi = rowsL[idx, pcol[sl].long()] - rowsL[idx, ncol[sl].long()]
+            phi.sum().backward()
+        chunks.append(wv.grad.detach().cpu())
+    return torch.cat(chunks, 0)                              # (N, D_eff)
+
+
+def _int_gap(delta_c: torch.Tensor, grad_clean, grad_corrupt, int_full: float) -> dict:
+    """INT_linear = <delta_c, grad_clean - grad_corrupt> (the smooth interaction); the
+    residual gap_INT = INT_full - INT_linear is the EMERGENT/gated interaction — how much
+    c's curvature is switched on by the bypass, the sharp Type-G-bypass-gated signal."""
+    if grad_clean is None or grad_corrupt is None or int_full is None:
+        return {"int_linear": None, "gap_INT": None, "gap_INT_frac": None}
+    a = (delta_c * (grad_clean - grad_corrupt)).sum(-1)      # (N,) per-example INT_linear
+    int_lin = float(a.mean())
+    gi = int_full - int_lin
+    return {"int_linear": int_lin, "gap_INT": gi, "gap_INT_frac": gi / (abs(int_full) + 1e-9)}
+
+
+def _atp_gap(delta_c: torch.Tensor, grad, full_abs: float) -> dict:
+    """AtP linear estimate for this component + its gap to the exact effect. `full_abs` is
+    the abs-INSIDE full noising effect mean_i|Phi_n_i - Ya_i| (cells["NIE_absmean"]) so both
+    sides use AtP's abs convention and gap = full - AtP measures region-crossing, NOT
+    cross-example sign cancellation. grad is (N,D) raw or (K,N,D) GradDrop; delta_c is (N,D)."""
+    if grad is None or full_abs is None:
+        return {"atp_linear": None, "gap": None, "gap_frac": None}
+    if grad.dim() == 3:                                  # GradDrop: max over drops
+        a = (delta_c.unsqueeze(0) * grad).sum(-1).abs().amax(0)   # (N,)
+    else:
+        a = (delta_c * grad).sum(-1).abs()               # (N,)
+    atp = float(a.mean())
+    return {"atp_linear": atp, "gap": full_abs - atp, "gap_frac": (full_abs - atp) / (full_abs + 1e-9)}
+
+
+# --------------------------------------------------------------------------- #
 #  run_layer_scans — the driver
 # --------------------------------------------------------------------------- #
 def run_layer_scans(prep: dict, components: dict, spec: CFSpec, *,
                     batch_size: int = 32, gt_labels: dict | None = None,
                     poly_mem: dict | None = None, home_tasks: dict | None = None,
-                    clouds: dict | None = None, save: bool = True) -> list[dict]:
+                    clouds: dict | None = None, save: bool = True,
+                    compute_gap: bool = True, graddrop_k: int = 0) -> list[dict]:
     """Per-component (NIE, PIE, INT) + PER-TASK geometry + directed labels for one
     (base_task -> target_task, strategy, alpha) scan over a grid subset.
 
@@ -464,6 +616,11 @@ def run_layer_scans(prep: dict, components: dict, spec: CFSpec, *,
     def _fmt(v):
         return f"{v:+.3f}" if v is not None else "  n/a"
 
+    # AtP linear gradients at the CLEAN base — once, all sites (for gap = |NIE| - |AtP|).
+    grad_atp = (atp_gradients(pipeline, bases, readout, all_units, pos,
+                              batch_size=batch_size, graddrop_k=graddrop_k)
+                if compute_gap else None)
+
     rows, reps_out = [], {}
     for key, target in components.items():
         units = _units_of(target)
@@ -476,6 +633,7 @@ def run_layer_scans(prep: dict, components: dict, spec: CFSpec, *,
             Yap_c = readout(pushed_scores_c)
             te = float((Yap_c - Ya).mean())
             cells = {"NIE": te, "PIE": te, "INT": 0.0, "TE": te,
+                     "NIE_absmean": float((Yap_c - Ya).abs().mean()),
                      "phi_noise": float(Yap_c.mean()), "phi_denoise": float(Ya.mean()),
                      "Ya": float(Ya.mean()), "Yap": float(Yap_c.mean())}
             hp[site_id] = h[site_id] + delta_c
@@ -506,6 +664,8 @@ def run_layer_scans(prep: dict, components: dict, spec: CFSpec, *,
             "direction": spec.direction, "base_task": bt, "target_task": tt, "alpha": spec.alpha,
             "category": spec.meta.get("category"), "n": len(spec.cf_noise),
             **cells,
+            # --- AtP gap: mean|full| - mean|AtP linear|  (region-crossing / Type-G onset) ---
+            **_atp_gap(delta_c, (grad_atp.get(site_id) if grad_atp else None), cells.get("NIE_absmean")),
             # --- M-layer: attribution + ground truth (dormancy outcome) ---
             "home_tasks": home,
             "in_base_circuit": (bt in home) if bt is not None else None,

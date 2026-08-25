@@ -1,17 +1,39 @@
-# Generated experiment outputs
+# === Generated experiment outputs (code-only repo: never commit results) ===
 results/
+results_v2/
+results_smoke_pod/
+smoke2/
 manifold_results/
 path_finder_results/
+activation_manifolds/
 das/
 _out/
 **/_out/
-results_smoke_pod/
-smoke2/
-# Python
+intervened_reps/
+**/intervened_reps/
+
+# result / analysis output dirs
+poly_results*/
+*_results/
+*_analysis/
+*__analysis/
+interaction_screen/
+dormancy_results/
+curvature_analysis/
+wrapplots/
+
+# large data / archives / logs
+*.safetensors
+*.tar.gz
+*.tar
+*.zip
+*.log
+
+# === Python ===
 __pycache__/
 *.py[cod]
 .venv/
 *.egg-info/
 
-# OS
+# === OS ===
 .DS_Store

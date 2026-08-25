@@ -427,6 +427,136 @@ class TracrPipeline(Pipeline):
         """Native analogue of ``delete_intervenable_model`` (nothing to free)."""
         intervenable_model.release()
 
+    # ------------------------------------------------------------------ #
+    #  Interaction-effects primitives (interaction_effects.py)
+    # ------------------------------------------------------------------ #
+    # The INT 2x2 needs two things pyvene-style interchange doesn't expose:
+    #   * a forward that WRITES a precomputed activation value into a unit
+    #     (the "corrupted mediator" h'_c is a cached tensor, not a second run), and
+    #   * an upstream "background push" at another unit composed into the SAME
+    #     forward (the push realises the corrupted world r' for the denoising cell).
+    # Composition is native TL: both are just entries in one fwd_hooks list, so a
+    # push+patch forward is a two-hook run_with_hooks call — no persistent hooks,
+    # no state to reset. The push is passed per call as (unit, delta, positions)
+    # and sliced per batch internally, which keeps batching and the push aligned
+    # by construction.
+
+    @staticmethod
+    def _push_hook(unit: AtomicModelUnit, delta: Tensor, pos: Tensor):
+        """(hook_name, fn) ADDING delta to the unit's slab at per-example positions.
+        delta (B, n_pos, D_eff), pos (B, n_pos)."""
+
+        def hook_fn(act: Tensor, **_kw: Any) -> Tensor:
+            slab = _slab(unit, act).clone()
+            rows = torch.arange(slab.shape[0], device=slab.device).unsqueeze(1)
+            p = pos.to(slab.device)
+            slab[rows, p] = slab[rows, p] + delta.to(slab.device, slab.dtype)
+            return _write_slab(unit, act, slab)
+
+        return hook_name(unit), hook_fn
+
+    @staticmethod
+    def _write_hook(unit: AtomicModelUnit, values: Tensor, pos: Tensor):
+        """(hook_name, fn) OVERWRITING the unit's slab at per-example positions with
+        precomputed values (B, n_pos, D_eff) — the source_representations-style patch."""
+
+        def hook_fn(act: Tensor, **_kw: Any) -> Tensor:
+            slab = _slab(unit, act).clone()
+            rows = torch.arange(slab.shape[0], device=slab.device).unsqueeze(1)
+            p = pos.to(slab.device)
+            slab[rows, p] = values.to(slab.device, slab.dtype)
+            return _write_slab(unit, act, slab)
+
+        return hook_name(unit), hook_fn
+
+    @staticmethod
+    def _norm_pos(pos: Any, n: int) -> Tensor:
+        """Positions -> (B, n_pos) LongTensor. Accepts a scalar (broadcast), a (B,)
+        vector (one position per example), or (B, n_pos)."""
+        p = torch.as_tensor(pos, dtype=torch.long)
+        if p.dim() == 0:
+            p = p.expand(n)
+        if p.dim() == 1:
+            p = p.unsqueeze(1)
+        return p
+
+    def _push_hooks_for(self, push: tuple | None, sl: slice, n: int) -> list:
+        if push is None:
+            return []
+        unit, delta, pos = push
+        d = torch.as_tensor(delta)[sl]
+        if d.dim() == 2:  # (B, D_eff) -> one position
+            d = d.unsqueeze(1)
+        p = self._norm_pos(pos, n)[sl]
+        return [self._push_hook(unit, d, p)]
+
+    def forward_cache(
+        self,
+        input: list[Any],
+        units: Sequence[AtomicModelUnit],
+        push: tuple | None = None,
+        batch_size: int = 32,
+    ) -> tuple[Tensor, dict[str, Tensor]]:
+        """Batched forward returning ``(scores, {unit.id: full slab})`` on cpu.
+
+        scores (N, S, V); slabs (N, S, D_eff) — the unit's raw activation stream
+        (head slice for head units), positions NOT gathered so the caller indexes
+        however it likes. ``push=(unit, delta (N,[n_pos,]D_eff), positions)``
+        composes an additive upstream push into the same forwards, so caching
+        "under the push" is this call with push set (Y(a') and h'_c together).
+        """
+        n = len(input)
+        score_chunks: list[Tensor] = []
+        slab_chunks: dict[str, list[Tensor]] = {u.id: [] for u in units}
+        for i in range(0, n, batch_size):
+            sl = slice(i, i + batch_size)
+            tokens = self.load(input[sl])["tokens"]
+            hooks = self._push_hooks_for(push, sl, n)
+            with torch.no_grad():
+                if hooks:
+                    with self.model.hooks(fwd_hooks=hooks):
+                        logits, cache = self.model.run_with_cache(tokens)
+                else:
+                    logits, cache = self.model.run_with_cache(tokens)
+            score_chunks.append(logits.detach().cpu())
+            for u in units:
+                slab_chunks[u.id].append(_slab(u, cache[hook_name(u)]).detach().cpu())
+        return (
+            torch.cat(score_chunks, 0),
+            {uid: torch.cat(chunks, 0) for uid, chunks in slab_chunks.items()},
+        )
+
+    def patch(
+        self,
+        input: list[Any],
+        writes: list[tuple],
+        push: tuple | None = None,
+        batch_size: int = 32,
+    ) -> Tensor:
+        """Batched forward over ``input`` writing PRECOMPUTED activations into units.
+
+        ``writes``: [(unit, values (N,[n_pos,]D_eff), positions)] — each unit's slab
+        is overwritten with values at the (per-example) positions. ``push`` as in
+        :meth:`forward_cache`, composed into the same fwd_hooks list — that single
+        composed forward IS the denoising cell (push realises r', the write restores
+        h_c). Returns scores (N, S, V) on cpu.
+        """
+        n = len(input)
+        score_chunks: list[Tensor] = []
+        for i in range(0, n, batch_size):
+            sl = slice(i, i + batch_size)
+            tokens = self.load(input[sl])["tokens"]
+            hooks = self._push_hooks_for(push, sl, n)
+            for unit, values, pos in writes:
+                v = torch.as_tensor(values)[sl]
+                if v.dim() == 2:
+                    v = v.unsqueeze(1)
+                hooks.append(self._write_hook(unit, v, self._norm_pos(pos, n)[sl]))
+            with torch.no_grad():
+                logits = self.model.run_with_hooks(tokens, fwd_hooks=hooks)
+            score_chunks.append(logits.detach().cpu())
+        return torch.cat(score_chunks, 0)
+
 
 def _model_device(model: Any) -> torch.device:
     cfg_dev = getattr(getattr(model, "cfg", None), "device", None)

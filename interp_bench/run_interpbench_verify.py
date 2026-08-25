@@ -53,16 +53,18 @@ def main() -> None:
     from causalab.tasks.interpbench.causal_models import CASES, verify_against_model
     from causalab.tasks.interpbench.token_positions import create_token_positions
 
-    if args.case not in CASES:
-        raise SystemExit(f"Case {args.case} not registered in CASES: {sorted(CASES)}")
+    # if args.case not in CASES:
+    #     raise SystemExit(f"Case {args.case} not registered in CASES: {sorted(CASES)}")
 
     print(f"\n=== 1. load case {args.case} (circuits_benchmark) ===")
     task, hl_ll_corr, model = load_case(args.case, args.device)
 
     print("\n=== 2. build_pipelines (LL + HL, hl_fn from the HL program) ===")
-    ll_pipeline, hl_pipeline, bos, hl_fn = build_pipelines(model, task, device=args.device)
+    ll_pipeline, hl_pipeline, bos, hl_fn, vocab, out_vocab = build_pipelines(
+        model, task, device=args.device)
     n_ctx = int(model.cfg.n_ctx)
     print(f"bos={bos!r} | n_ctx={n_ctx} | n_layers={model.cfg.n_layers} n_heads={model.cfg.n_heads}")
+    print(f"vocab={vocab} | out_vocab={out_vocab}")
 
     print("\n=== 3. dump_correspondence (confirm field names) ===")
     dump_correspondence(hl_ll_corr)

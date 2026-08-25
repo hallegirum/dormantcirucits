@@ -115,6 +115,15 @@ def load_rows(results_root: str, combos=None, seeds=None) -> list[dict]:
             r["ctype"], r["layer"] = component_type(r.get("site", "")), _layer(r.get("site", ""))
             r["mclass"] = membership_class(r.get("poly_membership"))
             r["abs_NIE"] = abs(r.get("NIE", 0.0)) if r.get("NIE") is not None else None
+            # borrowing feature that works for ANY strategy/direction: the divergence's
+            # max alignment with a NON-base task's subspace. For cross-task swap this is
+            # ~along_target; for within-task swap or Gaussian (no target) it's the honest
+            # "does the displacement point into some OTHER task" — the realistic-method test.
+            abt = r.get("along_by_task") or {}
+            bt = r.get("base_task")
+            nonbase = [v for k, v in abt.items()
+                       if str(k) != str(bt) and isinstance(v, (int, float)) and math.isfinite(v)]
+            r["along_nonbase_max"] = max(nonbase) if nonbase else None
             rows.append(r)
     if skipped:
         print(f"[warn] skipped {skipped} legacy int.json without base_task (pre-directed run)")
@@ -154,6 +163,14 @@ def swap_all(rows):
     """ALL STR swap rows (within + cross task) with geometry — broadened FP base."""
     return [r for r in rows if r["strategy"] == "STR" and r["push_site"] == "input"
             and _num(r, "INT", "orth_base", "along_target", "NIE")]
+
+
+def swap_stratum(rows, within):
+    """ALL STR-swap rows (in- AND off-circuit, for the separation ref/pop split) of one
+    direction stratum: within=True keeps base==target (the realistic method), within=False
+    keeps base!=target (the artificial cross-task base case)."""
+    return [r for r in rows if r["strategy"] == "STR" and r["push_site"] == "input"
+            and ((r["base_task"] == r["target_task"]) == within)]
 
 
 def _is_downstream(r):
@@ -197,17 +214,26 @@ def fp_all(rows):
     return [r for r in swap_all(rows) if r.get("in_base_circuit") is False]
 
 
+def _borrowed_row(r) -> bool:
+    """This FP component belongs to ANOTHER task's circuit (not the base). Cross-task
+    swap/push: in_target_circuit=True. No explicit target (within-task swap, Gaussian
+    push): home_tasks non-empty means it's in SOME other task's circuit."""
+    if r.get("in_target_circuit") is True:
+        return True
+    if r.get("home_tasks") and (r.get("target_task") is None
+                                or r.get("base_task") == r.get("target_task")):
+        return True
+    return False
+
+
 def fp_borrowed(rows):
-    """FP rows where the component IS in another task's circuit — the borrowing subset.
-    Cross-task: in_target_circuit=True. Within-task or push (no explicit target):
-    home_tasks is non-empty (component belongs to SOME other task's circuit)."""
-    out = []
-    for r in fp_all(rows):
-        if r.get("in_target_circuit") is True:
-            out.append(r)
-        elif r.get("base_task") == r.get("target_task") and r.get("home_tasks"):
-            out.append(r)
-    return out
+    """STR-swap FP rows where the component is in another task's circuit (borrowing)."""
+    return [r for r in fp_all(rows) if _borrowed_row(r)]
+
+
+def borrowed_of(pop):
+    """Borrowed subset of any already-FP population (¬in_base ∧ in another circuit)."""
+    return [r for r in pop if r.get("in_base_circuit") is False and _borrowed_row(r)]
 
 
 def fp_geometric(rows):
@@ -297,6 +323,70 @@ def _sig(ci):  # CI excludes 0?
 
 
 # --------------------------------------------------------------------------- #
+#  logistic separation machinery (AUC / IRLS) — for the discrimination test
+# --------------------------------------------------------------------------- #
+def _rankdata(a):
+    """Average ranks (1-based), ties averaged — for a rank-based AUC."""
+    a = np.asarray(a, float)
+    order = np.argsort(a, kind="mergesort")
+    ranks = np.empty(len(a), float)
+    sa = a[order]
+    i, n = 0, len(a)
+    while i < n:
+        j = i
+        while j + 1 < n and sa[j + 1] == sa[i]:
+            j += 1
+        ranks[order[i:j + 1]] = (i + j) / 2.0 + 1.0
+        i = j + 1
+    return ranks
+
+
+def _auc(scores, y):
+    """AUC = P(score | FP > score | harmless), tie-corrected. nan if one class."""
+    y = np.asarray(y)
+    n1 = int(y.sum())
+    n0 = len(y) - n1
+    if n1 == 0 or n0 == 0:
+        return float("nan")
+    ranks = _rankdata(scores)
+    return float((ranks[y == 1].sum() - n1 * (n1 + 1) / 2.0) / (n1 * n0))
+
+
+def _logit_fit(X, y, ridge=0.1, iters=25):
+    """L2-penalised logistic regression via IRLS (Newton). X includes an intercept
+    column; predictors should be standardised. Ridge keeps it stable under quasi-
+    separation. Returns the coefficient vector."""
+    beta = np.zeros(X.shape[1])
+    P = ridge * np.eye(X.shape[1])
+    P[0, 0] = 0.0  # don't penalise the intercept
+    for _ in range(iters):
+        eta = np.clip(X @ beta, -30, 30)
+        p = 1.0 / (1.0 + np.exp(-eta))
+        W = p * (1.0 - p) + 1e-9
+        grad = X.T @ (y - p) - P @ beta
+        H = X.T @ (X * W[:, None]) + P
+        try:
+            step = np.linalg.solve(H, grad)
+        except np.linalg.LinAlgError:
+            break
+        beta = beta + step
+        if np.max(np.abs(step)) < 1e-8:
+            break
+    return beta
+
+
+def _auc_of(sample, feats, y_fn):
+    """Fit logistic FP ~ 1 + standardised feats on `sample`, return (AUC, coef vector).
+    y_fn(sample) -> the 0/1 label array. nan AUC when a class is missing."""
+    y = y_fn(sample)
+    if y.sum() == 0 or y.sum() == len(y) or len(y) < 8:
+        return float("nan"), None
+    X = np.column_stack([np.ones(len(sample))] + [_zc(sample, f) for f in feats])
+    beta = _logit_fit(X, y)
+    return _auc(X @ beta, y), beta
+
+
+# --------------------------------------------------------------------------- #
 #  the models
 # --------------------------------------------------------------------------- #
 def m1_geometry_to_int(rows):
@@ -364,24 +454,31 @@ def m2_int_to_fp(rows):
             "predict": "dormancy => orth_base + INT drive FPs; cross_task tests if cross-task is worse than within-task"}
 
 
-def m2b_borrowed_fp(rows):
-    """M2 restricted to BORROWED FPs — components in another task's circuit but not
-    the base circuit. Tests whether the borrowing mechanism (along_target alignment)
-    matters specifically for task-affiliated false positives."""
-    pop = fp_borrowed(rows)
+def m2b_borrowed(pop, label):
+    """M2 on BORROWED FPs of one strategy: |NIE| ~ orth_base [+ INT] [+ along_target].
+    along_target is included only when a target direction exists (STR swap / STR push);
+    Gaussian push has no target, so it reduces to |NIE| ~ orth_base [+ INT] and just asks
+    whether task-affiliated components get inflated attributions under random push.
+    INT is dropped when degenerate (self-push)."""
     if len(pop) < 8:
-        return {"status": f"too few borrowed-FP rows ({len(pop)})"}
+        return {"status": f"too few borrowed-FP rows ({len(pop)})", "label": label, "n": len(pop)}
+    has_along = all(r.get("along_target") is not None for r in pop)
+    has_int = any(r.get("INT") is not None and abs(r["INT"]) > 1e-9 for r in pop)
+
+    def preds(s):
+        p = {"orth_base": _zc(s, "orth_base")}
+        if has_int:
+            p["INT"] = _zc(s, "INT")
+        if has_along:
+            p["along_target"] = _zc(s, "along_target")
+        return p
 
     def fit(s):
-        b, _ = ols(_zc(s, "abs_NIE"),
-                   {"INT": _zc(s, "INT"), "orth_base": _zc(s, "orth_base"),
-                    "along_target": _zc(s, "along_target")})
+        b, _ = ols(_zc(s, "abs_NIE"), preds(s))
         return b
-    _, r2 = ols(_zc(pop, "abs_NIE"),
-                {"INT": _zc(pop, "INT"), "orth_base": _zc(pop, "orth_base"),
-                 "along_target": _zc(pop, "along_target")})
-    return {"status": "ok", "n": len(pop), "r2": round(r2, 3), "coef": boot(pop, fit),
-            "predict": "borrowing => along_target > 0 drives borrowed FPs specifically"}
+    _, r2 = ols(_zc(pop, "abs_NIE"), preds(pop))
+    return {"status": "ok", "label": label, "n": len(pop), "r2": round(r2, 3), "coef": boot(pop, fit),
+            "predict": "borrowing => along_target > 0 drives borrowed FPs (when a target exists)"}
 
 
 def mediation(rows):
@@ -435,6 +532,230 @@ def m3_separation(rows):
             "coef": boot(pop, fit),
             "predict": "separation => INT > 0 means INT predicts which non-circuit components get falsely attributed; "
                        "is_borrowed > 0 means task-affiliated components are worse"}
+
+
+def m3l_separation_logit(base_pop, q=0.5, feats=("INT", "along_target"),
+                         label_str="STR swap", B=250):
+    """THE separation test, run on one strategy's rows (base_pop = both in- and off-
+    circuit rows for that strategy). A false positive is an off-base-circuit component
+    whose attributed |NIE| is as large as a genuine base-circuit member's (>= the
+    q-quantile of in-circuit |NIE|, computed per combo). Everything else off-circuit is
+    'harmless'.
+
+    orth_base is the baseline discriminator; `feats` are the CANDIDATE extra separators
+    (INT, along_target) tested for AUC gain beyond orth_base. Per feature f it reports:
+      AUC_f          f alone
+      gain_f         AUC(orth+f) - AUC(orth)   (added discrimination from f)
+      AUC_f_hiorth   f alone WITHIN the high-orth half (the crux: among already-high-
+                     divergence off-circuit comps, does f tell FP from harmless?)
+      beta_f         f's standardised logistic coef in the full (orth + all feats) model
+    plus AUC_orth and AUC_full. Features absent for this strategy (e.g. along_target on a
+    directionless push) are dropped. Cluster-bootstrapped over combos."""
+    have = lambda r, f: r.get(f) is not None and isinstance(r.get(f), (int, float)) and math.isfinite(r[f])
+    pop0 = [r for r in base_pop if r.get("in_base_circuit") is False and _num(r, "orth_base", "NIE")]
+    # KEEP a feature if it's present on >=80% of rows (a few missing gap rows from run_gap
+    # skips must NOT drop the whole feature), then restrict the pop to rows complete on it.
+    feats = [f for f in feats if pop0 and sum(have(r, f) for r in pop0) >= 0.8 * len(pop0)]
+    pop = [r for r in pop0 if all(have(r, f) for f in feats)]
+    ref = [r for r in base_pop if r.get("in_base_circuit") is True and _num(r, "NIE")]
+    if len(pop) < 20 or len(ref) < 5 or not feats:
+        return {"status": f"too few rows / no feats (off-circuit {len(pop)}, ref {len(ref)}, "
+                          f"feats {feats}) [{label_str}]", "label": label_str}
+
+    thr = {}                                     # per-combo FP threshold from in-circuit |NIE|
+    for c in {r["combo"] for r in ref}:
+        vals = [r["abs_NIE"] for r in ref if r["combo"] == c and r.get("abs_NIE") is not None]
+        if vals:
+            thr[c] = float(np.quantile(vals, q))
+
+    def label(sample):
+        return np.array([1.0 if (thr.get(r["combo"]) is not None and r["abs_NIE"] is not None
+                                 and r["abs_NIE"] >= thr[r["combo"]]) else 0.0 for r in sample])
+    y = label(pop)
+    n_fp, n_tn = int(y.sum()), len(y) - int(y.sum())
+    if n_fp < 5 or n_tn < 5:
+        return {"status": f"degenerate FP labels (FP {n_fp}, harmless {n_tn}) at q={q} [{label_str}]",
+                "label": label_str}
+
+    def fit(s):
+        out = {}
+        a_o, _ = _auc_of(s, ["orth_base"], label)
+        a_full, beta = _auc_of(s, ["orth_base"] + feats, label)
+        out["AUC_orth"], out["AUC_full"], out["gain_full"] = a_o, a_full, (a_full - a_o)
+        ob = np.array([r["orth_base"] for r in s])
+        hi = [s[i] for i in range(len(s)) if ob[i] >= np.median(ob)]
+        for j, f in enumerate(feats):
+            a_f, _ = _auc_of(s, [f], label)
+            a_of, _ = _auc_of(s, ["orth_base", f], label)
+            a_hi, _ = _auc_of(hi, [f], label)
+            out[f"AUC_{f}"] = a_f
+            out[f"gain_{f}"] = a_of - a_o           # value of f over orth ALONE
+            out[f"AUC_{f}_hiorth"] = a_hi
+            out[f"beta_{f}"] = float(beta[2 + j]) if beta is not None else float("nan")
+            # marginal of f in the FULL model = AUC(all) - AUC(all but f)  -> "with vs without f"
+            a_drop, _ = _auc_of(s, ["orth_base"] + [g for g in feats if g != f], label)
+            out[f"drop_{f}"] = a_full - a_drop
+        return out
+    return {"status": "ok", "n": len(pop), "n_fp": n_fp, "n_harmless": n_tn, "q_threshold": q,
+            "label": label_str, "feats": feats, "coef": boot(pop, fit, B=B),
+            "predict": "separation => gain_<f>>0 and AUC_<f>_hiorth>0.5: that feature distinguishes "
+                       "pernicious (high-orth -> FP) from harmless (high-orth -> no FP) beyond divergence"}
+
+
+def xint_separation(rows):
+    """THE xINT payoff. Among interaction-carried candidates (rows that run_xint wrote an
+    xint_off_frac onto), does the OFF-TASK xINT fraction separate ground-truth BORROWED
+    (partners in another task's circuit) from healthy — better than |INT| alone? This is
+    the 'which circuit does the interaction route into' test INT-scalar cannot do."""
+    pop = [r for r in rows if r.get("xint_off_frac") is not None and _num(r, "xint_off_frac")
+           and r.get("in_base_circuit") is False]
+    if len(pop) < 12:
+        return {"status": f"too few xINT candidates ({len(pop)}) — run run_xint.py first"}
+    y = np.array([1.0 if _borrowed_row(r) else 0.0 for r in pop])
+    n_b = int(y.sum())
+    if n_b < 4 or n_b > len(y) - 4:
+        return {"status": f"degenerate borrowed labels (borrowed {n_b}/{len(y)})"}
+    have_int = all(r.get("INT") is not None for r in pop)
+
+    def fit(s):
+        ys = np.array([1.0 if _borrowed_row(r) else 0.0 for r in s])
+        out = {"AUC_xint_off_frac": _auc(np.array([r["xint_off_frac"] for r in s]), ys)}
+        if have_int:
+            out["AUC_absINT"] = _auc(np.array([abs(r["INT"]) for r in s]), ys)
+        return out
+    return {"status": "ok", "n": len(pop), "n_borrowed": n_b, "coef": boot(pop, fit),
+            "predict": "borrowing => AUC_xint_off_frac > 0.5 and > AUC_absINT: xINT partner "
+                       "identity separates borrowed from healthy where |INT| magnitude cannot"}
+
+
+def _xint_strat_bucket(r):
+    push = r.get("push_site")
+    if push == "input":
+        return f"STR_swap_{'within' if r['base_task'] == r['target_task'] else 'cross'}"
+    if push == "self":
+        return f"{r['strategy']}_self"
+    return f"{r['strategy']}_push"
+
+
+def xint_separation_by_strategy(rows):
+    """Per-strategy breakdown of the xINT borrowing separation — plus the DIRECTION check:
+    mean xint_off_frac for borrowed vs harmless. If borrowed's mean is LOWER (AUC < 0.5), the
+    off-task fraction is anti-predictive there (a real surprise, or a bucketing bug), not just
+    weak. Split by strategy isolates whether it's uniform (points to a bug) or strategy-specific."""
+    pop = [r for r in rows if r.get("xint_off_frac") is not None and _num(r, "xint_off_frac")
+           and r.get("in_base_circuit") is False]
+    if not pop:
+        return {"status": "no xINT candidates — run run_xint.py (writeback)"}
+    groups = defaultdict(list)
+    for r in pop:
+        groups[_xint_strat_bucket(r)].append(r)
+    out = {}
+    for bucket, items in sorted(groups.items()):
+        y = np.array([1.0 if _borrowed_row(r) else 0.0 for r in items])
+        nb = int(y.sum())
+        rec = {"n": len(items), "n_borrowed": nb}
+        if len(items) >= 8 and 3 <= nb <= len(items) - 3:
+            off = np.array([r["xint_off_frac"] for r in items])
+            rec["AUC_xint_off_frac"] = round(_auc(off, y), 3)
+            if all(r.get("INT") is not None for r in items):
+                rec["AUC_absINT"] = round(_auc(np.array([abs(r["INT"]) for r in items]), y), 3)
+            rec["mean_offfrac_borrowed"] = round(float(off[y == 1].mean()), 3)
+            rec["mean_offfrac_harmless"] = round(float(off[y == 0].mean()), 3)
+        else:
+            rec["note"] = "too few / degenerate labels"
+        out[bucket] = rec
+    return {"status": "ok", "by_strategy": out}
+
+
+def xint_logistic_by_strategy(rows):
+    """Per-strategy logistic P(borrowed) with a MAGNITUDE CONTROL. The raw xINT masses
+    (off/shared/none) partly proxy total interaction magnitude, which itself correlates with
+    borrowing — so we separate the two:
+      xint_total  = |on|+|off|+|shared|+|none|      -> the magnitude covariate
+      frac_*      = |bucket| / xint_total            -> magnitude-normalized STRUCTURE
+    The decisive numbers: AUC_magnitude (xint_total alone), AUC_full (magnitude + structure
+    fractions + coherence), and struct_gain = AUC_full - AUC_magnitude = how much the partner
+    DISTRIBUTION adds BEYOND raw magnitude. drop_<frac> = each fraction's marginal in the full
+    model. If struct_gain ~ 0, the earlier 'structure beats INT' was magnitude in disguise."""
+    for r in rows:                                    # derive magnitude + fractions in place
+        if r.get("xint_off_frac") is None:
+            continue
+        m = {k: (r.get(k) or 0.0) for k in ("xint_on_task", "xint_off_task", "xint_shared", "xint_none")}
+        tot = float(sum(m.values()))
+        r["xint_total"] = tot
+        r["frac_off"] = (m["xint_off_task"] / tot) if tot > 1e-9 else 0.0
+        r["frac_shared"] = (m["xint_shared"] / tot) if tot > 1e-9 else 0.0
+        r["frac_none"] = (m["xint_none"] / tot) if tot > 1e-9 else 0.0
+
+    MAG = "xint_total"
+    STRUCT = ["xint_coherence", "frac_off", "frac_shared", "frac_none"]   # frac_on dropped (sum=1)
+    hasf = lambda r, f: isinstance(r.get(f), (int, float)) and math.isfinite(r.get(f, float("nan")))
+    pop0 = [r for r in rows if r.get("xint_off_frac") is not None and r.get("in_base_circuit") is False]
+    if not pop0:
+        return {"status": "no xINT candidates — run run_xint.py"}
+    groups = defaultdict(list)
+    for r in pop0:
+        groups[_xint_strat_bucket(r)].append(r)
+
+    def y_fn(s):
+        return np.array([1.0 if _borrowed_row(r) else 0.0 for r in s])
+    out = {}
+    for bucket, items in sorted(groups.items()):
+        struct = [f for f in STRUCT if sum(hasf(r, f) for r in items) >= 0.8 * len(items)]
+        allf = [MAG] + struct
+        pop = [r for r in items if all(hasf(r, f) for f in allf)]
+        y = y_fn(pop)
+        nb = int(y.sum())
+        if len(pop) < 12 or nb < 4 or nb > len(pop) - 4 or not struct:
+            out[bucket] = {"n": len(pop), "n_borrowed": nb, "note": "too few / degenerate"}
+            continue
+        a_mag, _ = _auc_of(pop, [MAG], y_fn)                 # magnitude ALONE
+        a_full, _ = _auc_of(pop, allf, y_fn)                 # magnitude + structure
+        rec = {"n": len(pop), "n_borrowed": nb, "struct": struct,
+               "AUC_magnitude": round(a_mag, 3), "AUC_full": round(a_full, 3),
+               "struct_gain": round(a_full - a_mag, 3)}      # <- structure BEYOND magnitude
+        for f in struct:
+            a_drop, _ = _auc_of(pop, [g for g in allf if g != f], y_fn)
+            rec[f"drop_{f}"] = round(a_full - a_drop, 3)
+        if all(r.get("INT") is not None for r in pop):
+            rec["AUC_absINT"] = round(_auc(np.array([abs(r["INT"]) for r in pop]), y), 3)
+        out[bucket] = rec
+    return {"status": "ok", "by_strategy": out}
+
+
+def xint_fp_prediction(rows):
+    """Do the xINT indicators predict a large false positive (|NIE|), not just the borrowed
+    label? Reuses M3L's FP definition (off-circuit |NIE| >= per-combo in-circuit median) but
+    (a) restricts the off-circuit classification set to xINT CANDIDATES and (b) adds
+    xint_total + structure fractions + gap_frac as features — so each gets an AUC / gain /
+    drop for predicting the FP attribution. Per strategy. Bootstrapped over combos."""
+    for r in rows:                                    # derive magnitude + fractions (idempotent)
+        if r.get("xint_off_frac") is None:
+            continue
+        m = {k: (r.get(k) or 0.0) for k in ("xint_on_task", "xint_off_task", "xint_shared", "xint_none")}
+        tot = float(sum(m.values()))
+        r["xint_total"] = tot
+        r["frac_off"] = (m["xint_off_task"] / tot) if tot > 1e-9 else 0.0
+        r["frac_shared"] = (m["xint_shared"] / tot) if tot > 1e-9 else 0.0
+        r["frac_none"] = (m["xint_none"] / tot) if tot > 1e-9 else 0.0
+
+    feats = ("gap_frac", "xint_total", "xint_coherence", "frac_off", "frac_shared", "frac_none",
+             "xint_partner_orth", "xint_partner_gap",         # interaction-with-off-manifold-partners
+             "ripple_in_orth", "ripple_off_orth", "ripple_frac",   # c knocks the LIVE circuit off-manifold
+             "ripple_xint_orth", "ripple_xint_in_orth")    # ... via the components it INTERACTS with
+    strat = defaultdict(lambda: {"in": [], "cand": []})
+    for r in rows:
+        if "strategy" not in r:
+            continue
+        b = _xint_strat_bucket(r)
+        if r.get("in_base_circuit") is True:
+            strat[b]["in"].append(r)                  # in-circuit ref for the FP threshold
+        elif r.get("in_base_circuit") is False and r.get("xint_off_frac") is not None:
+            strat[b]["cand"].append(r)                # off-circuit candidates = classification set
+    out = {}
+    for b, d in sorted(strat.items()):
+        out[b] = m3l_separation_logit(d["in"] + d["cand"], feats=feats, label_str=b, B=200)
+    return {"status": "ok", "by_strategy": out}
 
 
 def p5_push(rows, strategy="STR"):
@@ -512,9 +833,14 @@ def _write_csv(rows, path):
     cols = ["combo", "seed", "site", "ctype", "layer", "strategy", "push_site", "direction",
             "base_task", "target_task", "alpha", "mclass", "gt_label", "poly_membership",
             "home_tasks", "in_base_circuit", "in_target_circuit", "degenerate",
-            "NIE", "PIE", "INT", "TE", "abs_NIE",
-            "orth_base", "along_target", "along_nontarget_max",
-            "push_along_target", "push_orth_base"]
+            "NIE", "PIE", "INT", "TE", "abs_NIE", "NIE_absmean",
+            "atp_linear", "gap", "gap_frac", "int_linear", "gap_INT", "gap_INT_frac",
+            "orth_base", "along_target", "along_nontarget_max", "along_nonbase_max",
+            "push_along_target", "push_orth_base",
+            "xint_off_frac", "xint_coherence", "xint_on_task", "xint_off_task", "xint_verdict",
+            "xint_partner_orth", "xint_partner_gap",
+            "ripple_in_orth", "ripple_off_orth", "ripple_frac",
+            "ripple_xint_orth", "ripple_xint_in_orth"]
     with open(path, "w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=cols, extrasaction="ignore")
         w.writeheader()
@@ -555,8 +881,31 @@ def main():
         "M2_STR_push_MLP": m2_outcome(fp_str_push(rows), "STR push @ MLP"),
         "M2_Gaussian_push": m2_outcome(fp_gauss_push(rows), "Gaussian push"),
         "M2_Gaussian_self": m2_outcome(fp_gauss_self(rows), "Gaussian self-push"),
-        "M2b_borrowed_FP": m2b_borrowed_fp(rows),
+        # --- M2b borrowed FPs, per strategy (along_target test where a target exists) ---
+        "M2b_STR_swap": m2b_borrowed(fp_borrowed(rows), "STR swap borrowed"),
+        "M2b_STR_push": m2b_borrowed(borrowed_of(fp_str_push(rows)), "STR push borrowed"),
+        "M2b_Gaussian_push": m2b_borrowed(borrowed_of(fp_gauss_push(rows)), "Gaussian push borrowed"),
         "M3_separation": m3_separation(rows),
+        # --- separation test, borrowing feature = along_nonbase_max (works for every
+        #     strategy). SWAP split into within-task (realistic) vs cross-task (base case).
+        "M3L_swap_within": m3l_separation_logit(
+            swap_stratum(rows, within=True), feats=("INT", "gap_frac", "gap_INT_frac", "along_nonbase_max"),
+            label_str="STR swap WITHIN-task (realistic)"),
+        "M3L_swap_cross": m3l_separation_logit(
+            swap_stratum(rows, within=False),
+            feats=("INT", "gap_frac", "gap_INT_frac", "along_target", "along_nonbase_max"),
+            label_str="STR swap CROSS-task (base case)"),
+        "M3L_STR_push": m3l_separation_logit(
+            push_downstream(rows, "STR"),
+            feats=("INT", "gap_frac", "gap_INT_frac", "along_target", "along_nonbase_max"),
+            label_str="STR push"),
+        "M3L_Gaussian_push": m3l_separation_logit(
+            push_downstream(rows, "Gaussian"), feats=("INT", "gap_frac", "gap_INT_frac", "along_nonbase_max"),
+            label_str="Gaussian push"),
+        "XINT_borrowing_separation": xint_separation(rows),
+        "XINT_by_strategy": xint_separation_by_strategy(rows),
+        "XINT_logistic_by_strategy": xint_logistic_by_strategy(rows),
+        "XINT_fp_prediction": xint_fp_prediction(rows),
         "MED_orth_base_to_INT_to_NIE": mediation(rows),
         # --- P5 push mediation on both push strategies ---
         "P5_STR_push": p5_push(rows, "STR"),
@@ -587,8 +936,77 @@ def main():
     _print_coef("M2  STR push@MLP  (|NIE| ~ orth_base [+ INT])", models["M2_STR_push_MLP"])
     _print_coef("M2  Gaussian push (|NIE| ~ orth_base [+ INT])", models["M2_Gaussian_push"])
     _print_coef("M2  Gaussian self (|NIE| ~ orth_base)  [INT degenerate]", models["M2_Gaussian_self"])
-    _print_coef("M2b  borrowed FPs  (|NIE| ~ INT + orth_base + along_target) [borrowed only]", models["M2b_borrowed_FP"])
-    _print_coef("M3  separation  (|NIE| ~ orth_base + INT + is_borrowed) [TN+FP, nonbase]", models["M3_separation"])
+    _print_coef("M2b STR swap  borrowed (|NIE| ~ INT + orth_base + along_target)", models["M2b_STR_swap"])
+    _print_coef("M2b STR push  borrowed (|NIE| ~ INT + orth_base + along_target)", models["M2b_STR_push"])
+    _print_coef("M2b Gaussian push borrowed (|NIE| ~ INT + orth_base)  [no target]", models["M2b_Gaussian_push"])
+    _print_coef("M3  separation (linear)  (|NIE| ~ orth_base + INT + is_borrowed) [nonbase]", models["M3_separation"])
+    for m3l_key, m3l_name in (("M3L_swap_within", "STR swap WITHIN-task (realistic)"),
+                              ("M3L_swap_cross", "STR swap CROSS-task (base case)"),
+                              ("M3L_STR_push", "STR push"),
+                              ("M3L_Gaussian_push", "Gaussian push")):
+        m3l = models[m3l_key]
+        print(f"\n== M3L  separation (LOGISTIC: P(FP) | off-circuit component) — {m3l_name} ==")
+        if m3l.get("status") != "ok":
+            print(f"  {m3l.get('status')}")
+            continue
+        print(f"  n={m3l['n']}  FP={m3l['n_fp']}  harmless={m3l['n_harmless']}  feats={m3l['feats']}  "
+              f"(FP = off-circuit |NIE| >= per-combo median of in-circuit |NIE|)")
+        for k, ci in m3l["coef"].items():
+            base = 0.5 if k.startswith("AUC") else 0.0     # AUCs compare to 0.5, gains/betas to 0
+            flag = "*" if (ci["lo"] > base or ci["hi"] < base) else " "
+            print(f"    {k:<20} {ci['est']:+.3f}  [{ci['lo']:+.3f}, {ci['hi']:+.3f}] {flag}")
+        print(f"  [predict] {m3l['predict']}")
+    xs = models["XINT_borrowing_separation"]
+    print("\n== XINT  borrowing separation (AUC of off-task xINT fraction, vs |INT|) ==")
+    if xs.get("status") != "ok":
+        print(f"  {xs.get('status')}")
+    else:
+        print(f"  n={xs['n']}  borrowed={xs['n_borrowed']}")
+        for k, ci in xs["coef"].items():
+            flag = "*" if (ci["lo"] > 0.5 or ci["hi"] < 0.5) else " "
+            print(f"    {k:<20} {ci['est']:+.3f}  [{ci['lo']:+.3f}, {ci['hi']:+.3f}] {flag}")
+        print(f"  [predict] {xs['predict']}")
+    xbs = models["XINT_by_strategy"]
+    if xbs.get("status") == "ok":
+        print("\n== XINT  by strategy (AUC + direction check: mean off_frac borrowed vs harmless) ==")
+        print(f"  {'strategy':<20} {'n':>4} {'n_borr':>7} {'AUC_off':>8} {'AUC_INT':>8} "
+              f"{'off|borr':>9} {'off|harm':>9}")
+        for name, r in xbs["by_strategy"].items():
+            if "AUC_xint_off_frac" in r:
+                print(f"  {name:<20} {r['n']:>4} {r['n_borrowed']:>7} "
+                      f"{r['AUC_xint_off_frac']:>8} {r.get('AUC_absINT','  n/a'):>8} "
+                      f"{r['mean_offfrac_borrowed']:>9} {r['mean_offfrac_harmless']:>9}")
+            else:
+                print(f"  {name:<20} {r['n']:>4} {r['n_borrowed']:>7}   {r.get('note','')}")
+    xl = models["XINT_logistic_by_strategy"]
+    if xl.get("status") == "ok":
+        print("\n== XINT  logistic P(borrowed), MAGNITUDE-CONTROLLED per strategy ==")
+        print("   struct_gain = AUC_full - AUC_magnitude = partner STRUCTURE beyond raw |xINT| magnitude")
+        for name, r in xl["by_strategy"].items():
+            if "AUC_full" not in r:
+                print(f"  {name}: {r.get('note','')} (n={r.get('n')})")
+                continue
+            print(f"  {name}  n={r['n']} borrowed={r['n_borrowed']}  "
+                  f"AUC_mag={r['AUC_magnitude']}  AUC_full={r['AUC_full']}  "
+                  f"struct_gain={r['struct_gain']:+.3f}  AUC_|INT|={r.get('AUC_absINT','n/a')}")
+            for f in r["struct"]:
+                print(f"       {f:<16} drop={r[f'drop_{f}']:+.3f}")
+    xfp = models["XINT_fp_prediction"]
+    if xfp.get("status") == "ok":
+        print("\n== XINT -> FP prediction (do xINT indicators predict large |NIE|, on candidates) ==")
+        print("   AUC_full = orth+gap+xINT ; gain_full = over orth alone ; drop_f = marginal in full model")
+        for name, r in xfp["by_strategy"].items():
+            if r.get("status") != "ok":
+                print(f"  {name}: {r.get('status')}")
+                continue
+            c = r["coef"]
+            g = lambda k: c[k]["est"] if k in c else float("nan")
+            print(f"  {name}  n={r['n']} FP={r['n_fp']}  AUC_orth={g('AUC_orth'):.3f}  "
+                  f"AUC_full={g('AUC_full'):.3f}  gain_full={g('gain_full'):+.3f}")
+            for f in r.get("feats", []):
+                dk = f"drop_{f}"
+                if dk in c:
+                    print(f"       {f:<16} AUC_alone={g('AUC_'+f):.3f}  drop={g(dk):+.3f} {_sig(c[dk])}")
     _print_coef("MED  orth_base -> INT -> |NIE|  (mediation)", models["MED_orth_base_to_INT_to_NIE"])
     _print_coef("P5  STR push mediation  (INT ~ push_along_target) [downstream]", models["P5_STR_push"])
     _print_coef("P5  Gaussian push mediation  (INT ~ push_orth_base) [downstream]", models["P5_Gaussian_push"])
