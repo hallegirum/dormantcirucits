@@ -1,0 +1,37 @@
+          strategy            model     AUC          95% CI      n
+-----------------------------------------------------------------
+ STR swap (within)             orth   0.622  [0.538, 0.699]    936
+  STR swap (cross)             orth   0.816  [0.786, 0.840]   4878
+ STR push (within)             orth   0.877  [0.852, 0.903]   2808
+  STR push (cross)             orth   0.879  [0.857, 0.898]   4878
+     Gaussian push             orth   0.938  [0.896, 0.974]   2808
+ STR swap (within)             curv   0.867  [0.808, 0.918]    936
+  STR swap (cross)             curv   0.897  [0.874, 0.914]   4878
+ STR push (within)             curv   0.736  [0.675, 0.808]   2808
+  STR push (cross)             curv   0.594  [0.502, 0.678]   4878
+     Gaussian push             curv   0.859  [0.779, 0.938]   2808
+ STR swap (within)           ripple   0.796  [0.768, 0.854]    936
+  STR swap (cross)           ripple   0.841  [0.814, 0.871]   4878
+ STR push (within)           ripple   0.825  [0.782, 0.868]   2808
+  STR push (cross)           ripple   0.833  [0.808, 0.854]   4878
+     Gaussian push           ripple   0.827  [0.791, 0.859]   2808
+ STR swap (within)        orth+curv   0.867  [0.808, 0.919]    936
+  STR swap (cross)        orth+curv   0.931  [0.909, 0.946]   4878
+ STR push (within)        orth+curv   0.841  [0.809, 0.891]   2808
+  STR push (cross)        orth+curv   0.810  [0.777, 0.886]   4878
+     Gaussian push        orth+curv   0.955  [0.910, 0.994]   2808
+ STR swap (within)      ripple+curv   0.902  [0.886, 0.934]    936
+  STR swap (cross)      ripple+curv   0.926  [0.914, 0.939]   4878
+ STR push (within)      ripple+curv   0.840  [0.796, 0.882]   2808
+  STR push (cross)      ripple+curv   0.837  [0.810, 0.862]   4878
+     Gaussian push      ripple+curv   0.902  [0.865, 0.952]   2808
+ STR swap (within)      orth+ripple   0.844  [0.826, 0.887]    936
+  STR swap (cross)      orth+ripple   0.914  [0.900, 0.931]   4878
+ STR push (within)      orth+ripple   0.913  [0.899, 0.933]   2808
+  STR push (cross)      orth+ripple   0.916  [0.901, 0.935]   4878
+     Gaussian push      orth+ripple   0.943  [0.912, 0.975]   2808
+ STR swap (within)             full   0.907  [0.896, 0.938]    936
+  STR swap (cross)             full   0.950  [0.938, 0.961]   4878
+ STR push (within)             full   0.917  [0.903, 0.939]   2808
+  STR push (cross)             full   0.911  [0.890, 0.933]   4878
+     Gaussian push             full   0.959  [0.920, 0.995]   2808

@@ -1,0 +1,24 @@
+\begin{table}[t]
+\centering
+\caption{Ripple directional decomposition: univariate $\beta$ and AUC for all five ripple signals. In FP-vs-TP, ripple\_in is consistently \emph{negative} (TPs propagate more in-circuit ripple) while ripple\_off is insignificant --- the signal is one-sided. In FP-vs-TN, both are positive (disruption magnitude). Block AUC (multivariate, all four features) shown in last column. * $=$ 95\% cluster-bootstrap CI excludes 0.}
+\label{tab:ripple-direction}
+\small
+\begin{tabular}{l rrrr r rrrr r}
+\toprule
+ & \multicolumn{5}{c}{FP vs.\ TP} & \multicolumn{5}{c}{FP vs.\ TN} \\
+\cmidrule(lr){2-6} \cmidrule(lr){7-11}
+ & in & off & frac & xint & \scriptsize{block} & in & off & frac & xint & \scriptsize{block} \\
+\midrule
+\textbf{swap (within)} & $-1.00$* & $-0.15$ & $-1.18$* & $-1.50$* &  & $+0.55$* & $+0.84$* & $-0.53$* & $+0.58$* &  \\
+ & \scriptsize{0.758} & \scriptsize{0.545} & \scriptsize{0.702} & \scriptsize{0.840} & \scriptsize{0.886} & \scriptsize{0.536} & \scriptsize{0.690} & \scriptsize{0.679} & \scriptsize{0.533} & \scriptsize{0.796} \\[2pt]
+\textbf{swap (cross)} & $-0.53$* & $+0.26$* & $-0.21$* & $-0.47$* &  & $+1.44$* & $+1.67$* & $-0.15$* & $+1.67$* &  \\
+ & \scriptsize{0.623} & \scriptsize{0.570} & \scriptsize{0.548} & \scriptsize{0.616} & \scriptsize{0.759} & \scriptsize{0.686} & \scriptsize{0.722} & \scriptsize{0.556} & \scriptsize{0.686} & \scriptsize{0.841} \\[2pt]
+\textbf{STR push (within)} & $-0.43$* & $+0.07$ & $+0.12$ & $-0.47$* &  & $+0.27$* & $+0.88$* & $-0.58$* & $+0.12$ &  \\
+ & \scriptsize{0.546} & \scriptsize{0.538} & \scriptsize{0.540} & \scriptsize{0.533} & \scriptsize{0.712} & \scriptsize{0.532} & \scriptsize{0.665} & \scriptsize{0.618} & \scriptsize{0.527} & \scriptsize{0.825} \\[2pt]
+\textbf{STR push (cross)} & $-0.37$* & $+0.13$ & $+0.05$ & $-0.33$* &  & $+0.49$* & $+0.73$* & $-0.40$* & $+0.26$* &  \\
+ & \scriptsize{0.541} & \scriptsize{0.577} & \scriptsize{0.530} & \scriptsize{0.507} & \scriptsize{0.683} & \scriptsize{0.569} & \scriptsize{0.635} & \scriptsize{0.567} & \scriptsize{0.550} & \scriptsize{0.833} \\[2pt]
+\textbf{Gaussian push} & $-1.27$* & $+0.33$ & $-0.74$* & $-1.33$* &  & $-0.35$* & $+0.71$* & $-1.17$* & $-0.45$* &  \\
+ & \scriptsize{0.708} & \scriptsize{0.561} & \scriptsize{0.663} & \scriptsize{0.679} & \scriptsize{0.801} & \scriptsize{0.633} & \scriptsize{0.589} & \scriptsize{0.791} & \scriptsize{0.623} & \scriptsize{0.827} \\[2pt]
+\bottomrule
+\end{tabular}
+\end{table}

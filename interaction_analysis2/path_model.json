@@ -1,0 +1,867 @@
+{
+  "audit": {
+    "cases_0+1|seed0": {
+      "Gaussian/self": 60,
+      "Gaussian/MLP(Layer-0,mlp_activation,Token-last_token)": 60,
+      "STR/input": 80,
+      "STR/MLP(Layer-0,mlp_activation,Token-last_token)": 60
+    },
+    "cases_0+1|seed1": {
+      "Gaussian/self": 60,
+      "Gaussian/MLP(Layer-0,mlp_activation,Token-last_token)": 60,
+      "STR/input": 80,
+      "STR/MLP(Layer-0,mlp_activation,Token-last_token)": 60
+    },
+    "cases_0+1|seed2": {
+      "Gaussian/self": 60,
+      "Gaussian/MLP(Layer-0,mlp_activation,Token-last_token)": 60,
+      "STR/input": 80,
+      "STR/MLP(Layer-0,mlp_activation,Token-last_token)": 60
+    },
+    "cases_0+1+2|seed0": {
+      "Gaussian/self": 135,
+      "Gaussian/MLP(Layer-0,mlp_activation,Token-last_token)": 135,
+      "STR/input": 315,
+      "STR/MLP(Layer-0,mlp_activation,Token-last_token)": 270
+    },
+    "cases_0+1+2|seed1": {
+      "Gaussian/self": 135,
+      "Gaussian/MLP(Layer-0,mlp_activation,Token-last_token)": 135,
+      "STR/input": 315,
+      "STR/MLP(Layer-0,mlp_activation,Token-last_token)": 270
+    },
+    "cases_0+1+2|seed2": {
+      "Gaussian/self": 135,
+      "Gaussian/MLP(Layer-0,mlp_activation,Token-last_token)": 135,
+      "STR/input": 315,
+      "STR/MLP(Layer-0,mlp_activation,Token-last_token)": 270
+    },
+    "cases_0+1+2+3|seed0": {
+      "Gaussian/self": 180,
+      "Gaussian/MLP(Layer-0,mlp_activation,Token-last_token)": 180,
+      "STR/input": 600,
+      "STR/MLP(Layer-0,mlp_activation,Token-last_token)": 540
+    },
+    "cases_0+1+2+3|seed1": {
+      "Gaussian/self": 180,
+      "Gaussian/MLP(Layer-0,mlp_activation,Token-last_token)": 180,
+      "STR/input": 600,
+      "STR/MLP(Layer-0,mlp_activation,Token-last_token)": 540
+    },
+    "cases_0+1+2+3|seed2": {
+      "Gaussian/self": 180,
+      "Gaussian/MLP(Layer-0,mlp_activation,Token-last_token)": 180,
+      "STR/input": 600,
+      "STR/MLP(Layer-0,mlp_activation,Token-last_token)": 540
+    },
+    "cases_0+1+3|seed0": {
+      "Gaussian/self": 135,
+      "Gaussian/MLP(Layer-0,mlp_activation,Token-last_token)": 135,
+      "STR/input": 315,
+      "STR/MLP(Layer-0,mlp_activation,Token-last_token)": 270
+    },
+    "cases_0+1+3|seed1": {
+      "Gaussian/self": 135,
+      "Gaussian/MLP(Layer-0,mlp_activation,Token-last_token)": 135,
+      "STR/input": 315,
+      "STR/MLP(Layer-0,mlp_activation,Token-last_token)": 270
+    },
+    "cases_0+1+3|seed2": {
+      "Gaussian/self": 135,
+      "Gaussian/MLP(Layer-0,mlp_activation,Token-last_token)": 135,
+      "STR/input": 315,
+      "STR/MLP(Layer-0,mlp_activation,Token-last_token)": 270
+    },
+    "cases_0+2|seed0": {
+      "Gaussian/self": 90,
+      "Gaussian/MLP(Layer-0,mlp_activation,Token-last_token)": 90,
+      "STR/input": 120,
+      "STR/MLP(Layer-0,mlp_activation,Token-last_token)": 90
+    },
+    "cases_0+2|seed1": {
+      "Gaussian/self": 90,
+      "Gaussian/MLP(Layer-0,mlp_activation,Token-last_token)": 90,
+      "STR/input": 120,
+      "STR/MLP(Layer-0,mlp_activation,Token-last_token)": 90
+    },
+    "cases_0+2|seed2": {
+      "Gaussian/self": 90,
+      "Gaussian/MLP(Layer-0,mlp_activation,Token-last_token)": 90,
+      "STR/input": 120,
+      "STR/MLP(Layer-0,mlp_activation,Token-last_token)": 90
+    },
+    "cases_0+2+3|seed0": {
+      "Gaussian/self": 135,
+      "Gaussian/MLP(Layer-0,mlp_activation,Token-last_token)": 135,
+      "STR/input": 315,
+      "STR/MLP(Layer-0,mlp_activation,Token-last_token)": 270
+    },
+    "cases_0+2+3|seed1": {
+      "Gaussian/self": 135,
+      "Gaussian/MLP(Layer-0,mlp_activation,Token-last_token)": 135,
+      "STR/input": 315,
+      "STR/MLP(Layer-0,mlp_activation,Token-last_token)": 270
+    },
+    "cases_0+2+3|seed2": {
+      "Gaussian/self": 135,
+      "Gaussian/MLP(Layer-0,mlp_activation,Token-last_token)": 135,
+      "STR/input": 315,
+      "STR/MLP(Layer-0,mlp_activation,Token-last_token)": 270
+    },
+    "cases_0+3|seed0": {
+      "Gaussian/self": 90,
+      "Gaussian/MLP(Layer-0,mlp_activation,Token-last_token)": 90,
+      "STR/input": 120,
+      "STR/MLP(Layer-0,mlp_activation,Token-last_token)": 90
+    },
+    "cases_0+3|seed1": {
+      "Gaussian/self": 90,
+      "Gaussian/MLP(Layer-0,mlp_activation,Token-last_token)": 90,
+      "STR/input": 120,
+      "STR/MLP(Layer-0,mlp_activation,Token-last_token)": 90
+    },
+    "cases_0+3|seed2": {
+      "Gaussian/self": 90,
+      "Gaussian/MLP(Layer-0,mlp_activation,Token-last_token)": 90,
+      "STR/input": 120,
+      "STR/MLP(Layer-0,mlp_activation,Token-last_token)": 90
+    },
+    "cases_1+2|seed0": {
+      "Gaussian/self": 90,
+      "Gaussian/MLP(Layer-0,mlp_activation,Token-last_token)": 90,
+      "STR/input": 120,
+      "STR/MLP(Layer-0,mlp_activation,Token-last_token)": 90
+    },
+    "cases_1+2|seed1": {
+      "Gaussian/self": 90,
+      "Gaussian/MLP(Layer-0,mlp_activation,Token-last_token)": 90,
+      "STR/input": 120,
+      "STR/MLP(Layer-0,mlp_activation,Token-last_token)": 90
+    },
+    "cases_1+2|seed2": {
+      "Gaussian/self": 90,
+      "Gaussian/MLP(Layer-0,mlp_activation,Token-last_token)": 90,
+      "STR/input": 120,
+      "STR/MLP(Layer-0,mlp_activation,Token-last_token)": 90
+    },
+    "cases_1+2+3|seed0": {
+      "Gaussian/self": 135,
+      "Gaussian/MLP(Layer-0,mlp_activation,Token-last_token)": 135,
+      "STR/input": 315,
+      "STR/MLP(Layer-0,mlp_activation,Token-last_token)": 270
+    },
+    "cases_1+2+3|seed1": {
+      "Gaussian/self": 135,
+      "Gaussian/MLP(Layer-0,mlp_activation,Token-last_token)": 135,
+      "STR/input": 315,
+      "STR/MLP(Layer-0,mlp_activation,Token-last_token)": 270
+    },
+    "cases_1+2+3|seed2": {
+      "Gaussian/self": 135,
+      "Gaussian/MLP(Layer-0,mlp_activation,Token-last_token)": 135,
+      "STR/input": 315,
+      "STR/MLP(Layer-0,mlp_activation,Token-last_token)": 270
+    },
+    "cases_1+3|seed0": {
+      "Gaussian/self": 90,
+      "Gaussian/MLP(Layer-0,mlp_activation,Token-last_token)": 90,
+      "STR/input": 120,
+      "STR/MLP(Layer-0,mlp_activation,Token-last_token)": 90
+    },
+    "cases_1+3|seed1": {
+      "Gaussian/self": 90,
+      "Gaussian/MLP(Layer-0,mlp_activation,Token-last_token)": 90,
+      "STR/input": 120,
+      "STR/MLP(Layer-0,mlp_activation,Token-last_token)": 90
+    },
+    "cases_1+3|seed2": {
+      "Gaussian/self": 90,
+      "Gaussian/MLP(Layer-0,mlp_activation,Token-last_token)": 90,
+      "STR/input": 120,
+      "STR/MLP(Layer-0,mlp_activation,Token-last_token)": 90
+    },
+    "cases_2+3|seed0": {
+      "Gaussian/self": 90,
+      "Gaussian/MLP(Layer-0,mlp_activation,Token-last_token)": 90,
+      "STR/input": 120,
+      "STR/MLP(Layer-0,mlp_activation,Token-last_token)": 90
+    },
+    "cases_2+3|seed1": {
+      "Gaussian/self": 90,
+      "Gaussian/MLP(Layer-0,mlp_activation,Token-last_token)": 90,
+      "STR/input": 120,
+      "STR/MLP(Layer-0,mlp_activation,Token-last_token)": 90
+    },
+    "cases_2+3|seed2": {
+      "Gaussian/self": 90,
+      "Gaussian/MLP(Layer-0,mlp_activation,Token-last_token)": 90,
+      "STR/input": 120,
+      "STR/MLP(Layer-0,mlp_activation,Token-last_token)": 90
+    }
+  },
+  "M1_geometry_to_INT": {
+    "status": "ok",
+    "n": 6390,
+    "r2": 0.019,
+    "coef": {
+      "orth_base": {
+        "est": -0.1383,
+        "lo": -0.1847,
+        "hi": -0.0808
+      },
+      "along_target": {
+        "est": 0.0033,
+        "lo": -0.056,
+        "hi": 0.0417
+      }
+    },
+    "predict": "dormancy => orth_base > 0 dominant, along_target ~ 0"
+  },
+  "M2_STR_swap": {
+    "status": "ok",
+    "n": 5814,
+    "r2": 0.359,
+    "coef": {
+      "INT": {
+        "est": 0.2219,
+        "lo": 0.1154,
+        "hi": 0.2993
+      },
+      "orth_base": {
+        "est": 0.5931,
+        "lo": 0.5439,
+        "hi": 0.6518
+      },
+      "in_target": {
+        "est": 0.1355,
+        "lo": 0.019,
+        "hi": 0.285
+      },
+      "cross_task": {
+        "est": -0.0482,
+        "lo": -0.1117,
+        "hi": 0.0021
+      }
+    },
+    "predict": "dormancy => orth_base + INT drive FPs; cross_task tests if cross-task is worse than within-task"
+  },
+  "M2_STR_push_MLP": {
+    "status": "ok",
+    "label": "STR push @ MLP",
+    "n": 3582,
+    "r2": 0.447,
+    "coef": {
+      "orth_base": {
+        "est": 0.6496,
+        "lo": 0.543,
+        "hi": 0.72
+      },
+      "INT": {
+        "est": -0.0582,
+        "lo": -0.2054,
+        "hi": 0.0732
+      },
+      "in_target": {
+        "est": 0.169,
+        "lo": -0.0338,
+        "hi": 0.42
+      }
+    },
+    "predict": "off-manifold (orth_base) + INT drive the false attribution"
+  },
+  "M2_Gaussian_push": {
+    "status": "ok",
+    "label": "Gaussian push",
+    "n": 2052,
+    "r2": 0.73,
+    "coef": {
+      "orth_base": {
+        "est": 0.7667,
+        "lo": 0.6189,
+        "hi": 0.8591
+      },
+      "INT": {
+        "est": 0.1609,
+        "lo": 0.06,
+        "hi": 0.3228
+      }
+    },
+    "predict": "off-manifold (orth_base) + INT drive the false attribution"
+  },
+  "M2_Gaussian_self": {
+    "status": "too few FP rows (0)",
+    "label": "Gaussian self-push",
+    "n": 0
+  },
+  "M2b_STR_swap": {
+    "status": "ok",
+    "label": "STR swap borrowed",
+    "n": 1029,
+    "r2": 0.603,
+    "coef": {
+      "orth_base": {
+        "est": 0.6938,
+        "lo": 0.6024,
+        "hi": 0.7703
+      },
+      "INT": {
+        "est": 0.2221,
+        "lo": 0.1363,
+        "hi": 0.314
+      },
+      "along_target": {
+        "est": 0.1871,
+        "lo": 0.062,
+        "hi": 0.3452
+      }
+    },
+    "predict": "borrowing => along_target > 0 drives borrowed FPs (when a target exists)"
+  },
+  "M2b_STR_push": {
+    "status": "ok",
+    "label": "STR push borrowed",
+    "n": 360,
+    "r2": 0.561,
+    "coef": {
+      "orth_base": {
+        "est": 0.1974,
+        "lo": -0.0206,
+        "hi": 0.4109
+      },
+      "INT": {
+        "est": -0.072,
+        "lo": -0.2816,
+        "hi": 0.1015
+      },
+      "along_target": {
+        "est": 0.598,
+        "lo": 0.3214,
+        "hi": 0.746
+      }
+    },
+    "predict": "borrowing => along_target > 0 drives borrowed FPs (when a target exists)"
+  },
+  "M2b_Gaussian_push": {
+    "status": "ok",
+    "label": "Gaussian push borrowed",
+    "n": 279,
+    "r2": 0.754,
+    "coef": {
+      "orth_base": {
+        "est": 0.8313,
+        "lo": 0.7249,
+        "hi": 0.9078
+      },
+      "INT": {
+        "est": 0.0606,
+        "lo": -0.0239,
+        "hi": 0.1975
+      }
+    },
+    "predict": "borrowing => along_target > 0 drives borrowed FPs (when a target exists)"
+  },
+  "M3_separation": {
+    "status": "ok",
+    "n": 5814,
+    "n_borrowed": 1029,
+    "n_geometric": 4785,
+    "r2": 0.361,
+    "coef": {
+      "orth_base": {
+        "est": 0.5912,
+        "lo": 0.543,
+        "hi": 0.6441
+      },
+      "INT": {
+        "est": 0.2219,
+        "lo": 0.1147,
+        "hi": 0.299
+      },
+      "is_borrowed": {
+        "est": 0.1522,
+        "lo": 0.0541,
+        "hi": 0.2671
+      }
+    },
+    "predict": "separation => INT > 0 means INT predicts which non-circuit components get falsely attributed; is_borrowed > 0 means task-affiliated components are worse"
+  },
+  "M3L_swap_within": {
+    "status": "ok",
+    "n": 936,
+    "n_fp": 155,
+    "n_harmless": 781,
+    "q_threshold": 0.5,
+    "label": "STR swap WITHIN-task (realistic)",
+    "feats": [
+      "INT",
+      "along_nonbase_max"
+    ],
+    "coef": {
+      "AUC_orth": {
+        "est": 0.6087,
+        "lo": 0.5219,
+        "hi": 0.6773
+      },
+      "AUC_full": {
+        "est": 0.8089,
+        "lo": 0.7804,
+        "hi": 0.8398
+      },
+      "gain_full": {
+        "est": 0.2002,
+        "lo": 0.1321,
+        "hi": 0.2981
+      },
+      "AUC_INT": {
+        "est": 0.4965,
+        "lo": 0.4549,
+        "hi": 0.6103
+      },
+      "gain_INT": {
+        "est": 0.0442,
+        "lo": 0.0002,
+        "hi": 0.1428
+      },
+      "AUC_INT_hiorth": {
+        "est": 0.5319,
+        "lo": 0.4783,
+        "hi": 0.5996
+      },
+      "beta_INT": {
+        "est": -0.14,
+        "lo": -0.4605,
+        "hi": 0.2166
+      },
+      "AUC_along_nonbase_max": {
+        "est": 0.8094,
+        "lo": 0.7782,
+        "hi": 0.8371
+      },
+      "gain_along_nonbase_max": {
+        "est": 0.198,
+        "lo": 0.1295,
+        "hi": 0.2995
+      },
+      "AUC_along_nonbase_max_hiorth": {
+        "est": 0.7842,
+        "lo": 0.7155,
+        "hi": 0.8402
+      },
+      "beta_along_nonbase_max": {
+        "est": 0.8268,
+        "lo": 0.6679,
+        "hi": 1.0765
+      }
+    },
+    "predict": "separation => gain_<f>>0 and AUC_<f>_hiorth>0.5: that feature distinguishes pernicious (high-orth -> FP) from harmless (high-orth -> no FP) beyond divergence"
+  },
+  "M3L_swap_cross": {
+    "status": "ok",
+    "n": 4878,
+    "n_fp": 1581,
+    "n_harmless": 3297,
+    "q_threshold": 0.5,
+    "label": "STR swap CROSS-task (base case)",
+    "feats": [
+      "INT",
+      "along_target",
+      "along_nonbase_max"
+    ],
+    "coef": {
+      "AUC_orth": {
+        "est": 0.8132,
+        "lo": 0.7823,
+        "hi": 0.8418
+      },
+      "AUC_full": {
+        "est": 0.8762,
+        "lo": 0.8596,
+        "hi": 0.8962
+      },
+      "gain_full": {
+        "est": 0.063,
+        "lo": 0.0463,
+        "hi": 0.0872
+      },
+      "AUC_INT": {
+        "est": 0.5517,
+        "lo": 0.4649,
+        "hi": 0.6074
+      },
+      "gain_INT": {
+        "est": 0.0079,
+        "lo": -0.004,
+        "hi": 0.026
+      },
+      "AUC_INT_hiorth": {
+        "est": 0.5564,
+        "lo": 0.4676,
+        "hi": 0.6163
+      },
+      "beta_INT": {
+        "est": 0.3613,
+        "lo": 0.1533,
+        "hi": 0.578
+      },
+      "AUC_along_target": {
+        "est": 0.8662,
+        "lo": 0.8419,
+        "hi": 0.8845
+      },
+      "gain_along_target": {
+        "est": 0.0676,
+        "lo": 0.0506,
+        "hi": 0.0888
+      },
+      "AUC_along_target_hiorth": {
+        "est": 0.7874,
+        "lo": 0.7325,
+        "hi": 0.82
+      },
+      "beta_along_target": {
+        "est": -0.4781,
+        "lo": -5.6908,
+        "hi": 0.641
+      },
+      "AUC_along_nonbase_max": {
+        "est": 0.8692,
+        "lo": 0.8467,
+        "hi": 0.8849
+      },
+      "gain_along_nonbase_max": {
+        "est": 0.0682,
+        "lo": 0.0513,
+        "hi": 0.0893
+      },
+      "AUC_along_nonbase_max_hiorth": {
+        "est": 0.7918,
+        "lo": 0.7406,
+        "hi": 0.8206
+      },
+      "beta_along_nonbase_max": {
+        "est": 1.5889,
+        "lo": 0.4794,
+        "hi": 6.9196
+      }
+    },
+    "predict": "separation => gain_<f>>0 and AUC_<f>_hiorth>0.5: that feature distinguishes pernicious (high-orth -> FP) from harmless (high-orth -> no FP) beyond divergence"
+  },
+  "M3L_STR_push": {
+    "status": "ok",
+    "n": 3582,
+    "n_fp": 355,
+    "n_harmless": 3227,
+    "q_threshold": 0.5,
+    "label": "STR push",
+    "feats": [
+      "INT",
+      "along_target",
+      "along_nonbase_max"
+    ],
+    "coef": {
+      "AUC_orth": {
+        "est": 0.8761,
+        "lo": 0.8656,
+        "hi": 0.8971
+      },
+      "AUC_full": {
+        "est": 0.9228,
+        "lo": 0.9032,
+        "hi": 0.9622
+      },
+      "gain_full": {
+        "est": 0.0467,
+        "lo": 0.03,
+        "hi": 0.0714
+      },
+      "AUC_INT": {
+        "est": 0.5164,
+        "lo": 0.4629,
+        "hi": 0.613
+      },
+      "gain_INT": {
+        "est": -0.0214,
+        "lo": -0.0389,
+        "hi": 0.0072
+      },
+      "AUC_INT_hiorth": {
+        "est": 0.5548,
+        "lo": 0.4916,
+        "hi": 0.6289
+      },
+      "beta_INT": {
+        "est": 0.0808,
+        "lo": -0.1501,
+        "hi": 0.2387
+      },
+      "AUC_along_target": {
+        "est": 0.8948,
+        "lo": 0.8762,
+        "hi": 0.9278
+      },
+      "gain_along_target": {
+        "est": 0.0404,
+        "lo": 0.0244,
+        "hi": 0.0623
+      },
+      "AUC_along_target_hiorth": {
+        "est": 0.8179,
+        "lo": 0.7818,
+        "hi": 0.8629
+      },
+      "beta_along_target": {
+        "est": -0.3552,
+        "lo": -1.2157,
+        "hi": 0.0366
+      },
+      "AUC_along_nonbase_max": {
+        "est": 0.9045,
+        "lo": 0.8861,
+        "hi": 0.9403
+      },
+      "gain_along_nonbase_max": {
+        "est": 0.0469,
+        "lo": 0.0308,
+        "hi": 0.0702
+      },
+      "AUC_along_nonbase_max_hiorth": {
+        "est": 0.8346,
+        "lo": 0.7943,
+        "hi": 0.8833
+      },
+      "beta_along_nonbase_max": {
+        "est": 1.4131,
+        "lo": 0.9489,
+        "hi": 2.2283
+      }
+    },
+    "predict": "separation => gain_<f>>0 and AUC_<f>_hiorth>0.5: that feature distinguishes pernicious (high-orth -> FP) from harmless (high-orth -> no FP) beyond divergence"
+  },
+  "M3L_Gaussian_push": {
+    "status": "ok",
+    "n": 2052,
+    "n_fp": 103,
+    "n_harmless": 1949,
+    "q_threshold": 0.5,
+    "label": "Gaussian push",
+    "feats": [
+      "INT",
+      "along_nonbase_max"
+    ],
+    "coef": {
+      "AUC_orth": {
+        "est": 0.9327,
+        "lo": 0.8599,
+        "hi": 0.9751
+      },
+      "AUC_full": {
+        "est": 0.9751,
+        "lo": 0.9569,
+        "hi": 0.9885
+      },
+      "gain_full": {
+        "est": 0.0424,
+        "lo": 0.0088,
+        "hi": 0.1031
+      },
+      "AUC_INT": {
+        "est": 0.7915,
+        "lo": 0.576,
+        "hi": 0.9494
+      },
+      "gain_INT": {
+        "est": 0.0167,
+        "lo": -0.0184,
+        "hi": 0.0657
+      },
+      "AUC_INT_hiorth": {
+        "est": 0.7829,
+        "lo": 0.5923,
+        "hi": 0.9414
+      },
+      "beta_INT": {
+        "est": 0.3075,
+        "lo": -0.0538,
+        "hi": 0.8087
+      },
+      "AUC_along_nonbase_max": {
+        "est": 0.937,
+        "lo": 0.9104,
+        "hi": 0.9627
+      },
+      "gain_along_nonbase_max": {
+        "est": 0.0348,
+        "lo": 0.0039,
+        "hi": 0.0911
+      },
+      "AUC_along_nonbase_max_hiorth": {
+        "est": 0.8713,
+        "lo": 0.824,
+        "hi": 0.9315
+      },
+      "beta_along_nonbase_max": {
+        "est": 0.9956,
+        "lo": 0.5476,
+        "hi": 1.5079
+      }
+    },
+    "predict": "separation => gain_<f>>0 and AUC_<f>_hiorth>0.5: that feature distinguishes pernicious (high-orth -> FP) from harmless (high-orth -> no FP) beyond divergence"
+  },
+  "MED_orth_base_to_INT_to_NIE": {
+    "status": "ok",
+    "n": 5814,
+    "coef": {
+      "a(orth->INT)": {
+        "est": -0.1799,
+        "lo": -0.2321,
+        "hi": -0.1051
+      },
+      "b(INT->NIE)": {
+        "est": 0.2213,
+        "lo": 0.1149,
+        "hi": 0.2993
+      },
+      "c_total(orth->NIE)": {
+        "est": 0.5567,
+        "lo": 0.5024,
+        "hi": 0.6172
+      },
+      "c'_direct": {
+        "est": 0.5965,
+        "lo": 0.5488,
+        "hi": 0.6503
+      },
+      "indirect(a*b)": {
+        "est": -0.0398,
+        "lo": -0.0593,
+        "hi": -0.017
+      },
+      "prop_mediated": {
+        "est": -0.0715,
+        "lo": -0.1129,
+        "hi": -0.029
+      }
+    },
+    "predict": "dormancy => indirect (a*b) large, prop_mediated high (INT carries orth_base)"
+  },
+  "P5_STR_push": {
+    "status": "ok",
+    "n": 4230,
+    "strategy": "STR",
+    "coef": {
+      "push_along_target": {
+        "est": 0.0971,
+        "lo": -0.0795,
+        "hi": 0.2571
+      },
+      "push_orth_base": {
+        "est": 0.0167,
+        "lo": -0.22,
+        "hi": 0.1915
+      }
+    },
+    "predict": "mediation => downstream INT scales with push_along_target (STR) / push_orth_base (Gaussian)"
+  },
+  "P5_Gaussian_push": {
+    "status": "ok",
+    "n": 2430,
+    "strategy": "Gaussian",
+    "coef": {
+      "push_orth_base": {
+        "est": 0.2193,
+        "lo": 0.1725,
+        "hi": 0.2598
+      }
+    },
+    "predict": "mediation => downstream INT scales with push_along_target (STR) / push_orth_base (Gaussian)"
+  },
+  "DOSE_STR_swap": {
+    "status": "ok",
+    "label": "STR_swap",
+    "by_alpha": {
+      "a0.3": {
+        "n": 2130,
+        "mean_INT": -0.0714,
+        "mean_absNIE_FP": 0.402,
+        "m1_orth_base_beta": -0.0167
+      },
+      "a1": {
+        "n": 2130,
+        "mean_INT": -0.3819,
+        "mean_absNIE_FP": 2.3883,
+        "m1_orth_base_beta": -0.1085
+      },
+      "a3": {
+        "n": 2130,
+        "mean_INT": -0.6391,
+        "mean_absNIE_FP": 7.4808,
+        "m1_orth_base_beta": -0.1271
+      }
+    },
+    "cross_alpha_regression": {
+      "r2": 0.335,
+      "n": 4878,
+      "coef": {
+        "alpha": {
+          "est": 0.2451,
+          "lo": 0.1421,
+          "hi": 0.3264
+        },
+        "orth_base": {
+          "est": 0.3966,
+          "lo": 0.2886,
+          "hi": 0.5068
+        }
+      }
+    },
+    "predict": "dormancy => mean_INT, |NIE|_FP and orth_base slope rise with alpha; cross_alpha beta_alpha = dose-response strength"
+  },
+  "DOSE_Gaussian_push": {
+    "status": "ok",
+    "label": "Gaussian_push",
+    "by_alpha": {
+      "a0.3": {
+        "n": 810,
+        "mean_INT": 0.047,
+        "mean_absNIE_FP": 0.0615,
+        "m1_orth_base_beta": 0.6457
+      },
+      "a1": {
+        "n": 810,
+        "mean_INT": 0.2391,
+        "mean_absNIE_FP": 0.2541,
+        "m1_orth_base_beta": 0.6284
+      },
+      "a3": {
+        "n": 810,
+        "mean_INT": 0.704,
+        "mean_absNIE_FP": 0.4313,
+        "m1_orth_base_beta": 0.7861
+      }
+    },
+    "cross_alpha_regression": {
+      "r2": 0.718,
+      "n": 2052,
+      "coef": {
+        "alpha": {
+          "est": 0.0963,
+          "lo": 0.0712,
+          "hi": 0.1229
+        },
+        "orth_base": {
+          "est": 0.8163,
+          "lo": 0.728,
+          "hi": 0.8859
+        }
+      }
+    },
+    "predict": "dormancy => mean_INT, |NIE|_FP and orth_base slope rise with alpha; cross_alpha beta_alpha = dose-response strength"
+  },
+  "NULL_STR_vs_Gaussian_push": {
+    "status": "ok",
+    "n_paired": 3438,
+    "mean_STR_minus_Gauss": -0.0917,
+    "frac_positive": 0.296,
+    "predict": "task-structured recruits more => STR-push INT > Gaussian-push INT"
+  }
+}

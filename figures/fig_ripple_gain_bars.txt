@@ -1,0 +1,32 @@
+            strategy      decomp                     model     AUC            95% CI          note
+----------------------------------------------------------------------------------------------------
+       swap (within)    FP vs TN    base (curv+orth+along)   0.879  [0.829, 0.929]       dwnstrm
+       swap (within)    FP vs TN             + best ripple   0.889  [0.864, 0.933]           off
+       swap (within)    FP vs TN                 + in_prop   0.879  [0.829, 0.930]              
+        swap (cross)    FP vs TN    base (curv+orth+along)   0.937  [0.921, 0.952]       dwnstrm
+        swap (cross)    FP vs TN             + best ripple   0.941  [0.928, 0.954]           off
+        swap (cross)    FP vs TN                 + in_prop   0.937  [0.921, 0.952]              
+   STR push (within)    FP vs TN    base (curv+orth+along)   0.921  [0.907, 0.946]         local
+   STR push (within)    FP vs TN             + best ripple   0.922  [0.907, 0.945]           off
+   STR push (within)    FP vs TN                 + in_prop   0.924  [0.914, 0.945]              
+    STR push (cross)    FP vs TN    base (curv+orth+along)   0.924  [0.914, 0.945]         local
+    STR push (cross)    FP vs TN             + best ripple   0.923  [0.914, 0.945]           off
+    STR push (cross)    FP vs TN                 + in_prop   0.926  [0.915, 0.949]              
+       Gaussian push    FP vs TN    base (curv+orth+along)   0.971  [0.951, 0.994]       dwnstrm
+       Gaussian push    FP vs TN             + best ripple   0.967  [0.941, 0.994]       in_prop
+       Gaussian push    FP vs TN                 + in_prop   0.967  [0.941, 0.994]              
+       swap (within)    FP vs TP    base (curv+orth+along)   0.841  [0.763, 0.944]         local
+       swap (within)    FP vs TP             + best ripple   0.940  [0.889, 0.996]          xint
+       swap (within)    FP vs TP                 + in_prop   0.896  [0.858, 0.971]              
+        swap (cross)    FP vs TP    base (curv+orth+along)   0.775  [0.722, 0.847]         local
+        swap (cross)    FP vs TP             + best ripple   0.792  [0.760, 0.850]            in
+        swap (cross)    FP vs TP                 + in_prop   0.781  [0.736, 0.853]              
+   STR push (within)    FP vs TP    base (curv+orth+along)   0.882  [0.830, 0.953]         local
+   STR push (within)    FP vs TP             + best ripple   0.876  [0.811, 0.962]            in
+   STR push (within)    FP vs TP                 + in_prop   0.861  [0.802, 0.958]              
+    STR push (cross)    FP vs TP    base (curv+orth+along)   0.888  [0.849, 0.943]         local
+    STR push (cross)    FP vs TP             + best ripple   0.853  [0.805, 0.929]           off
+    STR push (cross)    FP vs TP                 + in_prop   0.865  [0.814, 0.936]              
+       Gaussian push    FP vs TP    base (curv+orth+along)   0.837  [0.809, 0.896]         local
+       Gaussian push    FP vs TP             + best ripple   0.965  [0.940, 0.996]            in
+       Gaussian push    FP vs TP                 + in_prop   0.925  [0.873, 0.977]              

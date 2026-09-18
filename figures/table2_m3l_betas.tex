@@ -1,0 +1,89 @@
+\begin{table}[t]
+\centering
+\caption{M3L: FP vs.\ TN logistic regression (off-circuit population). FP $=$ off-circuit components with $|$NIE$|$ above per-combo median of in-circuit $|$NIE$|$; TN $=$ off-circuit below threshold. Standardised $\beta$ from base model ($\mathrm{orth}_b$, $\mathrm{along}_s$) $+$ one curvature feature at a time. * $=$ 95\% cluster-bootstrap CI excludes 0.}
+\label{tab:m3l-curv}
+\small
+
+\medskip
+\textbf{swap (within)} ($n=936$, FP$=156$, TN$=780$)
+
+\begin{tabular}{l r r r r}
+\toprule
+ & base & $+$local & $+$downstream & $+$excess \\
+\midrule
+AUC & 0.818 & 0.822 & 0.877 & 0.857 \\
+$\mathrm{orth}_b(\delta)$ & $+0.30$ & $+0.43$ & $+0.10$ & $+0.49$* \\
+$\mathrm{along}_s(\delta)$ & $+1.14$* & $+1.22$* & $+0.71$* & $+1.13$* \\
+local curvature & -- & $-0.38$* & -- & -- \\
+downstream curv. & -- & -- & $+1.44$* & -- \\
+excess curv. & -- & -- & -- & $-0.93$* \\
+\bottomrule
+\end{tabular}
+
+\medskip
+\textbf{swap (cross)} ($n=4878$, FP$=1594$, TN$=3284$)
+
+\begin{tabular}{l r r r r}
+\toprule
+ & base & $+$local & $+$downstream & $+$excess \\
+\midrule
+AUC & 0.882 & 0.889 & 0.937 & 0.910 \\
+$\mathrm{orth}_b(\delta)$ & $+1.12$* & $+1.36$* & $+1.04$* & $+1.66$* \\
+$\mathrm{along}_s(\delta)$ & $+1.51$* & $+1.66$* & $+1.51$* & $+2.05$* \\
+$\mathrm{along}_t(\delta)$ & $-0.26$ & $-0.14$ & $-0.59$ & $-0.24$ \\
+local curvature & -- & $-0.47$* & -- & -- \\
+downstream curv. & -- & -- & $+1.74$* & -- \\
+excess curv. & -- & -- & -- & $-1.04$* \\
+\bottomrule
+\end{tabular}
+
+\medskip
+\textbf{push (within)} ($n=2808$, FP$=420$, TN$=2388$)
+
+\begin{tabular}{l r r r r}
+\toprule
+ & base & $+$local & $+$downstream & $+$excess \\
+\midrule
+AUC & 0.922 & 0.921 & 0.922 & 0.921 \\
+$\mathrm{orth}_b(\delta)$ & $+0.79$* & $+0.77$* & $+0.87$* & $+0.85$* \\
+$\mathrm{along}_s(\delta)$ & $+1.57$* & $+1.36$* & $+1.42$* & $+1.78$* \\
+local curvature & -- & $+0.24$ & -- & -- \\
+downstream curv. & -- & -- & $+0.44$* & -- \\
+excess curv. & -- & -- & -- & $-0.32$ \\
+\bottomrule
+\end{tabular}
+
+\medskip
+\textbf{push (cross)} ($n=4878$, FP$=642$, TN$=4236$)
+
+\begin{tabular}{l r r r r}
+\toprule
+ & base & $+$local & $+$downstream & $+$excess \\
+\midrule
+AUC & 0.924 & 0.924 & 0.927 & 0.927 \\
+$\mathrm{orth}_b(\delta)$ & $+0.56$* & $+0.56$* & $+0.54$* & $+0.53$* \\
+$\mathrm{along}_s(\delta)$ & $+1.50$* & $+1.49$* & $+1.56$* & $+1.75$* \\
+$\mathrm{along}_t(\delta)$ & $+0.23$ & $+0.23$ & $+0.20$ & $+0.21$ \\
+local curvature & -- & $+0.01$ & -- & -- \\
+downstream curv. & -- & -- & $+0.22$ & -- \\
+excess curv. & -- & -- & -- & $-0.27$ \\
+\bottomrule
+\end{tabular}
+
+\medskip
+\textbf{Gauss. push} ($n=2808$, FP$=173$, TN$=2635$)
+
+\begin{tabular}{l r r r r}
+\toprule
+ & base & $+$local & $+$downstream & $+$excess \\
+\midrule
+AUC & 0.961 & 0.962 & 0.972 & 0.965 \\
+$\mathrm{orth}_b(\delta)$ & $+0.97$* & $+0.96$* & $+1.03$* & $+0.99$* \\
+$\mathrm{along}_s(\delta)$ & $+1.49$* & $+1.66$* & $+1.20$* & $+1.76$* \\
+local curvature & -- & $-0.30$ & -- & -- \\
+downstream curv. & -- & -- & $+0.70$* & -- \\
+excess curv. & -- & -- & -- & $-0.72$* \\
+\bottomrule
+\end{tabular}
+
+\end{table}

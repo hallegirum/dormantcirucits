@@ -1,0 +1,17 @@
+            strategy                      model     AUC          95% CI
+----------------------------------------------------------------------
+       swap (within)  base (orth + along) (base)   0.712  [0.596, 0.830]
+        swap (cross)  base (orth + along) (base)   0.675  [0.644, 0.711]
+   STR push (within)  base (orth + along) (base)   0.780  [0.746, 0.811]
+    STR push (cross)  base (orth + along) (base)   0.781  [0.756, 0.805]
+       Gaussian push  base (orth + along) (base)   0.798  [0.751, 0.826]
+       swap (within)  + best individual ripple (xint)   0.880  [0.817, 0.943]
+        swap (cross)  + best individual ripple (in)   0.767  [0.742, 0.803]
+   STR push (within)  + best individual ripple (in_prop)   0.793  [0.767, 0.830]
+    STR push (cross)  + best individual ripple (in_prop)   0.800  [0.785, 0.828]
+       Gaussian push  + best individual ripple (in_prop)   0.810  [0.784, 0.845]
+       swap (within)     + ripple block (block)   0.899  [0.855, 0.953]
+        swap (cross)     + ripple block (block)   0.759  [0.732, 0.808]
+   STR push (within)     + ripple block (block)   0.784  [0.755, 0.828]
+    STR push (cross)     + ripple block (block)   0.802  [0.790, 0.838]
+       Gaussian push     + ripple block (block)   0.814  [0.787, 0.848]

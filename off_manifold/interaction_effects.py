@@ -531,13 +531,102 @@ def _atp_gap(delta_c: torch.Tensor, grad, full_abs: float) -> dict:
 
 
 # --------------------------------------------------------------------------- #
+#  local gate-crossing: nonlinearity at c's OWN activation function
+# --------------------------------------------------------------------------- #
+def local_relu_gap(z_clean: torch.Tensor, z_patched: torch.Tensor) -> dict:
+    """Gate-crossing at c's ReLU: compare the actual ReLU output change with the
+    linear (derivative) prediction.  For ReLU, f'(z) = 1{z>0}, so the linear
+    prediction is delta_z * 1{z_clean > 0}.  The gap is nonzero ONLY at neurons
+    that cross the zero threshold under the intervention (sign change)."""
+    delta_z = z_patched - z_clean
+    f_patched = torch.relu(z_patched)
+    f_clean = torch.relu(z_clean)
+    actual = f_patched - f_clean                             # (N, D_mlp)
+    linear = delta_z * (z_clean > 0).float()                 # f'(z_clean) * delta_z
+    gap = (actual - linear).abs().mean(-1)                   # (N,) per-example
+    scale = actual.abs().mean(-1) + 1e-9
+    return {"local_relu_gap": float(gap.mean()),
+            "local_relu_gap_frac": float((gap / scale).mean()),
+            "local_relu_ncross": float(((z_clean > 0) != (z_patched > 0)).float().mean())}
+
+
+def local_gelu_gap(z_clean: torch.Tensor, z_patched: torch.Tensor) -> dict:
+    """Gate-crossing at c's GeLU. The GeLU derivative is
+    f'(x) = Phi(x) + x*phi(x) where Phi is the standard normal CDF and phi the
+    PDF.  The gap between f(z_patched) - f(z_clean) and f'(z_clean)*delta_z
+    measures curvature at c's own nonlinearity."""
+    import math as _m
+    delta_z = z_patched - z_clean
+    f_patched = torch.nn.functional.gelu(z_patched)
+    f_clean = torch.nn.functional.gelu(z_clean)
+    actual = f_patched - f_clean
+    phi = torch.exp(-0.5 * z_clean ** 2) / _m.sqrt(2 * _m.pi)
+    Phi = 0.5 * (1 + torch.erf(z_clean / _m.sqrt(2)))
+    fprime = Phi + z_clean * phi
+    linear = delta_z * fprime
+    gap = (actual - linear).abs().mean(-1)
+    scale = actual.abs().mean(-1) + 1e-9
+    return {"local_gelu_gap": float(gap.mean()),
+            "local_gelu_gap_frac": float((gap / scale).mean())}
+
+
+def local_softmax_gap(s_clean: torch.Tensor, s_patched: torch.Tensor) -> dict:
+    """Gate-crossing at c's attention softmax: actual softmax change vs the Jacobian
+    prediction J*delta_s, J = diag(p) - pp^T.  s is (N, K): ONE head's pre-softmax
+    score row at the target query position (mirrors the MLP path, which is one
+    unit's pre-activation gathered at the target position).
+
+    TransformerLens applies the causal mask BEFORE hook_attn_scores, so masked keys
+    hold -inf in both tensors and (-inf) - (-inf) = NaN; those keys carry zero
+    probability either way, so delta_s is zeroed there."""
+    s_clean = s_clean.float()
+    s_patched = s_patched.float()
+    live = torch.isfinite(s_clean) & torch.isfinite(s_patched)
+    delta_s = torch.where(live, s_patched - s_clean, torch.zeros_like(s_clean))
+    p_clean = torch.softmax(s_clean, dim=-1)
+    p_patched = torch.softmax(s_patched, dim=-1)
+    actual = p_patched - p_clean                             # (N, K)
+    linear = p_clean * delta_s - p_clean * (p_clean * delta_s).sum(-1, keepdim=True)
+    gap = (actual - linear).abs().mean(-1)                   # (N,)
+    scale = actual.abs().mean(-1) + 1e-9
+    # a row with no finite key (or a +inf/NaN score) has an undefined softmax; the model
+    # itself zeroes that pattern, so the head is inert there: drop it, report the count
+    valid = torch.isfinite(gap) & torch.isfinite(scale)
+    nvalid = int(valid.sum())
+    if nvalid == 0:
+        return {"local_softmax_gap": float("nan"), "local_softmax_gap_frac": float("nan"),
+                "local_softmax_nvalid": 0}
+    return {"local_softmax_gap": float(gap[valid].mean()),
+            "local_softmax_gap_frac": float((gap / scale)[valid].mean()),
+            "local_softmax_nvalid": nvalid}
+
+
+def _head_query_row(scores: torch.Tensor, head: int, positions: Any) -> torch.Tensor:
+    """(N, H, Q, K) attn scores -> (N, K): head `head`'s query row at each example's
+    target position (scalar or per-example)."""
+    s = scores[:, head]                                      # (N, Q, K)
+    return _gather(s, positions)                             # (N, K)
+
+
+def local_act_gap(z_clean: torch.Tensor, z_patched: torch.Tensor,
+                  act_fn: str) -> dict:
+    """Dispatch to the correct local gap function based on activation function name."""
+    if act_fn == "relu":
+        return local_relu_gap(z_clean, z_patched)
+    if act_fn in ("gelu", "gelu_new", "gelu_fast"):
+        return local_gelu_gap(z_clean, z_patched)
+    return {}
+
+
+# --------------------------------------------------------------------------- #
 #  run_layer_scans — the driver
 # --------------------------------------------------------------------------- #
 def run_layer_scans(prep: dict, components: dict, spec: CFSpec, *,
                     batch_size: int = 32, gt_labels: dict | None = None,
                     poly_mem: dict | None = None, home_tasks: dict | None = None,
                     clouds: dict | None = None, save: bool = True,
-                    compute_gap: bool = True, graddrop_k: int = 0) -> list[dict]:
+                    compute_gap: bool = True, graddrop_k: int = 0,
+                    compute_local_gap: bool = False) -> list[dict]:
     """Per-component (NIE, PIE, INT) + PER-TASK geometry + directed labels for one
     (base_task -> target_task, strategy, alpha) scan over a grid subset.
 
@@ -569,12 +658,33 @@ def run_layer_scans(prep: dict, components: dict, spec: CFSpec, *,
     pos = spec.positions
     tasks = sorted(clouds.keys()) if clouds else None
 
-    base_scores, base_slabs = pipeline.forward_cache(bases, all_units, batch_size=batch_size)
+    # pre-nonlinearity hooks for local_gap_frac: one mlp.hook_pre per layer with an
+    # MLP unit, one attn.hook_attn_scores per layer with an attention unit.
+    pre_hooks: list[str] = []
+    act_fn_name: str | None = None
+    if compute_local_gap:
+        act_fn_name = str(getattr(pipeline.model.cfg, "act_fn", "relu"))
+        seen_layers_mlp: set[int] = set()
+        seen_layers_attn: set[int] = set()
+        for u in all_units:
+            ct = str(u.component_type)
+            ly = int(u.layer)
+            if "mlp" in ct and ly not in seen_layers_mlp:
+                seen_layers_mlp.add(ly)
+                pre_hooks.append(f"blocks.{ly}.mlp.hook_pre")
+            if ("attn" in ct or "head" in ct) and ly not in seen_layers_attn:
+                seen_layers_attn.add(ly)
+                pre_hooks.append(f"blocks.{ly}.attn.hook_attn_scores")
+
+    extra = pre_hooks if pre_hooks else None
+    base_scores, base_slabs = pipeline.forward_cache(bases, all_units, batch_size=batch_size,
+                                                     extra_hooks=extra)
     Ya = readout(base_scores)
     push_geo = None  # {task: (along, orth)} of the push's OWN divergence at X
 
     if spec.kind == "swap":
-        src_scores, src_slabs = pipeline.forward_cache(sources, all_units, batch_size=batch_size)
+        src_scores, src_slabs = pipeline.forward_cache(sources, all_units, batch_size=batch_size,
+                                                       extra_hooks=extra)
         Yap = readout(src_scores)
         caches = None
         h = {u.id: _gather(base_slabs[u.id], pos) for u in all_units}
@@ -593,7 +703,7 @@ def run_layer_scans(prep: dict, components: dict, spec: CFSpec, *,
             delta = spec.alpha * 3.0 * x_base.std() * torch.randn(x_base.shape, generator=g)
         push = (X, delta, pos)
         pushed_scores, pushed_slabs = pipeline.forward_cache(
-            bases, all_units, push=push, batch_size=batch_size)
+            bases, all_units, push=push, batch_size=batch_size, extra_hooks=extra)
         Yap = readout(pushed_scores)
         caches = {"clean": base_slabs, "pushed": pushed_slabs, "push": push}
         h = {u.id: _gather(base_slabs[u.id], pos) for u in all_units}
@@ -658,6 +768,41 @@ def run_layer_scans(prep: dict, components: dict, spec: CFSpec, *,
         along_target = along_K.get(str(tt)) if tt is not None else None
         orth_base = orth_K.get(str(bt)) if bt is not None else None
         nontarget = [v for k, v in along_K.items() if k != str(tt)]
+
+        # --- local gate-crossing at c's own activation function ---
+        local_gap_fields: dict = {}
+        if compute_local_gap and act_fn_name:
+            u0 = units[0]
+            ct = str(u0.component_type)
+            ly = int(u0.layer)
+            if "mlp" in ct:
+                pre_hk = f"blocks.{ly}.mlp.hook_pre"
+                if pre_hk in base_slabs:
+                    z_clean = _gather(base_slabs[pre_hk], pos)
+                    if spec.kind == "swap":
+                        z_src = _gather(src_slabs[pre_hk], pos)
+                        z_patched = z_clean + spec.alpha * (z_src - z_clean)
+                    elif spec.kind == "push" and spec.push_unit is not None:
+                        z_patched = _gather(pushed_slabs[pre_hk], pos)
+                    else:
+                        z_patched = z_clean  # self-push: pre-act at c itself unchanged
+                    local_gap_fields = local_act_gap(z_clean, z_patched, act_fn_name)
+            elif "attn" in ct or "head" in ct:
+                score_hk = f"blocks.{ly}.attn.hook_attn_scores"
+                if score_hk in base_slabs:
+                    hd = int(u0.head)
+                    s_clean = _head_query_row(base_slabs[score_hk], hd, pos)
+                    if spec.kind == "swap":
+                        s_src = _head_query_row(src_slabs[score_hk], hd, pos)
+                        # masked keys are -inf in both; interpolate only finite entries
+                        fin = torch.isfinite(s_clean) & torch.isfinite(s_src)
+                        s_patched = torch.where(fin, s_clean + spec.alpha * (s_src - s_clean), s_clean)
+                    elif spec.kind == "push" and spec.push_unit is not None:
+                        s_patched = _head_query_row(pushed_slabs[score_hk], hd, pos)
+                    else:
+                        s_patched = s_clean
+                    local_gap_fields = local_softmax_gap(s_clean, s_patched)
+
         row = {
             "site": site_id, "key": str(key),
             "strategy": spec.strategy, "kind": spec.kind, "push_site": spec.push_name,
@@ -666,6 +811,8 @@ def run_layer_scans(prep: dict, components: dict, spec: CFSpec, *,
             **cells,
             # --- AtP gap: mean|full| - mean|AtP linear|  (region-crossing / Type-G onset) ---
             **_atp_gap(delta_c, (grad_atp.get(site_id) if grad_atp else None), cells.get("NIE_absmean")),
+            # --- local gate-crossing at c's own activation ---
+            **local_gap_fields,
             # --- M-layer: attribution + ground truth (dormancy outcome) ---
             "home_tasks": home,
             "in_base_circuit": (bt in home) if bt is not None else None,
@@ -693,7 +840,15 @@ def run_layer_scans(prep: dict, components: dict, spec: CFSpec, *,
         if save:
             d = interaction_dir(site_id, spec.strategy, spec.push_name, spec.direction, spec.alpha)
             os.makedirs(d, exist_ok=True)
-            with open(os.path.join(d, "int.json"), "w") as f:
+            fp = os.path.join(d, "int.json")
+            # run_ripple.py appends ripple_* onto this file; a re-scan must not erase them
+            if os.path.exists(fp):
+                try:
+                    old = json.load(open(fp))
+                    row.update({k: v for k, v in old.items() if k.startswith("ripple_") and k not in row})
+                except Exception:
+                    pass
+            with open(fp, "w") as f:
                 json.dump(row, f, indent=2)
         print(f"[int] {spec.direction:>7} a{spec.alpha:<4g} {site_id:<32} INT {cells['INT']:+.4f}  "
               f"orth_b {_fmt(orth_base)}  along_t {_fmt(along_target)}"

@@ -130,13 +130,14 @@ def _scan(prep, grid, gt, mem, home, clouds, args, **mk):
     spec = make_counterfactual(prep, n=args.n, seed=args.seed, **mk)
     return run_layer_scans(prep, grid, spec, batch_size=args.batch_size,
                            gt_labels=gt, poly_mem=mem, home_tasks=home, clouds=clouds,
-                           graddrop_k=getattr(args, "graddrop", 0))
+                           graddrop_k=getattr(args, "graddrop", 0),
+                           compute_local_gap=getattr(args, "local_gap", False))
 
 
 # --------------------------------------------------------------------------- #
 #  directed sweep — the (base x target) matrix over all strategies
 # --------------------------------------------------------------------------- #
-def directed_sweep(prep, grid, gt, mem, home, clouds, X, args, diagonal_only=False):
+def directed_sweep(prep, grid, gt, mem, home, clouds, X, args, mode="full"):
     """Full base x target x strategy x alpha map (or just the within-task diagonal
     control when diagonal_only). See the strategy x direction table:
       STR swap  base->base   : within-task control (affine gate), single alpha
@@ -148,10 +149,21 @@ def directed_sweep(prep, grid, gt, mem, home, clouds, X, args, diagonal_only=Fal
     tasks = prep["tasks"]
     all_rows = []
     for base in tasks:
-        print(f"== base task {base} : within-task control (STR swap {base}->{base}) ==")
-        all_rows += _scan(prep, grid, gt, mem, home, clouds, args,
-                          strategy="STR", base_task=base, target_task=base, alpha=1.0)
-        if diagonal_only:
+        if mode in ("diagonal", "full"):
+            print(f"== base task {base} : within-task control (STR swap {base}->{base}) ==")
+            all_rows += _scan(prep, grid, gt, mem, home, clouds, args,
+                              strategy="STR", base_task=base, target_task=base, alpha=1.0)
+        if mode == "diagonal":
+            continue
+        # within-task STR push @ shared MLP, alpha-swept: the push analog of the within-task
+        # swap. base==target draws DISTINCT same-task example pairs, so the injection
+        # alpha*(x_src - x_base) at X is a real near-manifold perturbation (non-degenerate INT
+        # for downstream c). Closes the swap/push grid on the within-task diagonal.
+        print(f"== within-task {base}->{base} : STR push@{X.id} (alphas {args.alphas}) ==")
+        for a in args.alphas:
+            all_rows += _scan(prep, grid, gt, mem, home, clouds, args, strategy="STR",
+                              base_task=base, target_task=base, alpha=a, push_site=X)
+        if mode == "within-push":                              # ONLY the new within-task push
             continue
         for a in args.alphas:  # Gaussian controls: no target, once per base
             all_rows += _scan(prep, grid, gt, mem, home, clouds, args,
@@ -176,7 +188,8 @@ def main():
     ap.add_argument("--case", default="poly", help="'poly', 'ioi', or a tracr case id")
     ap.add_argument("--poly-comb", default="cases_0+1")
     ap.add_argument("--target-pos", type=int, default=-1)
-    ap.add_argument("--step", default="0", choices=["0", "full", "both"])
+    ap.add_argument("--step", default="0", choices=["0", "full", "both", "within-push"],
+                    help="0=within-swap gate | full=all | both | within-push=ONLY within-task STR push@MLP")
     ap.add_argument("--push-site", default="auto",
                     help="mediation push site: 'auto' = first shared-labelled MLP "
                          "(poly), or an explicit grid site_id")
@@ -193,6 +206,8 @@ def main():
     ap.add_argument("--batch-size", type=int, default=32)
     ap.add_argument("--graddrop", type=int, default=0,
                     help="AtP* GradDrop passes for the gap measure (0 = raw AtP; ~5 de-cancels)")
+    ap.add_argument("--local-gap", action="store_true",
+                    help="compute local gate-crossing at each component's own activation function")
     ap.add_argument("--no-residual", dest="include_residual", action="store_false")
     ap.set_defaults(include_residual=False)  # INT is a component story; residual = the bypass
     args = ap.parse_args()
@@ -220,8 +235,8 @@ def main():
 
     X = pick_push_unit(grid, mem, args.push_site)
     print(f"== push site X = {X.id} ==")
-    rows = directed_sweep(d, grid, gt, mem, home, clouds, X, args,
-                          diagonal_only=(args.step == "0"))
+    _mode = {"0": "diagonal", "within-push": "within-push"}.get(args.step, "full")
+    rows = directed_sweep(d, grid, gt, mem, home, clouds, X, args, mode=_mode)
     s = _summary(rows)
     s.update(push_site=X.id, alphas=args.alphas, tasks=d["tasks"], step=args.step)
     _save_summary("directed_map.json" if args.step != "0" else "gate.json", s)

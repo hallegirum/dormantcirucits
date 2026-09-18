@@ -1,0 +1,25 @@
+     swap (within)       curvature  0.867  [0.808, 0.918]  dwnstrm
+     swap (within)            orth  0.622  [0.538, 0.699]  
+     swap (within)           along  0.818  [0.795, 0.847]  
+     swap (within)     best ripple  0.690  [0.597, 0.771]  off
+     swap (within)    ripple block  0.796  [0.768, 0.854]  
+      swap (cross)       curvature  0.897  [0.874, 0.914]  dwnstrm
+      swap (cross)            orth  0.816  [0.786, 0.840]  
+      swap (cross)           along  0.869  [0.849, 0.885]  
+      swap (cross)     best ripple  0.722  [0.696, 0.749]  off
+      swap (cross)    ripple block  0.841  [0.814, 0.871]  
+     push (within)       curvature  0.869  [0.845, 0.898]  local
+     push (within)            orth  0.877  [0.852, 0.903]  
+     push (within)           along  0.914  [0.896, 0.936]  
+     push (within)     best ripple  0.665  [0.594, 0.730]  off
+     push (within)    ripple block  0.825  [0.782, 0.868]  
+      push (cross)       curvature  0.844  [0.823, 0.877]  local
+      push (cross)            orth  0.879  [0.857, 0.898]  
+      push (cross)           along  0.919  [0.905, 0.940]  
+      push (cross)     best ripple  0.635  [0.573, 0.686]  off
+      push (cross)    ripple block  0.833  [0.808, 0.854]  
+     Gaussian push       curvature  0.859  [0.779, 0.938]  dwnstrm
+     Gaussian push            orth  0.938  [0.896, 0.974]  
+     Gaussian push           along  0.940  [0.924, 0.965]  
+     Gaussian push     best ripple  0.791  [0.757, 0.813]  frac
+     Gaussian push    ripple block  0.827  [0.791, 0.859]  

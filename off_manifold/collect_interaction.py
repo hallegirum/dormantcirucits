@@ -124,6 +124,45 @@ def load_rows(results_root: str, combos=None, seeds=None) -> list[dict]:
             nonbase = [v for k, v in abt.items()
                        if str(k) != str(bt) and isinstance(v, (int, float)) and math.isfinite(v)]
             r["along_nonbase_max"] = max(nonbase) if nonbase else None
+            # circuit-AWARE variant: max alignment only with NON-base tasks the component is
+            # actually a circuit member of (home_tasks). Captures borrowing directly — high for
+            # borrowed FPs (lives in task B, delta_c points into B), None for pure-geometric FPs
+            # (no home). Identical to along_nonbase_max on 2-task combos (one non-base task).
+            home = {str(t) for t in (r.get("home_tasks") or [])}
+            nonbase_home = [v for k, v in abt.items()
+                            if str(k) != str(bt) and str(k) in home
+                            and isinstance(v, (int, float)) and math.isfinite(v)]
+            r["along_home_max"] = max(nonbase_home) if nonbase_home else None
+            along_base_v = abt.get(str(bt))
+            r["along_base"] = (float(along_base_v) if isinstance(along_base_v, (int, float))
+                               and math.isfinite(along_base_v) else None)
+            ob = r.get("orth_base")
+            ab = r["along_base"]
+            if ab is not None and ob is not None and isinstance(ob, (int, float)) and math.isfinite(ob):
+                r["delta_norm"] = math.sqrt(ab**2 + ob**2)
+                gap = r.get("gap")
+                if gap is not None and isinstance(gap, (int, float)) and math.isfinite(gap):
+                    r["kappa_dir"] = gap / (r["delta_norm"]**2 + 1e-9)
+                else:
+                    r["kappa_dir"] = None
+            else:
+                r["delta_norm"] = None
+                r["kappa_dir"] = None
+            # unified local_gap_frac: whichever local gap the run computed (relu, gelu, or softmax)
+            for lgf_key in ("local_relu_gap_frac", "local_gelu_gap_frac", "local_softmax_gap_frac"):
+                v = r.get(lgf_key)
+                if v is not None and isinstance(v, (int, float)) and math.isfinite(v):
+                    r["local_gap_frac"] = v
+                    break
+            else:
+                r["local_gap_frac"] = None
+            lgf = r["local_gap_frac"]
+            gf = r.get("gap_frac")
+            if (lgf is not None and gf is not None
+                    and isinstance(gf, (int, float)) and math.isfinite(gf)):
+                r["excess_local_gap"] = lgf - gf
+            else:
+                r["excess_local_gap"] = None
             rows.append(r)
     if skipped:
         print(f"[warn] skipped {skipped} legacy int.json without base_task (pre-directed run)")
@@ -146,6 +185,17 @@ def _num(r, *ks):
     OLS (float overflow), so they're excluded from every model here."""
     if r.get("degenerate"):
         return False
+    for k in ks:
+        v = r.get(k)
+        if v is None or not math.isfinite(v):
+            return False
+    return True
+
+
+def _numf(r, *ks):
+    """Like _num but degenerate-TOLERANT: fields present AND finite, degenerate OK. For
+    self-push, where INT is degenerate (=0) by construction but |NIE|=TE and the geometry
+    (orth_base, gap_frac) are perfectly valid — the interaction-free baseline population."""
     for k in ks:
         v = r.get(k)
         if v is None or not math.isfinite(v):
@@ -179,19 +229,22 @@ def _is_downstream(r):
     return pl is not None and cl is not None and cl > pl
 
 
-def push_comp(rows, strategy="STR"):
+def push_comp(rows, strategy="STR", within=None):
     """Component-push rows (push at X, measure c downstream) for one strategy. STR push
-    is directed (cross-task, has push_along_target); Gaussian push has no target."""
+    is directed (has push_along_target); Gaussian push has no target. `within` selects the
+    STR direction stratum: None -> cross-task only (default, backward-compatible); True ->
+    within-task push (base==target); False -> cross-task push (base!=target)."""
     out = [r for r in rows if r["strategy"] == strategy
            and r["push_site"] not in ("input", "self") and _num(r, "INT", "orth_base")]
     if strategy == "STR":
-        out = [r for r in out if r["base_task"] != r["target_task"]]
+        keep_within = False if within is None else within        # default: cross-task only
+        out = [r for r in out if (r["base_task"] == r["target_task"]) == keep_within]
     return out
 
 
-def push_downstream(rows, strategy="STR"):
+def push_downstream(rows, strategy="STR", within=None):
     """push_comp filtered to components DOWNSTREAM of the push site (layer > push layer)."""
-    pop = push_comp(rows, strategy)
+    pop = push_comp(rows, strategy, within)
     out = [r for r in pop if _is_downstream(r)]
     return out if out else pop
 
@@ -200,7 +253,7 @@ def self_push(rows, strategy="Gaussian"):
     """self-push rows (push_site='self'): INT is degenerate (=0), so |NIE| = TE = the
     DIRECT off-manifold effect of pushing the component itself off its base manifold."""
     return [r for r in rows if r["strategy"] == strategy and r["push_site"] == "self"
-            and _num(r, "orth_base", "NIE")]
+            and _numf(r, "orth_base", "NIE")]      # degenerate-tolerant: self-push INT=0 by construction
 
 
 def fp_population(rows):
@@ -634,7 +687,9 @@ def _xint_strat_bucket(r):
         return f"STR_swap_{'within' if r['base_task'] == r['target_task'] else 'cross'}"
     if push == "self":
         return f"{r['strategy']}_self"
-    return f"{r['strategy']}_push"
+    if r["strategy"] == "STR":                       # STR push has a target -> split within/cross
+        return f"STR_push_{'within' if r['base_task'] == r['target_task'] else 'cross'}"
+    return f"{r['strategy']}_push"                    # Gaussian push: no target
 
 
 def xint_separation_by_strategy(rows):
@@ -758,6 +813,337 @@ def xint_fp_prediction(rows):
     return {"status": "ok", "by_strategy": out}
 
 
+def _ripple_gap_residual(ref, cand, feats_rip, B=200):
+    """Test B — is ripple COMPLEMENTARY to gap_frac (does it catch the FPs gap misses)?
+    Fit P(FP | orth_base, gap_frac), then report, bootstrapped over combos:
+      resid_R2                    OLS of (y - P_hat) on ripple: variance ripple recovers
+                                  that orth+gap leave on the table (0 => nothing).
+      AUC_ripple_on_gap_errors    AUC of ripple among the comps the orth+gap model MIS-
+                                  classifies (>0.5 => ripple separates gap's blind-spot FPs).
+      gain_ripple_block           AUC(orth+gap+ripple) - AUC(orth+gap): the ripple BLOCK's
+                                  marginal AUC (the honest number; per-feature LOO understates
+                                  it because the 5 ripple feats are mutually correlated).
+    Pop = ripple-AND-gap rows (gap_frac must be present)."""
+    ok = lambda r, f: r.get(f) is not None and isinstance(r.get(f), (int, float)) and math.isfinite(r[f])
+    thr = {}
+    for c in {r["combo"] for r in ref}:
+        vals = [r["abs_NIE"] for r in ref if r["combo"] == c and r.get("abs_NIE") is not None]
+        if vals:
+            thr[c] = float(np.quantile(vals, 0.5))
+    pop = [r for r in cand if ok(r, "orth_base") and ok(r, "gap_frac") and ok(r, "abs_NIE")
+           and all(ok(r, f) for f in feats_rip) and thr.get(r["combo"]) is not None]
+    if len(pop) < 30:
+        return {"status": f"too few ripple-and-gap rows ({len(pop)})"}
+    lbl = lambda s: np.array([1.0 if r["abs_NIE"] >= thr[r["combo"]] else 0.0 for r in s])
+    y0 = lbl(pop)
+    if y0.sum() < 5 or len(y0) - y0.sum() < 5:
+        return {"status": f"degenerate FP labels (FP {int(y0.sum())}) [residual]"}
+
+    def _phat(s, y):
+        Xg = np.column_stack([np.ones(len(s)), _zc(s, "orth_base"), _zc(s, "gap_frac")])
+        return Xg, 1.0 / (1.0 + np.exp(-np.clip(Xg @ _logit_fit(Xg, y), -30, 30)))
+
+    def fit(s):
+        y = lbl(s)
+        if y.sum() < 5 or len(y) - y.sum() < 5:
+            raise ValueError("degenerate")
+        Xg, ph = _phat(s, y)
+        resid = y - ph
+        Xr = np.column_stack([np.ones(len(s))] + [_zc(s, f) for f in feats_rip])
+        br, *_ = np.linalg.lstsq(Xr, resid, rcond=None)
+        sst = ((resid - resid.mean()) ** 2).sum()
+        r2 = 1 - ((resid - Xr @ br) ** 2).sum() / sst if sst > 1e-12 else 0.0
+        wrong = (ph >= 0.5) != (y >= 0.5)               # orth+gap model's errors
+        hard = [s[i] for i in range(len(s)) if wrong[i]]
+        yh = y[wrong]
+        if len(hard) >= 8 and 0 < yh.sum() < len(yh):
+            Xh = np.column_stack([np.ones(len(hard))] + [_zc(hard, f) for f in feats_rip])
+            auc_err = _auc(Xh @ _logit_fit(Xh, yh), yh)
+        else:
+            auc_err = float("nan")
+        a_og = _auc(Xg @ _logit_fit(Xg, y), y)
+        Xall = np.column_stack([Xg] + [_zc(s, f) for f in feats_rip])
+        a_ogr = _auc(Xall @ _logit_fit(Xall, y), y)
+        return {"resid_R2": r2, "AUC_ripple_on_gap_errors": auc_err,
+                "AUC_orth_gap": a_og, "AUC_orth_gap_ripple": a_ogr,
+                "gain_ripple_block": a_ogr - a_og}
+
+    _, ph0 = _phat(pop, y0)
+    n_err = int((((ph0 >= 0.5) != (y0 >= 0.5))).sum())
+    return {"status": "ok", "n": len(pop), "n_fp": int(y0.sum()), "n_gap_errors": n_err,
+            "coef": boot(pop, fit, B=B),
+            "predict": "complementary => resid_R2>0, AUC_ripple_on_gap_errors>0.5, gain_ripple_block>0"}
+
+
+def ripple_fp_prediction(rows):
+    """Ripple metrics (run_ripple) are computed ONLY on the orth-gated candidate subset
+    (~9% of off-circuit rows), so m3l's >=80%-coverage filter would drop them from the full
+    FP population. This restricts the classification set to rows that HAVE ripple — the
+    already-high-divergence off-circuit components — which is exactly the crux regime: among
+    high-orth off-circuit comps, does the off-manifold RIPPLE that c's single patch induces
+    on the LIVE circuit separate pernicious FPs from harmless ones, beyond orth_base (and
+    beyond gap_frac / xINT-partner geometry)? Per strategy; swap-only in practice."""
+    feats = ("ripple_in_orth", "ripple_off_orth", "ripple_frac",       # c knocks the live circuit off-manifold
+             "ripple_xint_orth", "ripple_xint_in_orth",                 # ... via the comps it INTERACTS with
+             "gap_frac", "xint_partner_orth")                           # geometric comparators
+    has_rip = lambda r: r.get("ripple_in_orth") is not None
+    strat = defaultdict(lambda: {"in": [], "cand": []})
+    for r in rows:
+        if "strategy" not in r:
+            continue
+        b = _xint_strat_bucket(r)
+        if r.get("in_base_circuit") is True:
+            strat[b]["in"].append(r)                   # in-circuit ref for the per-combo FP threshold
+        elif r.get("in_base_circuit") is False and has_rip(r):
+            strat[b]["cand"].append(r)                 # ONLY ripple-having (gated) candidates
+    RIP = ("ripple_in_orth", "ripple_off_orth", "ripple_frac", "ripple_xint_orth", "ripple_xint_in_orth")
+    out, n_rip = {}, 0
+    for b, d in sorted(strat.items()):
+        n_rip += len(d["cand"])
+        if len(d["cand"]) < 20:
+            out[b] = {"status": f"too few ripple candidates ({len(d['cand'])}) [{b}]"}
+            continue
+        res = m3l_separation_logit(d["in"] + d["cand"], feats=feats, label_str=f"ripple/{b}", B=200)
+        if isinstance(res, dict) and res.get("status") == "ok":
+            res["gap_residual_test"] = _ripple_gap_residual(d["in"], d["cand"], RIP)   # test B
+        out[b] = res
+    return {"status": "ok", "n_ripple_rows": n_rip, "by_strategy": out,
+            "predict": "off-manifold ripple => AUC_ripple_*_hiorth>0.5 and gain>0: the displacement "
+                       "c induces on the live circuit distinguishes pernicious FPs from harmless high-orth comps"}
+
+
+def fp_vs_tp_logit(rows, q=0.5, B=200):
+    """Complement of the FP-vs-TN separation (m3l): among components that ALL look in-circuit
+    (|NIE| >= the per-combo q-quantile of in-circuit |NIE|), can each instrument tell a
+    fabricated off-circuit hit (FP) from a genuine in-circuit mediator (TP)? Both classes sit
+    above the SAME threshold, so effect magnitude is matched away by construction and the AUC
+    isolates ground-truth information beyond raw effect size. label 1 = FP (artifact),
+    0 = TP (genuine). Per strategy bucket; cluster-bootstrapped over combos.
+
+    Features of interest: gap_frac (curvature), along_target (along), orth_base (orth),
+    ripple_xint_in_orth (ripple), INT (interaction). A feature is kept only at >=80% coverage
+    on the FP+TP pool: along_target is dropped for within-task / Gaussian buckets (no target),
+    and ripple_xint_in_orth is dropped everywhere here because run_ripple instruments ONLY
+    off-circuit candidates, so TP (in-circuit) rows never carry it. A ripple FP-vs-TP would
+    require running the ripple pass on in-circuit components too."""
+    feats_all = ("gap_frac", "local_gap_frac", "excess_local_gap", "kappa_dir",
+                  "along_target", "along_nonbase_max", "along_home_max",
+                  "orth_base", "delta_norm", "INT", "ripple_xint_in_orth")
+    have = lambda r, f: (r.get(f) is not None and isinstance(r.get(f), (int, float))
+                         and math.isfinite(r[f]))
+    is_fp = lambda r: 1.0 if r.get("in_base_circuit") is False else 0.0
+    strat = defaultdict(lambda: {"in": [], "off": []})
+    for r in rows:
+        if "strategy" not in r or r.get("abs_NIE") is None:
+            continue
+        b = _xint_strat_bucket(r)
+        if r.get("in_base_circuit") is True:
+            strat[b]["in"].append(r)
+        elif r.get("in_base_circuit") is False:
+            strat[b]["off"].append(r)
+    out = {}
+    for b, d in sorted(strat.items()):
+        ref = d["in"]
+        if len(ref) < 10:
+            out[b] = {"status": f"too few in-circuit ref ({len(ref)}) [{b}]"}
+            continue
+        thr = {}
+        for c in {r["combo"] for r in ref}:
+            vals = [r["abs_NIE"] for r in ref if r["combo"] == c and r.get("abs_NIE") is not None]
+            if vals:
+                thr[c] = float(np.quantile(vals, q))
+        above = lambda r: (thr.get(r["combo"]) is not None and r.get("abs_NIE") is not None
+                           and r["abs_NIE"] >= thr[r["combo"]])
+        pool = [r for r in (d["off"] + ref) if above(r)]
+        feats = [f for f in feats_all if pool and sum(have(r, f) for r in pool) >= 0.8 * len(pool)]
+        pop = [r for r in pool if all(have(r, f) for f in feats)]
+        y = np.array([is_fp(r) for r in pop])
+        n_fp, n_tp = int(y.sum()), len(y) - int(y.sum())
+        if n_fp < 5 or n_tp < 5 or not feats:
+            out[b] = {"status": f"degenerate (FP {n_fp}, TP {n_tp}, feats {feats}) [{b}]"}
+            continue
+
+        def fit(s):
+            o = {}
+            lab = lambda z: np.array([is_fp(r) for r in z])
+            a_o = _auc_of(s, ["orth_base"], lab)[0] \
+                if "orth_base" in feats else float("nan")
+            a_full, beta = _auc_of(s, feats, lab)
+            o["AUC_orth"], o["AUC_full"] = a_o, a_full
+            o["gain_full"] = a_full - a_o
+            ob = np.array([r["orth_base"] for r in s])
+            hi = [s[i] for i in range(len(s)) if ob[i] >= np.median(ob)]
+            for j, f in enumerate(feats):
+                o[f"AUC_{f}"] = _auc_of(s, [f], lab)[0]
+                a_of = _auc_of(s, ["orth_base", f], lab)[0] if "orth_base" in feats else o[f"AUC_{f}"]
+                o[f"gain_{f}"] = a_of - a_o
+                o[f"AUC_{f}_hiorth"] = _auc_of(hi, [f], lab)[0]
+                o[f"beta_{f}"] = float(beta[1 + j]) if beta is not None else float("nan")
+                a_drop = _auc_of(s, [g for g in feats if g != f], lab)[0]
+                o[f"drop_{f}"] = a_full - a_drop
+            return o
+        means = {}
+        for f in feats:
+            fp_vals = [r[f] for r in pop if is_fp(r) == 1.0 and have(r, f)]
+            tp_vals = [r[f] for r in pop if is_fp(r) == 0.0 and have(r, f)]
+            means[f] = {"FP": round(float(np.mean(fp_vals)), 4) if fp_vals else None,
+                        "TP": round(float(np.mean(tp_vals)), 4) if tp_vals else None}
+        out[b] = {"status": "ok", "n": len(pop), "n_fp": n_fp, "n_tp": n_tp, "q_threshold": q,
+                  "feats": feats, "coef": boot(pop, fit, B=B), "means": means,
+                  "predict": "AUC_<f> > 0.5 => the instrument flags fabricated (FP) from genuine (TP) "
+                             "among matched-effect apparent hits; AUC ~ 0.5 => that geometry is shared "
+                             "with real mediators, so it cannot correct the attribution"}
+    return {"status": "ok", "by_strategy": out}
+
+
+def fp_vs_tp_nie_controlled(rows, q=0.5, B=200):
+    """FP-vs-TP with |NIE| as the baseline covariate instead of orth_base. Every gain_<f>
+    measures what f adds AFTER controlling for effect size, so features that merely proxy
+    |NIE| (like kappa_dir in swap_within) show gain~0. The population is the same above-
+    median pool as fp_vs_tp_logit; the difference is what constitutes 'already known.'"""
+    feats_all = ("gap_frac", "local_gap_frac", "excess_local_gap", "kappa_dir",
+                  "along_target", "along_nonbase_max", "along_home_max",
+                  "orth_base", "delta_norm", "INT", "ripple_xint_in_orth")
+    have = lambda r, f: (r.get(f) is not None and isinstance(r.get(f), (int, float))
+                         and math.isfinite(r[f]))
+    is_fp = lambda r: 1.0 if r.get("in_base_circuit") is False else 0.0
+    strat = defaultdict(lambda: {"in": [], "off": []})
+    for r in rows:
+        if "strategy" not in r or r.get("abs_NIE") is None:
+            continue
+        b = _xint_strat_bucket(r)
+        if r.get("in_base_circuit") is True:
+            strat[b]["in"].append(r)
+        elif r.get("in_base_circuit") is False:
+            strat[b]["off"].append(r)
+    out = {}
+    for b, d in sorted(strat.items()):
+        ref = d["in"]
+        if len(ref) < 10:
+            out[b] = {"status": f"too few in-circuit ref ({len(ref)}) [{b}]"}
+            continue
+        thr = {}
+        for c in {r["combo"] for r in ref}:
+            vals = [r["abs_NIE"] for r in ref if r["combo"] == c and r.get("abs_NIE") is not None]
+            if vals:
+                thr[c] = float(np.quantile(vals, q))
+        above = lambda r: (thr.get(r["combo"]) is not None and r.get("abs_NIE") is not None
+                           and r["abs_NIE"] >= thr[r["combo"]])
+        pool = [r for r in (d["off"] + ref) if above(r)]
+        feats = [f for f in feats_all if pool and sum(have(r, f) for r in pool) >= 0.8 * len(pool)]
+        pop = [r for r in pool if all(have(r, f) for f in feats) and have(r, "abs_NIE")]
+        y = np.array([is_fp(r) for r in pop])
+        n_fp, n_tp = int(y.sum()), len(y) - int(y.sum())
+        if n_fp < 5 or n_tp < 5 or not feats:
+            out[b] = {"status": f"degenerate (FP {n_fp}, TP {n_tp}, feats {feats}) [{b}]"}
+            continue
+
+        def fit(s):
+            o = {}
+            lab = lambda z: np.array([is_fp(r) for r in z])
+            a_nie = _auc_of(s, ["abs_NIE"], lab)[0]
+            a_full, beta = _auc_of(s, ["abs_NIE"] + feats, lab)
+            o["AUC_nie"], o["AUC_full"] = a_nie, a_full
+            o["gain_full"] = a_full - a_nie
+            nie_arr = np.array([r["abs_NIE"] for r in s])
+            hi = [s[i] for i in range(len(s)) if nie_arr[i] >= np.median(nie_arr)]
+            for j, f in enumerate(feats):
+                o[f"AUC_{f}"] = _auc_of(s, [f], lab)[0]
+                a_nf = _auc_of(s, ["abs_NIE", f], lab)[0]
+                o[f"gain_{f}"] = a_nf - a_nie
+                o[f"AUC_{f}_hiNIE"] = _auc_of(hi, [f], lab)[0]
+                o[f"beta_{f}"] = float(beta[2 + j]) if beta is not None else float("nan")
+                a_drop = _auc_of(s, ["abs_NIE"] + [g for g in feats if g != f], lab)[0]
+                o[f"drop_{f}"] = a_full - a_drop
+            return o
+        means = {}
+        for f in feats:
+            fp_vals = [r[f] for r in pop if is_fp(r) == 1.0 and have(r, f)]
+            tp_vals = [r[f] for r in pop if is_fp(r) == 0.0 and have(r, f)]
+            means[f] = {"FP": round(float(np.mean(fp_vals)), 4) if fp_vals else None,
+                        "TP": round(float(np.mean(tp_vals)), 4) if tp_vals else None}
+        out[b] = {"status": "ok", "n": len(pop), "n_fp": n_fp, "n_tp": n_tp, "q_threshold": q,
+                  "feats": feats, "coef": boot(pop, fit, B=B), "means": means,
+                  "predict": "gain_<f> > 0 => f discriminates FP from TP AFTER controlling for |NIE|; "
+                             "AUC_<f>_hiNIE > 0.5 => f works among the highest-effect components"}
+    return {"status": "ok", "by_strategy": out}
+
+
+def fn_vs_tn_logit(rows, q=0.5, B=200):
+    """Mirror of fp_vs_tp_logit on the LOW-effect side: among components whose |NIE| is
+    BELOW the per-combo q-quantile of in-circuit |NIE|, can each instrument tell a
+    missed in-circuit member (FN) from a correctly-ignored off-circuit component (TN)?
+    label 1 = FN (missed genuine), 0 = TN (correctly absent).
+    Per strategy bucket; cluster-bootstrapped over combos."""
+    feats_all = ("gap_frac", "local_gap_frac", "excess_local_gap", "kappa_dir",
+                  "along_target", "along_nonbase_max", "along_home_max",
+                  "orth_base", "delta_norm", "INT", "ripple_xint_in_orth")
+    have = lambda r, f: (r.get(f) is not None and isinstance(r.get(f), (int, float))
+                         and math.isfinite(r[f]))
+    is_fn = lambda r: 1.0 if r.get("in_base_circuit") is True else 0.0
+    strat = defaultdict(lambda: {"in": [], "off": []})
+    for r in rows:
+        if "strategy" not in r or r.get("abs_NIE") is None:
+            continue
+        b = _xint_strat_bucket(r)
+        if r.get("in_base_circuit") is True:
+            strat[b]["in"].append(r)
+        elif r.get("in_base_circuit") is False:
+            strat[b]["off"].append(r)
+    out = {}
+    for b, d in sorted(strat.items()):
+        ref = d["in"]
+        if len(ref) < 10:
+            out[b] = {"status": f"too few in-circuit ref ({len(ref)}) [{b}]"}
+            continue
+        thr = {}
+        for c in {r["combo"] for r in ref}:
+            vals = [r["abs_NIE"] for r in ref if r["combo"] == c and r.get("abs_NIE") is not None]
+            if vals:
+                thr[c] = float(np.quantile(vals, q))
+        below = lambda r: (thr.get(r["combo"]) is not None and r.get("abs_NIE") is not None
+                           and r["abs_NIE"] < thr[r["combo"]])
+        pool = [r for r in (d["off"] + ref) if below(r)]
+        feats = [f for f in feats_all if pool and sum(have(r, f) for r in pool) >= 0.8 * len(pool)]
+        pop = [r for r in pool if all(have(r, f) for f in feats)]
+        y = np.array([is_fn(r) for r in pop])
+        n_fn, n_tn = int(y.sum()), len(y) - int(y.sum())
+        if n_fn < 5 or n_tn < 5 or not feats:
+            out[b] = {"status": f"degenerate (FN {n_fn}, TN {n_tn}, feats {feats}) [{b}]"}
+            continue
+
+        def fit(s):
+            o = {}
+            lab = lambda z: np.array([is_fn(r) for r in z])
+            a_o = _auc_of(s, ["orth_base"], lab)[0] \
+                if "orth_base" in feats else float("nan")
+            a_full, beta = _auc_of(s, feats, lab)
+            o["AUC_orth"], o["AUC_full"] = a_o, a_full
+            o["gain_full"] = a_full - a_o
+            ob = np.array([r["orth_base"] for r in s])
+            hi = [s[i] for i in range(len(s)) if ob[i] >= np.median(ob)]
+            for j, f in enumerate(feats):
+                o[f"AUC_{f}"] = _auc_of(s, [f], lab)[0]
+                a_of = _auc_of(s, ["orth_base", f], lab)[0] if "orth_base" in feats else o[f"AUC_{f}"]
+                o[f"gain_{f}"] = a_of - a_o
+                o[f"AUC_{f}_hiorth"] = _auc_of(hi, [f], lab)[0]
+                o[f"beta_{f}"] = float(beta[1 + j]) if beta is not None else float("nan")
+                a_drop = _auc_of(s, [g for g in feats if g != f], lab)[0]
+                o[f"drop_{f}"] = a_full - a_drop
+            return o
+        means = {}
+        for f in feats:
+            fn_vals = [r[f] for r in pop if is_fn(r) == 1.0 and have(r, f)]
+            tn_vals = [r[f] for r in pop if is_fn(r) == 0.0 and have(r, f)]
+            means[f] = {"FN": round(float(np.mean(fn_vals)), 4) if fn_vals else None,
+                        "TN": round(float(np.mean(tn_vals)), 4) if tn_vals else None}
+        out[b] = {"status": "ok", "n": len(pop), "n_fn": n_fn, "n_tn": n_tn, "q_threshold": q,
+                  "feats": feats, "coef": boot(pop, fit, B=B), "means": means,
+                  "predict": "AUC_<f> > 0.5 => the instrument detects missed circuit members (FN) "
+                             "among low-effect components; AUC ~ 0.5 => FN and TN are indistinguishable"}
+    return {"status": "ok", "by_strategy": out}
+
+
 def p5_push(rows, strategy="STR"):
     """Downstream INT ~ push geometry, for STR push (target-directed) or Gaussian push
     (no target -> falls back to push_orth_base, then orth_base). Population is the
@@ -835,12 +1221,14 @@ def _write_csv(rows, path):
             "home_tasks", "in_base_circuit", "in_target_circuit", "degenerate",
             "NIE", "PIE", "INT", "TE", "abs_NIE", "NIE_absmean",
             "atp_linear", "gap", "gap_frac", "int_linear", "gap_INT", "gap_INT_frac",
-            "orth_base", "along_target", "along_nontarget_max", "along_nonbase_max",
+            "orth_base", "along_target", "along_nontarget_max", "along_nonbase_max", "along_home_max",
             "push_along_target", "push_orth_base",
             "xint_off_frac", "xint_coherence", "xint_on_task", "xint_off_task", "xint_verdict",
             "xint_partner_orth", "xint_partner_gap",
             "ripple_in_orth", "ripple_off_orth", "ripple_frac",
-            "ripple_xint_orth", "ripple_xint_in_orth"]
+            "ripple_xint_orth", "ripple_xint_in_orth",
+            "along_base", "delta_norm", "kappa_dir",
+            "local_gap_frac", "excess_local_gap"]
     with open(path, "w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=cols, extrasaction="ignore")
         w.writeheader()
@@ -858,6 +1246,17 @@ def _print_coef(name, block):
         print(f"    {k:<22} {ci['est']:+.3f}  [{ci['lo']:+.3f}, {ci['hi']:+.3f}] {_sig(ci)}")
     if "predict" in block:
         print(f"  [predict] {block['predict']}")
+
+
+def _m3l_trio(bucket, pop, base, label, B=200):
+    """Run three separate M3L regressions for one bucket, each with one gap feature
+    (gap_frac / local_gap_frac / excess_local_gap) alongside the non-collinear base features."""
+    out = {}
+    for suffix, gap_feat in (("gf", "gap_frac"), ("lgf", "local_gap_frac"), ("elg", "excess_local_gap")):
+        key = f"M3L_{bucket}_{suffix}"
+        feats = (gap_feat,) + base
+        out[key] = m3l_separation_logit(pop, feats=feats, label_str=f"{label} [{gap_feat}]", B=B)
+    return out
 
 
 def main():
@@ -888,24 +1287,30 @@ def main():
         "M3_separation": m3_separation(rows),
         # --- separation test, borrowing feature = along_nonbase_max (works for every
         #     strategy). SWAP split into within-task (realistic) vs cross-task (base case).
-        "M3L_swap_within": m3l_separation_logit(
-            swap_stratum(rows, within=True), feats=("INT", "gap_frac", "gap_INT_frac", "along_nonbase_max"),
-            label_str="STR swap WITHIN-task (realistic)"),
-        "M3L_swap_cross": m3l_separation_logit(
-            swap_stratum(rows, within=False),
-            feats=("INT", "gap_frac", "gap_INT_frac", "along_target", "along_nonbase_max"),
-            label_str="STR swap CROSS-task (base case)"),
-        "M3L_STR_push": m3l_separation_logit(
-            push_downstream(rows, "STR"),
-            feats=("INT", "gap_frac", "gap_INT_frac", "along_target", "along_nonbase_max"),
-            label_str="STR push"),
-        "M3L_Gaussian_push": m3l_separation_logit(
-            push_downstream(rows, "Gaussian"), feats=("INT", "gap_frac", "gap_INT_frac", "along_nonbase_max"),
-            label_str="Gaussian push"),
+        **_m3l_trio("swap_within", swap_stratum(rows, within=True),
+                   base=("INT", "gap_INT_frac", "along_nonbase_max"),
+                   label="STR swap WITHIN-task (realistic)"),
+        **_m3l_trio("swap_cross", swap_stratum(rows, within=False),
+                   base=("INT", "gap_INT_frac", "along_target", "along_nonbase_max"),
+                   label="STR swap CROSS-task (base case)"),
+        **_m3l_trio("STR_push_cross", push_downstream(rows, "STR", within=False),
+                   base=("INT", "gap_INT_frac", "along_target", "along_nonbase_max"),
+                   label="STR push CROSS-task"),
+        **_m3l_trio("STR_push_within", push_downstream(rows, "STR", within=True),
+                   base=("INT", "gap_INT_frac", "along_nonbase_max"),
+                   label="STR push WITHIN-task"),
+        **_m3l_trio("Gaussian_push", push_downstream(rows, "Gaussian"),
+                   base=("INT", "gap_INT_frac", "along_nonbase_max"),
+                   label="Gaussian push"),
         "XINT_borrowing_separation": xint_separation(rows),
         "XINT_by_strategy": xint_separation_by_strategy(rows),
         "XINT_logistic_by_strategy": xint_logistic_by_strategy(rows),
         "XINT_fp_prediction": xint_fp_prediction(rows),
+        "RIPPLE_fp_prediction": ripple_fp_prediction(rows),   # gated subset only (own regression)
+        "FP_vs_TP": fp_vs_tp_logit(rows),                     # artifact vs genuine, effect matched
+        "FP_vs_TP_NIE": fp_vs_tp_nie_controlled(rows),        # same pool, |NIE| as baseline
+        "FN_vs_TN": fn_vs_tn_logit(rows),                     # missed genuine vs correctly absent
+
         "MED_orth_base_to_INT_to_NIE": mediation(rows),
         # --- P5 push mediation on both push strategies ---
         "P5_STR_push": p5_push(rows, "STR"),
@@ -940,22 +1345,24 @@ def main():
     _print_coef("M2b STR push  borrowed (|NIE| ~ INT + orth_base + along_target)", models["M2b_STR_push"])
     _print_coef("M2b Gaussian push borrowed (|NIE| ~ INT + orth_base)  [no target]", models["M2b_Gaussian_push"])
     _print_coef("M3  separation (linear)  (|NIE| ~ orth_base + INT + is_borrowed) [nonbase]", models["M3_separation"])
-    for m3l_key, m3l_name in (("M3L_swap_within", "STR swap WITHIN-task (realistic)"),
-                              ("M3L_swap_cross", "STR swap CROSS-task (base case)"),
-                              ("M3L_STR_push", "STR push"),
-                              ("M3L_Gaussian_push", "Gaussian push")):
-        m3l = models[m3l_key]
-        print(f"\n== M3L  separation (LOGISTIC: P(FP) | off-circuit component) — {m3l_name} ==")
-        if m3l.get("status") != "ok":
-            print(f"  {m3l.get('status')}")
-            continue
-        print(f"  n={m3l['n']}  FP={m3l['n_fp']}  harmless={m3l['n_harmless']}  feats={m3l['feats']}  "
-              f"(FP = off-circuit |NIE| >= per-combo median of in-circuit |NIE|)")
-        for k, ci in m3l["coef"].items():
-            base = 0.5 if k.startswith("AUC") else 0.0     # AUCs compare to 0.5, gains/betas to 0
-            flag = "*" if (ci["lo"] > base or ci["hi"] < base) else " "
-            print(f"    {k:<20} {ci['est']:+.3f}  [{ci['lo']:+.3f}, {ci['hi']:+.3f}] {flag}")
-        print(f"  [predict] {m3l['predict']}")
+    for bucket_name, bucket_label in (("swap_within", "STR swap WITHIN-task (realistic)"),
+                                       ("swap_cross", "STR swap CROSS-task (base case)"),
+                                       ("STR_push_cross", "STR push CROSS-task"),
+                                       ("STR_push_within", "STR push WITHIN-task"),
+                                       ("Gaussian_push", "Gaussian push")):
+        print(f"\n== M3L  separation (LOGISTIC: P(FP) | off-circuit) — {bucket_label} ==")
+        for suffix, gap_label in (("gf", "gap_frac"), ("lgf", "local_gap_frac"), ("elg", "excess_local_gap")):
+            m3l_key = f"M3L_{bucket_name}_{suffix}"
+            m3l = models.get(m3l_key, {})
+            if m3l.get("status") != "ok":
+                print(f"  [{gap_label}] {m3l.get('status', 'missing')}")
+                continue
+            print(f"  [{gap_label}]  n={m3l['n']}  FP={m3l['n_fp']}  harmless={m3l['n_harmless']}  feats={m3l['feats']}")
+            for k, ci in m3l["coef"].items():
+                base = 0.5 if k.startswith("AUC") else 0.0
+                flag = "*" if (ci["lo"] > base or ci["hi"] < base) else " "
+                print(f"      {k:<20} {ci['est']:+.3f}  [{ci['lo']:+.3f}, {ci['hi']:+.3f}] {flag}")
+            print(f"    [predict] {m3l['predict']}")
     xs = models["XINT_borrowing_separation"]
     print("\n== XINT  borrowing separation (AUC of off-task xINT fraction, vs |INT|) ==")
     if xs.get("status") != "ok":
@@ -1007,6 +1414,75 @@ def main():
                 dk = f"drop_{f}"
                 if dk in c:
                     print(f"       {f:<16} AUC_alone={g('AUC_'+f):.3f}  drop={g(dk):+.3f} {_sig(c[dk])}")
+    ftp = models["FP_vs_TP"]
+    if ftp.get("status") == "ok":
+        print("\n== FP vs TP (LOGISTIC: artifact vs genuine among matched-effect apparent hits) ==")
+        print("   pop = off-circuit FP + in-circuit TP, both |NIE| >= per-combo in-circuit median")
+        print("   AUC_<f> > 0.5 => f separates fabricated from real; ~0.5 => shares geometry with real mediators")
+        for name, r in ftp["by_strategy"].items():
+            if r.get("status") != "ok":
+                print(f"  {name}: {r.get('status')}")
+                continue
+            c = r["coef"]
+            g = lambda k: c[k]["est"] if k in c else float("nan")
+            print(f"  {name}  n={r['n']} FP={r['n_fp']} TP={r['n_tp']}  "
+                  f"AUC_full={g('AUC_full'):.3f}  gain_full={g('gain_full'):+.3f}  feats={r['feats']}")
+            for f in r["feats"]:
+                ak, bk, gk, hk, dk = f"AUC_{f}", f"beta_{f}", f"gain_{f}", f"AUC_{f}_hiorth", f"drop_{f}"
+                flag = "*" if (ak in c and (c[ak]["lo"] > 0.5 or c[ak]["hi"] < 0.5)) else " "
+                m = r.get("means", {}).get(f, {})
+                mfp, mtp = m.get("FP"), m.get("TP")
+                mtxt = f"  mean FP={mfp:.4f} TP={mtp:.4f}" if mfp is not None and mtp is not None else ""
+                print(f"       {f:<20} AUC_alone={g(ak):.3f} [{c[ak]['lo']:.3f},{c[ak]['hi']:.3f}] {flag}  "
+                      f"gain={g(gk):+.3f}  hiorth={g(hk):.3f}  drop={g(dk):+.3f}  "
+                      f"beta={g(bk):+.3f}{mtxt}")
+        print(f"  [predict] {next((r['predict'] for r in ftp['by_strategy'].values() if r.get('predict')), '')}")
+    ftp_nie = models["FP_vs_TP_NIE"]
+    if ftp_nie.get("status") == "ok":
+        print("\n== FP vs TP — |NIE|-CONTROLLED (baseline = abs_NIE; gain = what f adds beyond effect size) ==")
+        print("   Same pool as FP_vs_TP. gain~0 => f merely proxies |NIE|; gain>0 => genuine discrimination.")
+        for name, r in ftp_nie["by_strategy"].items():
+            if r.get("status") != "ok":
+                print(f"  {name}: {r.get('status')}")
+                continue
+            c = r["coef"]
+            g = lambda k: c[k]["est"] if k in c else float("nan")
+            print(f"  {name}  n={r['n']} FP={r['n_fp']} TP={r['n_tp']}  "
+                  f"AUC_nie={g('AUC_nie'):.3f}  AUC_full={g('AUC_full'):.3f}  "
+                  f"gain_full={g('gain_full'):+.3f}  feats={r['feats']}")
+            for f in r["feats"]:
+                ak, bk, gk, hk, dk = f"AUC_{f}", f"beta_{f}", f"gain_{f}", f"AUC_{f}_hiNIE", f"drop_{f}"
+                flag = "*" if (ak in c and (c[ak]["lo"] > 0.5 or c[ak]["hi"] < 0.5)) else " "
+                m = r.get("means", {}).get(f, {})
+                mfp, mtp = m.get("FP"), m.get("TP")
+                mtxt = f"  mean FP={mfp:.4f} TP={mtp:.4f}" if mfp is not None and mtp is not None else ""
+                print(f"       {f:<20} AUC_alone={g(ak):.3f} [{c[ak]['lo']:.3f},{c[ak]['hi']:.3f}] {flag}  "
+                      f"gain={g(gk):+.3f}  hiNIE={g(hk):.3f}  drop={g(dk):+.3f}  "
+                      f"beta={g(bk):+.3f}{mtxt}")
+        print(f"  [predict] {next((r['predict'] for r in ftp_nie['by_strategy'].values() if r.get('predict')), '')}")
+    ftn = models["FN_vs_TN"]
+    if ftn.get("status") == "ok":
+        print("\n== FN vs TN (LOGISTIC: missed genuine vs correctly absent among low-effect components) ==")
+        print("   pop = in-circuit FN + off-circuit TN, both |NIE| < per-combo in-circuit median")
+        print("   AUC_<f> > 0.5 => f detects missed circuit members; ~0.5 => FN indistinguishable from TN")
+        for name, r in ftn["by_strategy"].items():
+            if r.get("status") != "ok":
+                print(f"  {name}: {r.get('status')}")
+                continue
+            c = r["coef"]
+            g = lambda k: c[k]["est"] if k in c else float("nan")
+            print(f"  {name}  n={r['n']} FN={r['n_fn']} TN={r['n_tn']}  "
+                  f"AUC_full={g('AUC_full'):.3f}  gain_full={g('gain_full'):+.3f}  feats={r['feats']}")
+            for f in r["feats"]:
+                ak, bk, gk, hk, dk = f"AUC_{f}", f"beta_{f}", f"gain_{f}", f"AUC_{f}_hiorth", f"drop_{f}"
+                flag = "*" if (ak in c and (c[ak]["lo"] > 0.5 or c[ak]["hi"] < 0.5)) else " "
+                m = r.get("means", {}).get(f, {})
+                mfn, mtn = m.get("FN"), m.get("TN")
+                mtxt = f"  mean FN={mfn:.4f} TN={mtn:.4f}" if mfn is not None and mtn is not None else ""
+                print(f"       {f:<20} AUC_alone={g(ak):.3f} [{c[ak]['lo']:.3f},{c[ak]['hi']:.3f}] {flag}  "
+                      f"gain={g(gk):+.3f}  hiorth={g(hk):.3f}  drop={g(dk):+.3f}  "
+                      f"beta={g(bk):+.3f}{mtxt}")
+        print(f"  [predict] {next((r['predict'] for r in ftn['by_strategy'].values() if r.get('predict')), '')}")
     _print_coef("MED  orth_base -> INT -> |NIE|  (mediation)", models["MED_orth_base_to_INT_to_NIE"])
     _print_coef("P5  STR push mediation  (INT ~ push_along_target) [downstream]", models["P5_STR_push"])
     _print_coef("P5  Gaussian push mediation  (INT ~ push_orth_base) [downstream]", models["P5_Gaussian_push"])

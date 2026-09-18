@@ -75,9 +75,11 @@ _COMPONENT_TO_HOOK: dict[str, str] = {
     "resid_mid": "blocks.{layer}.hook_resid_mid",
     # mlp
     "mlp_activation": "blocks.{layer}.mlp.hook_post",  # d_mlp hidden (tracr MLP SOps)
+    "mlp_pre": "blocks.{layer}.mlp.hook_pre",          # pre-activation (before act_fn)
     "mlp_output": "blocks.{layer}.hook_mlp_out",
     # attention (per-head, 4D: batch,pos,head,·)
     "head_attention_value_output": "blocks.{layer}.attn.hook_z",   # (·,head,d_head) — pyvene parity
+    "attn_scores": "blocks.{layer}.attn.hook_attn_scores",         # pre-softmax (n_heads, q, k)
     "attn_result": "blocks.{layer}.attn.hook_result",              # (·,head,d_model) — InterpBench corr
     "attention_output": "blocks.{layer}.hook_attn_out",
 }
@@ -496,6 +498,7 @@ class TracrPipeline(Pipeline):
         units: Sequence[AtomicModelUnit],
         push: tuple | None = None,
         batch_size: int = 32,
+        extra_hooks: Sequence[str] | None = None,
     ) -> tuple[Tensor, dict[str, Tensor]]:
         """Batched forward returning ``(scores, {unit.id: full slab})`` on cpu.
 
@@ -504,10 +507,15 @@ class TracrPipeline(Pipeline):
         however it likes. ``push=(unit, delta (N,[n_pos,]D_eff), positions)``
         composes an additive upstream push into the same forwards, so caching
         "under the push" is this call with push set (Y(a') and h'_c together).
+
+        extra_hooks: optional list of TL hook names (e.g. 'blocks.0.mlp.hook_pre')
+        to extract from the cache alongside the unit slabs. Returned in the slabs
+        dict keyed by the hook name string (full tensor, no head slicing).
         """
         n = len(input)
         score_chunks: list[Tensor] = []
         slab_chunks: dict[str, list[Tensor]] = {u.id: [] for u in units}
+        extra_chunks: dict[str, list[Tensor]] = {h: [] for h in (extra_hooks or [])}
         for i in range(0, n, batch_size):
             sl = slice(i, i + batch_size)
             tokens = self.load(input[sl])["tokens"]
@@ -521,10 +529,14 @@ class TracrPipeline(Pipeline):
             score_chunks.append(logits.detach().cpu())
             for u in units:
                 slab_chunks[u.id].append(_slab(u, cache[hook_name(u)]).detach().cpu())
-        return (
-            torch.cat(score_chunks, 0),
-            {uid: torch.cat(chunks, 0) for uid, chunks in slab_chunks.items()},
-        )
+            for h in (extra_hooks or []):
+                if h in cache:
+                    extra_chunks[h].append(cache[h].detach().cpu())
+        slabs = {uid: torch.cat(chunks, 0) for uid, chunks in slab_chunks.items()}
+        for h, chunks in extra_chunks.items():
+            if chunks:
+                slabs[h] = torch.cat(chunks, 0)
+        return torch.cat(score_chunks, 0), slabs
 
     def patch(
         self,

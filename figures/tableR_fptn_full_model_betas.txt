@@ -1,0 +1,30 @@
+
+swap (within) (n=936, FP=156, TN=780, AUC=0.910)
+  $\mathrm{orth}_b(\delta)$: +0.25 [-0.13, +0.56]
+  $\mathrm{along}_s(\delta)$: +0.39 [+0.18, +0.81]*
+      downstream curv.: +1.47 [+0.98, +2.35]*
+  best ripple (r_xint_in): +1.04 [+0.41, +1.98]*
+
+swap (cross) (n=4878, FP=1594, TN=3284, AUC=0.952)
+  $\mathrm{orth}_b(\delta)$: +1.03 [+0.70, +1.38]*
+  $\mathrm{along}_s(\delta)$: +0.51 [+0.27, +0.84]*
+      downstream curv.: +1.69 [+1.34, +2.10]*
+  best ripple (r_xint_in): +1.88 [+1.00, +2.76]*
+
+push (within) (n=2808, FP=420, TN=2388, AUC=0.943)
+  $\mathrm{orth}_b(\delta)$: +0.81 [+0.45, +1.26]*
+  $\mathrm{along}_s(\delta)$: +1.44 [+1.07, +2.02]*
+      downstream curv.: +0.69 [+0.42, +0.99]*
+    best ripple (r_in): +1.08 [+0.59, +1.69]*
+
+push (cross) (n=4878, FP=642, TN=4236, AUC=0.940)
+  $\mathrm{orth}_b(\delta)$: +0.75 [+0.55, +0.95]*
+  $\mathrm{along}_s(\delta)$: +1.07 [+0.87, +1.43]*
+      downstream curv.: +0.30 [-0.01, +0.50]
+    best ripple (r_in): +1.44 [+0.92, +2.00]*
+
+Gauss.\ push (n=2808, FP=173, TN=2635, AUC=0.959)
+  $\mathrm{orth}_b(\delta)$: +1.32 [+1.01, +2.45]*
+  $\mathrm{along}_s(\delta)$: ---
+      downstream curv.: +0.99 [+0.48, +1.99]*
+    best ripple (r_in): +0.77 [-0.53, +1.61]

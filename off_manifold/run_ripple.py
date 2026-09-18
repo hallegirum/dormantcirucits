@@ -18,8 +18,17 @@ One cached forward per candidate. Appends ripple_in_orth / ripple_off_orth / rip
 onto each candidate's int.json so collect_interaction picks them up. --n MUST match the
 original run. One (combo, seed) per call.
 
+Works for BOTH swap (--kind swap, default) and two-site PUSH (--kind push) — STR or
+Gaussian at the shared MLP. The ripple forward is identical: push ONLY c by delta_c on a
+CLEAN bypass (the MLP is not re-pushed); only the source of hp[c] differs (c's swapped rep
+vs c's rep downstream of the MLP push). Use --strategy Gaussian to run only Gaussian-push.
+
+    # swap (default):
     python run_ripple.py --results-root poly_results_gapInt --combo cases_0+2 --seed 0 \
         --case poly --tau 0.05 --n 150 --device cuda
+    # Gaussian-push at the MLP (INT is strong here -> tests interaction contagion):
+    python run_ripple.py --results-root poly_results_gapInt --combo cases_0+2 --seed 0 \
+        --case poly --kind push --strategy Gaussian --tau 0.5 --n 150 --device cuda
 """
 from __future__ import annotations
 
@@ -76,7 +85,17 @@ def main():
                          "population, INT-agnostic); 'int' = |INT| (biases to interaction-carried, "
                          "NOT recommended); 'none' = all off-circuit (costly: xINT weighting is O(G) each)")
     ap.add_argument("--tau", type=float, default=0.0, help="threshold for --gate-by (0 = keep all)")
-    ap.add_argument("--device", default="cpu")
+    ap.add_argument("--only", default="all", choices=["all", "within", "cross"],
+                    help="restrict to within-task (base==target) or cross-task (base!=target). "
+                         "within-task orth is small (~<0.6) so pair with a LOW --tau (e.g. 0.26)")
+    ap.add_argument("--kind", default="all", choices=["swap", "push", "all"],
+                    help="swap (input single-patch, default) | push (two-site @ MLP: STR or Gaussian) | all")
+    ap.add_argument("--strategy", default="all", choices=["all", "STR", "Gaussian"],
+                    help="restrict to one strategy, e.g. Gaussian to run ONLY Gaussian-push")
+    ap.add_argument("--include-tp", action="store_true",
+                    help="also instrument in-circuit (TP) components so ripple_xint_in_orth "
+                         "values exist for FP-vs-TP comparison")
+    ap.add_argument("--device", default="cuda")
     ap.add_argument("--position", default="last_token")
     ap.add_argument("--patch-at", default="internal")
     ap.add_argument("--batch-size", type=int, default=32)
@@ -99,16 +118,29 @@ def main():
     pipeline = d["pipeline"]
     grid = build_full_grid(pipeline, d["task"], list(range(d["n_layers"])),
                            positions=[args.position], patch_at=args.patch_at, include_residual=False)
-    all_units = [t.flatten()[0] for t in grid.values()]
-    unit_by_id = {u.id: u for u in all_units}
+    unit_lists = [_units_of(t) for t in grid.values()]             # each site = list of units
+    unit_by_id = {ul[0].id: ul for ul in unit_lists}               # site_id -> unit LIST (component_xint contract)
+    all_units = [u for ul in unit_lists for u in ul]               # flat, for forward_cache/clouds
     clouds = build_task_clouds(pipeline, d["pool"], all_units)      # {task: {site: (M,D)}}
     rows_idx = load_scan_rows(results_dir)
 
     n_written = 0
     for dpath in sorted(glob.glob(os.path.join(reps_root, "int-*"))):
         info = parse_reps_dir(os.path.basename(dpath))
-        if info is None or info["push_site"] != "input" or info["base_task"] is None:
-            continue                                           # ripple is a swap (single-patch) story
+        if info is None or info["base_task"] is None:
+            continue
+        strat, push, direc, alpha = info["strategy"], info["push_site"], info["direction"], info["alpha"]
+        kind = "swap" if push == "input" else ("self" if push == "self" else "push")
+        if kind == "self":
+            continue                                           # self-push: INT degenerate, no bypass to ripple
+        if (args.kind != "all" and kind != args.kind) or \
+           (args.strategy != "all" and strat != args.strategy):
+            continue
+        if kind == "push" and push not in unit_by_id:
+            continue                                           # can't locate the push site in the grid
+        is_within = (info["base_task"] == info["target_task"])
+        if (args.only == "within" and not is_within) or (args.only == "cross" and is_within):
+            continue                                           # within/cross-task filter
         base = info["base_task"]
         if base not in clouds:
             continue
@@ -116,10 +148,16 @@ def main():
         if not sf:
             continue
         hp = load_file(sf[0])
-        strat, push, direc, alpha = info["strategy"], info["push_site"], info["direction"], info["alpha"]
         n_scan = int(next(iter(hp.values())).shape[0])
 
-        mk = dict(strategy=strat, base_task=base, target_task=info["target_task"], alpha=alpha)
+        # rebuild the counterfactual: swap -> (base,target); push -> add push_site @ MLP;
+        # Gaussian has no task direction (drop target_task). hp[c] is c's rep UNDER the
+        # intervention (swapped, or downstream of the MLP push); delta_c/ripple are identical.
+        mk = dict(strategy=strat, base_task=base, alpha=alpha)
+        if kind == "push":
+            mk["push_site"] = unit_by_id[push][0]              # two-site push at the shared MLP
+        if strat == "STR":
+            mk["target_task"] = info["target_task"]            # Gaussian: no target direction
         spec = make_counterfactual(d, n=n_scan, seed=args.seed, **mk)
         if len(spec.cf_noise) != n_scan:
             print(f"[ripple][skip] {direc} a{alpha}: rebuilt {len(spec.cf_noise)} != saved {n_scan}")
@@ -141,7 +179,8 @@ def main():
 
         # candidates = OFF-circuit sites, gated by divergence (default) not interaction — the
         # FP mechanism is geometric, so an |INT| gate would drop the actual false positives.
-        def _keep(r):
+        # With --include-tp, also instrument in-circuit sites (for FP-vs-TP ripple comparison).
+        def _keep_off(r):
             if r.get("degenerate") or r.get("in_base_circuit") is not False:
                 return False
             if args.gate_by == "int":
@@ -149,8 +188,19 @@ def main():
             if args.gate_by == "orth":
                 return r.get("orth_base") is not None and abs(r["orth_base"]) >= args.tau
             return True                                          # 'none' -> all off-circuit
-        cand = [sid for sid in hp if (hit := rows_idx.get((strat, push, direc, alpha, sid)))
-                and _keep(hit[0])]
+
+        def _keep_tp(r):
+            return not r.get("degenerate") and r.get("in_base_circuit") is True
+
+        def _keep(r):
+            if _keep_off(r):
+                return True
+            if args.include_tp and _keep_tp(r):
+                return True
+            return False
+
+        cand = [sid for sid in hp if sid != push                     # never the push site itself
+                and (hit := rows_idx.get((strat, push, direc, alpha, sid))) and _keep(hit[0])]
 
         for cid in cand:
             if cid not in unit_by_id or cid not in h:
@@ -158,7 +208,7 @@ def main():
             delta_c = hp[cid] - h[cid]
             # push c by its own divergence -> the noising forward; cache every site
             _, rippled = pipeline.forward_cache(bases, all_units,
-                                                push=(unit_by_id[cid], delta_c, pos),
+                                                push=(unit_by_id[cid][0], delta_c, pos),
                                                 batch_size=args.batch_size)
             orthN = {}                                          # off-base-manifold ripple per site
             for uid in rippled:
@@ -189,7 +239,7 @@ def main():
             row.update(fields)
             json.dump(row, open(path, "w"), indent=2)
             n_written += 1
-        print(f"[ripple] {direc:>7} a{alpha:<4g} candidates {len(cand)}")
+        print(f"[ripple] {strat:>8} {kind:>4} {direc:>7} a{alpha:<4g} candidates {len(cand)}")
 
     print(f"\nwrote ripple_* (incl. xINT-weighted) onto {n_written} candidate rows")
 

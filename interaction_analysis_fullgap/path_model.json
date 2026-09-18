@@ -1,0 +1,6846 @@
+{
+  "audit": {
+    "cases_0+1|seed0": {
+      "Gaussian/self": 60,
+      "Gaussian/MLP(Layer-0,mlp_activation,Token-last_token)": 60,
+      "STR/input": 80,
+      "STR/MLP(Layer-0,mlp_activation,Token-last_token)": 120
+    },
+    "cases_0+1|seed1": {
+      "Gaussian/self": 60,
+      "Gaussian/MLP(Layer-0,mlp_activation,Token-last_token)": 60,
+      "STR/input": 80,
+      "STR/MLP(Layer-0,mlp_activation,Token-last_token)": 120
+    },
+    "cases_0+1|seed2": {
+      "Gaussian/self": 60,
+      "Gaussian/MLP(Layer-0,mlp_activation,Token-last_token)": 60,
+      "STR/input": 80,
+      "STR/MLP(Layer-0,mlp_activation,Token-last_token)": 120
+    },
+    "cases_0+1+2|seed0": {
+      "Gaussian/self": 135,
+      "Gaussian/MLP(Layer-0,mlp_activation,Token-last_token)": 135,
+      "STR/input": 315,
+      "STR/MLP(Layer-0,mlp_activation,Token-last_token)": 405
+    },
+    "cases_0+1+2|seed1": {
+      "Gaussian/self": 135,
+      "Gaussian/MLP(Layer-0,mlp_activation,Token-last_token)": 135,
+      "STR/input": 315,
+      "STR/MLP(Layer-0,mlp_activation,Token-last_token)": 405
+    },
+    "cases_0+1+2|seed2": {
+      "Gaussian/self": 135,
+      "Gaussian/MLP(Layer-0,mlp_activation,Token-last_token)": 135,
+      "STR/input": 315,
+      "STR/MLP(Layer-0,mlp_activation,Token-last_token)": 405
+    },
+    "cases_0+1+2+3|seed0": {
+      "Gaussian/self": 180,
+      "Gaussian/MLP(Layer-0,mlp_activation,Token-last_token)": 180,
+      "STR/input": 600,
+      "STR/MLP(Layer-0,mlp_activation,Token-last_token)": 720
+    },
+    "cases_0+1+2+3|seed1": {
+      "Gaussian/self": 180,
+      "Gaussian/MLP(Layer-0,mlp_activation,Token-last_token)": 180,
+      "STR/input": 600,
+      "STR/MLP(Layer-0,mlp_activation,Token-last_token)": 720
+    },
+    "cases_0+1+2+3|seed2": {
+      "Gaussian/self": 180,
+      "Gaussian/MLP(Layer-0,mlp_activation,Token-last_token)": 180,
+      "STR/input": 600,
+      "STR/MLP(Layer-0,mlp_activation,Token-last_token)": 720
+    },
+    "cases_0+1+3|seed0": {
+      "Gaussian/self": 135,
+      "Gaussian/MLP(Layer-0,mlp_activation,Token-last_token)": 135,
+      "STR/input": 315,
+      "STR/MLP(Layer-0,mlp_activation,Token-last_token)": 405
+    },
+    "cases_0+1+3|seed1": {
+      "Gaussian/self": 135,
+      "Gaussian/MLP(Layer-0,mlp_activation,Token-last_token)": 135,
+      "STR/input": 315,
+      "STR/MLP(Layer-0,mlp_activation,Token-last_token)": 405
+    },
+    "cases_0+1+3|seed2": {
+      "Gaussian/self": 135,
+      "Gaussian/MLP(Layer-0,mlp_activation,Token-last_token)": 135,
+      "STR/input": 315,
+      "STR/MLP(Layer-0,mlp_activation,Token-last_token)": 405
+    },
+    "cases_0+2|seed0": {
+      "Gaussian/self": 90,
+      "Gaussian/MLP(Layer-0,mlp_activation,Token-last_token)": 90,
+      "STR/input": 120,
+      "STR/MLP(Layer-0,mlp_activation,Token-last_token)": 180
+    },
+    "cases_0+2|seed1": {
+      "Gaussian/self": 90,
+      "Gaussian/MLP(Layer-0,mlp_activation,Token-last_token)": 90,
+      "STR/input": 120,
+      "STR/MLP(Layer-0,mlp_activation,Token-last_token)": 180
+    },
+    "cases_0+2|seed2": {
+      "Gaussian/self": 90,
+      "Gaussian/MLP(Layer-0,mlp_activation,Token-last_token)": 90,
+      "STR/input": 120,
+      "STR/MLP(Layer-0,mlp_activation,Token-last_token)": 180
+    },
+    "cases_0+2+3|seed0": {
+      "Gaussian/self": 135,
+      "Gaussian/MLP(Layer-0,mlp_activation,Token-last_token)": 135,
+      "STR/input": 315,
+      "STR/MLP(Layer-0,mlp_activation,Token-last_token)": 405
+    },
+    "cases_0+2+3|seed1": {
+      "Gaussian/self": 135,
+      "Gaussian/MLP(Layer-0,mlp_activation,Token-last_token)": 135,
+      "STR/input": 315,
+      "STR/MLP(Layer-0,mlp_activation,Token-last_token)": 405
+    },
+    "cases_0+2+3|seed2": {
+      "Gaussian/self": 135,
+      "Gaussian/MLP(Layer-0,mlp_activation,Token-last_token)": 135,
+      "STR/input": 315,
+      "STR/MLP(Layer-0,mlp_activation,Token-last_token)": 405
+    },
+    "cases_0+3|seed0": {
+      "Gaussian/self": 90,
+      "Gaussian/MLP(Layer-0,mlp_activation,Token-last_token)": 90,
+      "STR/input": 120,
+      "STR/MLP(Layer-0,mlp_activation,Token-last_token)": 180
+    },
+    "cases_0+3|seed1": {
+      "Gaussian/self": 90,
+      "Gaussian/MLP(Layer-0,mlp_activation,Token-last_token)": 90,
+      "STR/input": 120,
+      "STR/MLP(Layer-0,mlp_activation,Token-last_token)": 180
+    },
+    "cases_0+3|seed2": {
+      "Gaussian/self": 90,
+      "Gaussian/MLP(Layer-0,mlp_activation,Token-last_token)": 90,
+      "STR/input": 120,
+      "STR/MLP(Layer-0,mlp_activation,Token-last_token)": 180
+    },
+    "cases_1+2|seed0": {
+      "Gaussian/self": 90,
+      "Gaussian/MLP(Layer-0,mlp_activation,Token-last_token)": 90,
+      "STR/input": 120,
+      "STR/MLP(Layer-0,mlp_activation,Token-last_token)": 180
+    },
+    "cases_1+2|seed1": {
+      "Gaussian/self": 90,
+      "Gaussian/MLP(Layer-0,mlp_activation,Token-last_token)": 90,
+      "STR/input": 120,
+      "STR/MLP(Layer-0,mlp_activation,Token-last_token)": 180
+    },
+    "cases_1+2|seed2": {
+      "Gaussian/self": 90,
+      "Gaussian/MLP(Layer-0,mlp_activation,Token-last_token)": 90,
+      "STR/input": 120,
+      "STR/MLP(Layer-0,mlp_activation,Token-last_token)": 180
+    },
+    "cases_1+2+3|seed0": {
+      "Gaussian/self": 135,
+      "Gaussian/MLP(Layer-0,mlp_activation,Token-last_token)": 135,
+      "STR/input": 315,
+      "STR/MLP(Layer-0,mlp_activation,Token-last_token)": 405
+    },
+    "cases_1+2+3|seed1": {
+      "Gaussian/self": 135,
+      "Gaussian/MLP(Layer-0,mlp_activation,Token-last_token)": 135,
+      "STR/input": 315,
+      "STR/MLP(Layer-0,mlp_activation,Token-last_token)": 405
+    },
+    "cases_1+2+3|seed2": {
+      "Gaussian/self": 135,
+      "Gaussian/MLP(Layer-0,mlp_activation,Token-last_token)": 135,
+      "STR/input": 315,
+      "STR/MLP(Layer-0,mlp_activation,Token-last_token)": 405
+    },
+    "cases_1+3|seed0": {
+      "Gaussian/self": 90,
+      "Gaussian/MLP(Layer-0,mlp_activation,Token-last_token)": 90,
+      "STR/input": 120,
+      "STR/MLP(Layer-0,mlp_activation,Token-last_token)": 180
+    },
+    "cases_1+3|seed1": {
+      "Gaussian/self": 90,
+      "Gaussian/MLP(Layer-0,mlp_activation,Token-last_token)": 90,
+      "STR/input": 120,
+      "STR/MLP(Layer-0,mlp_activation,Token-last_token)": 180
+    },
+    "cases_1+3|seed2": {
+      "Gaussian/self": 90,
+      "Gaussian/MLP(Layer-0,mlp_activation,Token-last_token)": 90,
+      "STR/input": 120,
+      "STR/MLP(Layer-0,mlp_activation,Token-last_token)": 180
+    },
+    "cases_2+3|seed0": {
+      "Gaussian/self": 90,
+      "Gaussian/MLP(Layer-0,mlp_activation,Token-last_token)": 90,
+      "STR/input": 120,
+      "STR/MLP(Layer-0,mlp_activation,Token-last_token)": 180
+    },
+    "cases_2+3|seed1": {
+      "Gaussian/self": 90,
+      "Gaussian/MLP(Layer-0,mlp_activation,Token-last_token)": 90,
+      "STR/input": 120,
+      "STR/MLP(Layer-0,mlp_activation,Token-last_token)": 180
+    },
+    "cases_2+3|seed2": {
+      "Gaussian/self": 90,
+      "Gaussian/MLP(Layer-0,mlp_activation,Token-last_token)": 90,
+      "STR/input": 120,
+      "STR/MLP(Layer-0,mlp_activation,Token-last_token)": 180
+    }
+  },
+  "M1_geometry_to_INT": {
+    "status": "ok",
+    "n": 6390,
+    "r2": 0.019,
+    "coef": {
+      "orth_base": {
+        "est": -0.139,
+        "lo": -0.1851,
+        "hi": -0.0832
+      },
+      "along_target": {
+        "est": 0.0004,
+        "lo": -0.0589,
+        "hi": 0.0365
+      }
+    },
+    "predict": "dormancy => orth_base > 0 dominant, along_target ~ 0"
+  },
+  "M2_STR_swap": {
+    "status": "ok",
+    "n": 5814,
+    "r2": 0.36,
+    "coef": {
+      "INT": {
+        "est": 0.222,
+        "lo": 0.1144,
+        "hi": 0.2984
+      },
+      "orth_base": {
+        "est": 0.5939,
+        "lo": 0.5451,
+        "hi": 0.6521
+      },
+      "in_target": {
+        "est": 0.1345,
+        "lo": 0.0199,
+        "hi": 0.283
+      },
+      "cross_task": {
+        "est": -0.0484,
+        "lo": -0.1122,
+        "hi": 0.0025
+      }
+    },
+    "predict": "dormancy => orth_base + INT drive FPs; cross_task tests if cross-task is worse than within-task"
+  },
+  "M2_STR_push_MLP": {
+    "status": "ok",
+    "label": "STR push @ MLP",
+    "n": 3582,
+    "r2": 0.446,
+    "coef": {
+      "orth_base": {
+        "est": 0.6503,
+        "lo": 0.5481,
+        "hi": 0.7196
+      },
+      "INT": {
+        "est": -0.0543,
+        "lo": -0.2014,
+        "hi": 0.0764
+      },
+      "in_target": {
+        "est": 0.1552,
+        "lo": -0.0559,
+        "hi": 0.4068
+      }
+    },
+    "predict": "off-manifold (orth_base) + INT drive the false attribution"
+  },
+  "M2_Gaussian_push": {
+    "status": "ok",
+    "label": "Gaussian push",
+    "n": 2052,
+    "r2": 0.731,
+    "coef": {
+      "orth_base": {
+        "est": 0.7663,
+        "lo": 0.6219,
+        "hi": 0.8602
+      },
+      "INT": {
+        "est": 0.1624,
+        "lo": 0.0654,
+        "hi": 0.3215
+      }
+    },
+    "predict": "off-manifold (orth_base) + INT drive the false attribution"
+  },
+  "M2_Gaussian_self": {
+    "status": "ok",
+    "label": "Gaussian self-push",
+    "n": 2808,
+    "r2": 0.634,
+    "coef": {
+      "orth_base": {
+        "est": 0.7962,
+        "lo": 0.7642,
+        "hi": 0.8268
+      }
+    },
+    "predict": "off-manifold (orth_base) + INT drive the false attribution"
+  },
+  "M2b_STR_swap": {
+    "status": "ok",
+    "label": "STR swap borrowed",
+    "n": 1029,
+    "r2": 0.601,
+    "coef": {
+      "orth_base": {
+        "est": 0.6935,
+        "lo": 0.6084,
+        "hi": 0.7726
+      },
+      "INT": {
+        "est": 0.2256,
+        "lo": 0.1407,
+        "hi": 0.3157
+      },
+      "along_target": {
+        "est": 0.1876,
+        "lo": 0.0671,
+        "hi": 0.3439
+      }
+    },
+    "predict": "borrowing => along_target > 0 drives borrowed FPs (when a target exists)"
+  },
+  "M2b_STR_push": {
+    "status": "ok",
+    "label": "STR push borrowed",
+    "n": 360,
+    "r2": 0.568,
+    "coef": {
+      "orth_base": {
+        "est": 0.1915,
+        "lo": -0.0184,
+        "hi": 0.4089
+      },
+      "INT": {
+        "est": -0.0716,
+        "lo": -0.2836,
+        "hi": 0.0975
+      },
+      "along_target": {
+        "est": 0.6093,
+        "lo": 0.3241,
+        "hi": 0.7564
+      }
+    },
+    "predict": "borrowing => along_target > 0 drives borrowed FPs (when a target exists)"
+  },
+  "M2b_Gaussian_push": {
+    "status": "ok",
+    "label": "Gaussian push borrowed",
+    "n": 279,
+    "r2": 0.753,
+    "coef": {
+      "orth_base": {
+        "est": 0.8287,
+        "lo": 0.7107,
+        "hi": 0.924
+      },
+      "INT": {
+        "est": 0.0637,
+        "lo": -0.0363,
+        "hi": 0.2245
+      }
+    },
+    "predict": "borrowing => along_target > 0 drives borrowed FPs (when a target exists)"
+  },
+  "M3_separation": {
+    "status": "ok",
+    "n": 5814,
+    "n_borrowed": 1029,
+    "n_geometric": 4785,
+    "r2": 0.361,
+    "coef": {
+      "orth_base": {
+        "est": 0.592,
+        "lo": 0.5443,
+        "hi": 0.6443
+      },
+      "INT": {
+        "est": 0.222,
+        "lo": 0.1142,
+        "hi": 0.2988
+      },
+      "is_borrowed": {
+        "est": 0.1517,
+        "lo": 0.0547,
+        "hi": 0.2681
+      }
+    },
+    "predict": "separation => INT > 0 means INT predicts which non-circuit components get falsely attributed; is_borrowed > 0 means task-affiliated components are worse"
+  },
+  "M3L_swap_within": {
+    "status": "ok",
+    "n": 936,
+    "n_fp": 156,
+    "n_harmless": 780,
+    "q_threshold": 0.5,
+    "label": "STR swap WITHIN-task (realistic)",
+    "feats": [
+      "INT",
+      "gap_frac",
+      "along_nonbase_max"
+    ],
+    "coef": {
+      "AUC_orth": {
+        "est": 0.6219,
+        "lo": 0.545,
+        "hi": 0.6959
+      },
+      "AUC_full": {
+        "est": 0.8792,
+        "lo": 0.8068,
+        "hi": 0.9238
+      },
+      "gain_full": {
+        "est": 0.2573,
+        "lo": 0.1775,
+        "hi": 0.3465
+      },
+      "AUC_INT": {
+        "est": 0.4934,
+        "lo": 0.4519,
+        "hi": 0.6067
+      },
+      "gain_INT": {
+        "est": 0.0398,
+        "lo": -0.0,
+        "hi": 0.1383
+      },
+      "AUC_INT_hiorth": {
+        "est": 0.5233,
+        "lo": 0.4643,
+        "hi": 0.6085
+      },
+      "beta_INT": {
+        "est": -0.0888,
+        "lo": -0.4454,
+        "hi": 0.2516
+      },
+      "drop_INT": {
+        "est": 0.0003,
+        "lo": -0.0007,
+        "hi": 0.0119
+      },
+      "AUC_gap_frac": {
+        "est": 0.867,
+        "lo": 0.7829,
+        "hi": 0.9134
+      },
+      "gain_gap_frac": {
+        "est": 0.2451,
+        "lo": 0.1527,
+        "hi": 0.3334
+      },
+      "AUC_gap_frac_hiorth": {
+        "est": 0.8758,
+        "lo": 0.7947,
+        "hi": 0.9172
+      },
+      "beta_gap_frac": {
+        "est": 1.6741,
+        "lo": 0.9201,
+        "hi": 2.3067
+      },
+      "drop_gap_frac": {
+        "est": 0.062,
+        "lo": 0.0067,
+        "hi": 0.0954
+      },
+      "AUC_along_nonbase_max": {
+        "est": 0.8177,
+        "lo": 0.7887,
+        "hi": 0.8493
+      },
+      "gain_along_nonbase_max": {
+        "est": 0.194,
+        "lo": 0.1212,
+        "hi": 0.282
+      },
+      "AUC_along_nonbase_max_hiorth": {
+        "est": 0.8023,
+        "lo": 0.7268,
+        "hi": 0.8501
+      },
+      "beta_along_nonbase_max": {
+        "est": 0.5607,
+        "lo": 0.3339,
+        "hi": 0.8652
+      },
+      "drop_along_nonbase_max": {
+        "est": 0.0118,
+        "lo": 0.0017,
+        "hi": 0.0408
+      }
+    },
+    "predict": "separation => gain_<f>>0 and AUC_<f>_hiorth>0.5: that feature distinguishes pernicious (high-orth -> FP) from harmless (high-orth -> no FP) beyond divergence"
+  },
+  "M3L_swap_cross": {
+    "status": "ok",
+    "n": 4878,
+    "n_fp": 1594,
+    "n_harmless": 3284,
+    "q_threshold": 0.5,
+    "label": "STR swap CROSS-task (base case)",
+    "feats": [
+      "INT",
+      "gap_frac",
+      "along_target",
+      "along_nonbase_max"
+    ],
+    "coef": {
+      "AUC_orth": {
+        "est": 0.8156,
+        "lo": 0.7854,
+        "hi": 0.8421
+      },
+      "AUC_full": {
+        "est": 0.9379,
+        "lo": 0.9154,
+        "hi": 0.9517
+      },
+      "gain_full": {
+        "est": 0.1222,
+        "lo": 0.103,
+        "hi": 0.1441
+      },
+      "AUC_INT": {
+        "est": 0.548,
+        "lo": 0.4586,
+        "hi": 0.6028
+      },
+      "gain_INT": {
+        "est": 0.008,
+        "lo": -0.004,
+        "hi": 0.0234
+      },
+      "AUC_INT_hiorth": {
+        "est": 0.5537,
+        "lo": 0.4658,
+        "hi": 0.6133
+      },
+      "beta_INT": {
+        "est": 0.1604,
+        "lo": 0.0112,
+        "hi": 0.3517
+      },
+      "drop_INT": {
+        "est": 0.0005,
+        "lo": 0.0,
+        "hi": 0.0025
+      },
+      "AUC_gap_frac": {
+        "est": 0.897,
+        "lo": 0.869,
+        "hi": 0.9135
+      },
+      "gain_gap_frac": {
+        "est": 0.1149,
+        "lo": 0.0935,
+        "hi": 0.1349
+      },
+      "AUC_gap_frac_hiorth": {
+        "est": 0.8693,
+        "lo": 0.8131,
+        "hi": 0.8924
+      },
+      "beta_gap_frac": {
+        "est": 1.9218,
+        "lo": 1.4422,
+        "hi": 2.2818
+      },
+      "drop_gap_frac": {
+        "est": 0.0608,
+        "lo": 0.0425,
+        "hi": 0.0742
+      },
+      "AUC_along_target": {
+        "est": 0.8661,
+        "lo": 0.8437,
+        "hi": 0.8831
+      },
+      "gain_along_target": {
+        "est": 0.0655,
+        "lo": 0.0492,
+        "hi": 0.0859
+      },
+      "AUC_along_target_hiorth": {
+        "est": 0.7884,
+        "lo": 0.7345,
+        "hi": 0.8202
+      },
+      "beta_along_target": {
+        "est": -1.5079,
+        "lo": -6.0498,
+        "hi": 0.2834
+      },
+      "drop_along_target": {
+        "est": 0.0,
+        "lo": -0.0001,
+        "hi": 0.0011
+      },
+      "AUC_along_nonbase_max": {
+        "est": 0.8691,
+        "lo": 0.8476,
+        "hi": 0.8835
+      },
+      "gain_along_nonbase_max": {
+        "est": 0.0662,
+        "lo": 0.0499,
+        "hi": 0.0861
+      },
+      "AUC_along_nonbase_max_hiorth": {
+        "est": 0.7925,
+        "lo": 0.7415,
+        "hi": 0.8212
+      },
+      "beta_along_nonbase_max": {
+        "est": 2.3014,
+        "lo": 0.5817,
+        "hi": 6.8666
+      },
+      "drop_along_nonbase_max": {
+        "est": 0.0003,
+        "lo": -0.0001,
+        "hi": 0.0015
+      }
+    },
+    "predict": "separation => gain_<f>>0 and AUC_<f>_hiorth>0.5: that feature distinguishes pernicious (high-orth -> FP) from harmless (high-orth -> no FP) beyond divergence"
+  },
+  "M3L_STR_push_cross": {
+    "status": "ok",
+    "n": 3582,
+    "n_fp": 364,
+    "n_harmless": 3218,
+    "q_threshold": 0.5,
+    "label": "STR push CROSS-task",
+    "feats": [
+      "INT",
+      "gap_frac",
+      "along_target",
+      "along_nonbase_max"
+    ],
+    "coef": {
+      "AUC_orth": {
+        "est": 0.8763,
+        "lo": 0.8653,
+        "hi": 0.8978
+      },
+      "AUC_full": {
+        "est": 0.9317,
+        "lo": 0.9117,
+        "hi": 0.9585
+      },
+      "gain_full": {
+        "est": 0.0554,
+        "lo": 0.0346,
+        "hi": 0.0687
+      },
+      "AUC_INT": {
+        "est": 0.5281,
+        "lo": 0.4545,
+        "hi": 0.6322
+      },
+      "gain_INT": {
+        "est": -0.0106,
+        "lo": -0.0254,
+        "hi": 0.0156
+      },
+      "AUC_INT_hiorth": {
+        "est": 0.5761,
+        "lo": 0.4908,
+        "hi": 0.6468
+      },
+      "beta_INT": {
+        "est": 0.2735,
+        "lo": -0.1034,
+        "hi": 0.446
+      },
+      "drop_INT": {
+        "est": -0.0013,
+        "lo": -0.0037,
+        "hi": 0.0033
+      },
+      "AUC_gap_frac": {
+        "est": 0.6867,
+        "lo": 0.5212,
+        "hi": 0.8152
+      },
+      "gain_gap_frac": {
+        "est": -0.0399,
+        "lo": -0.0808,
+        "hi": 0.033
+      },
+      "AUC_gap_frac_hiorth": {
+        "est": 0.7073,
+        "lo": 0.5394,
+        "hi": 0.8279
+      },
+      "beta_gap_frac": {
+        "est": 0.6258,
+        "lo": 0.0862,
+        "hi": 1.1338
+      },
+      "drop_gap_frac": {
+        "est": 0.0114,
+        "lo": -0.0019,
+        "hi": 0.0305
+      },
+      "AUC_along_target": {
+        "est": 0.8936,
+        "lo": 0.8714,
+        "hi": 0.9274
+      },
+      "gain_along_target": {
+        "est": 0.0393,
+        "lo": 0.0251,
+        "hi": 0.0582
+      },
+      "AUC_along_target_hiorth": {
+        "est": 0.813,
+        "lo": 0.7721,
+        "hi": 0.8638
+      },
+      "beta_along_target": {
+        "est": -0.547,
+        "lo": -1.4374,
+        "hi": -0.2799
+      },
+      "drop_along_target": {
+        "est": 0.0003,
+        "lo": -0.0016,
+        "hi": 0.0019
+      },
+      "AUC_along_nonbase_max": {
+        "est": 0.9023,
+        "lo": 0.8816,
+        "hi": 0.9372
+      },
+      "gain_along_nonbase_max": {
+        "est": 0.0451,
+        "lo": 0.0305,
+        "hi": 0.0641
+      },
+      "AUC_along_nonbase_max_hiorth": {
+        "est": 0.8276,
+        "lo": 0.7856,
+        "hi": 0.8808
+      },
+      "beta_along_nonbase_max": {
+        "est": 1.5592,
+        "lo": 1.1834,
+        "hi": 2.4497
+      },
+      "drop_along_nonbase_max": {
+        "est": 0.0066,
+        "lo": -0.0011,
+        "hi": 0.0155
+      }
+    },
+    "predict": "separation => gain_<f>>0 and AUC_<f>_hiorth>0.5: that feature distinguishes pernicious (high-orth -> FP) from harmless (high-orth -> no FP) beyond divergence"
+  },
+  "M3L_STR_push_within": {
+    "status": "ok",
+    "n": 2052,
+    "n_fp": 308,
+    "n_harmless": 1744,
+    "q_threshold": 0.5,
+    "label": "STR push WITHIN-task",
+    "feats": [
+      "INT",
+      "gap_frac",
+      "along_nonbase_max"
+    ],
+    "coef": {
+      "AUC_orth": {
+        "est": 0.841,
+        "lo": 0.7658,
+        "hi": 0.8931
+      },
+      "AUC_full": {
+        "est": 0.9031,
+        "lo": 0.859,
+        "hi": 0.9348
+      },
+      "gain_full": {
+        "est": 0.0622,
+        "lo": 0.0243,
+        "hi": 0.1053
+      },
+      "AUC_INT": {
+        "est": 0.6262,
+        "lo": 0.5642,
+        "hi": 0.6906
+      },
+      "gain_INT": {
+        "est": 0.0065,
+        "lo": -0.0137,
+        "hi": 0.0454
+      },
+      "AUC_INT_hiorth": {
+        "est": 0.5838,
+        "lo": 0.4811,
+        "hi": 0.6512
+      },
+      "beta_INT": {
+        "est": 0.2386,
+        "lo": 0.0877,
+        "hi": 0.4145
+      },
+      "drop_INT": {
+        "est": 0.0124,
+        "lo": 0.001,
+        "hi": 0.0392
+      },
+      "AUC_gap_frac": {
+        "est": 0.7253,
+        "lo": 0.6423,
+        "hi": 0.8185
+      },
+      "gain_gap_frac": {
+        "est": -0.0185,
+        "lo": -0.0513,
+        "hi": 0.0237
+      },
+      "AUC_gap_frac_hiorth": {
+        "est": 0.7278,
+        "lo": 0.6409,
+        "hi": 0.8253
+      },
+      "beta_gap_frac": {
+        "est": 0.4987,
+        "lo": 0.2336,
+        "hi": 0.8722
+      },
+      "drop_gap_frac": {
+        "est": 0.0001,
+        "lo": -0.0206,
+        "hi": 0.0096
+      },
+      "AUC_along_nonbase_max": {
+        "est": 0.8792,
+        "lo": 0.8284,
+        "hi": 0.9135
+      },
+      "gain_along_nonbase_max": {
+        "est": 0.0555,
+        "lo": 0.022,
+        "hi": 0.094
+      },
+      "AUC_along_nonbase_max_hiorth": {
+        "est": 0.825,
+        "lo": 0.7744,
+        "hi": 0.8662
+      },
+      "beta_along_nonbase_max": {
+        "est": 1.0169,
+        "lo": 0.4756,
+        "hi": 1.4309
+      },
+      "drop_along_nonbase_max": {
+        "est": 0.078,
+        "lo": 0.0261,
+        "hi": 0.1199
+      }
+    },
+    "predict": "separation => gain_<f>>0 and AUC_<f>_hiorth>0.5: that feature distinguishes pernicious (high-orth -> FP) from harmless (high-orth -> no FP) beyond divergence"
+  },
+  "M3L_Gaussian_push": {
+    "status": "ok",
+    "n": 2052,
+    "n_fp": 103,
+    "n_harmless": 1949,
+    "q_threshold": 0.5,
+    "label": "Gaussian push",
+    "feats": [
+      "INT",
+      "gap_frac",
+      "along_nonbase_max"
+    ],
+    "coef": {
+      "AUC_orth": {
+        "est": 0.9378,
+        "lo": 0.8582,
+        "hi": 0.9808
+      },
+      "AUC_full": {
+        "est": 0.9851,
+        "lo": 0.9736,
+        "hi": 0.9932
+      },
+      "gain_full": {
+        "est": 0.0472,
+        "lo": 0.0077,
+        "hi": 0.1206
+      },
+      "AUC_INT": {
+        "est": 0.7891,
+        "lo": 0.5656,
+        "hi": 0.9498
+      },
+      "gain_INT": {
+        "est": 0.0148,
+        "lo": -0.0182,
+        "hi": 0.0673
+      },
+      "AUC_INT_hiorth": {
+        "est": 0.774,
+        "lo": 0.5574,
+        "hi": 0.942
+      },
+      "beta_INT": {
+        "est": 0.5177,
+        "lo": 0.0902,
+        "hi": 1.0219
+      },
+      "drop_INT": {
+        "est": 0.0042,
+        "lo": 0.0001,
+        "hi": 0.0114
+      },
+      "AUC_gap_frac": {
+        "est": 0.872,
+        "lo": 0.7673,
+        "hi": 0.9572
+      },
+      "gain_gap_frac": {
+        "est": 0.0414,
+        "lo": 0.0064,
+        "hi": 0.1112
+      },
+      "AUC_gap_frac_hiorth": {
+        "est": 0.8335,
+        "lo": 0.7296,
+        "hi": 0.9428
+      },
+      "beta_gap_frac": {
+        "est": 1.2999,
+        "lo": 0.7682,
+        "hi": 2.0609
+      },
+      "drop_gap_frac": {
+        "est": 0.0105,
+        "lo": 0.0021,
+        "hi": 0.0227
+      },
+      "AUC_along_nonbase_max": {
+        "est": 0.9339,
+        "lo": 0.9068,
+        "hi": 0.9616
+      },
+      "gain_along_nonbase_max": {
+        "est": 0.0291,
+        "lo": 0.0014,
+        "hi": 0.0887
+      },
+      "AUC_along_nonbase_max_hiorth": {
+        "est": 0.8667,
+        "lo": 0.8174,
+        "hi": 0.9279
+      },
+      "beta_along_nonbase_max": {
+        "est": 0.3737,
+        "lo": -0.0948,
+        "hi": 0.9356
+      },
+      "drop_along_nonbase_max": {
+        "est": 0.0012,
+        "lo": -0.0003,
+        "hi": 0.0044
+      }
+    },
+    "predict": "separation => gain_<f>>0 and AUC_<f>_hiorth>0.5: that feature distinguishes pernicious (high-orth -> FP) from harmless (high-orth -> no FP) beyond divergence"
+  },
+  "XINT_borrowing_separation": {
+    "status": "too few xINT candidates (0) \u2014 run run_xint.py first"
+  },
+  "XINT_by_strategy": {
+    "status": "no xINT candidates \u2014 run run_xint.py (writeback)"
+  },
+  "XINT_logistic_by_strategy": {
+    "status": "no xINT candidates \u2014 run run_xint.py"
+  },
+  "XINT_fp_prediction": {
+    "status": "ok",
+    "by_strategy": {
+      "Gaussian_push": {
+        "status": "too few rows / no feats (off-circuit 0, ref 630, feats []) [Gaussian_push]",
+        "label": "Gaussian_push"
+      },
+      "Gaussian_self": {
+        "status": "too few rows / no feats (off-circuit 0, ref 0, feats []) [Gaussian_self]",
+        "label": "Gaussian_self"
+      },
+      "STR_push_cross": {
+        "status": "too few rows / no feats (off-circuit 0, ref 1080, feats []) [STR_push_cross]",
+        "label": "STR_push_cross"
+      },
+      "STR_push_within": {
+        "status": "too few rows / no feats (off-circuit 0, ref 630, feats []) [STR_push_within]",
+        "label": "STR_push_within"
+      },
+      "STR_swap_cross": {
+        "status": "too few rows / no feats (off-circuit 0, ref 1512, feats []) [STR_swap_cross]",
+        "label": "STR_swap_cross"
+      },
+      "STR_swap_within": {
+        "status": "too few rows / no feats (off-circuit 0, ref 294, feats []) [STR_swap_within]",
+        "label": "STR_swap_within"
+      }
+    }
+  },
+  "RIPPLE_fp_prediction": {
+    "status": "ok",
+    "n_ripple_rows": 1430,
+    "by_strategy": {
+      "Gaussian_push": {
+        "status": "too few ripple candidates (0) [Gaussian_push]"
+      },
+      "Gaussian_self": {
+        "status": "too few ripple candidates (0) [Gaussian_self]"
+      },
+      "STR_push_cross": {
+        "status": "too few ripple candidates (0) [STR_push_cross]"
+      },
+      "STR_push_within": {
+        "status": "too few ripple candidates (0) [STR_push_within]"
+      },
+      "STR_swap_cross": {
+        "status": "ok",
+        "n": 1056,
+        "n_fp": 308,
+        "n_harmless": 748,
+        "q_threshold": 0.5,
+        "label": "ripple/STR_swap_cross",
+        "feats": [
+          "ripple_in_orth",
+          "ripple_off_orth",
+          "ripple_frac",
+          "ripple_xint_orth",
+          "ripple_xint_in_orth",
+          "gap_frac"
+        ],
+        "coef": {
+          "AUC_orth": {
+            "est": 0.7741,
+            "lo": 0.7216,
+            "hi": 0.8292
+          },
+          "AUC_full": {
+            "est": 0.9319,
+            "lo": 0.9107,
+            "hi": 0.9685
+          },
+          "gain_full": {
+            "est": 0.1579,
+            "lo": 0.1244,
+            "hi": 0.2247
+          },
+          "AUC_ripple_in_orth": {
+            "est": 0.703,
+            "lo": 0.6645,
+            "hi": 0.7555
+          },
+          "gain_ripple_in_orth": {
+            "est": 0.1241,
+            "lo": 0.0703,
+            "hi": 0.2034
+          },
+          "AUC_ripple_in_orth_hiorth": {
+            "est": 0.6396,
+            "lo": 0.5611,
+            "hi": 0.7361
+          },
+          "beta_ripple_in_orth": {
+            "est": 0.9839,
+            "lo": -1.207,
+            "hi": 2.4094
+          },
+          "drop_ripple_in_orth": {
+            "est": 0.0019,
+            "lo": -0.0003,
+            "hi": 0.0165
+          },
+          "AUC_ripple_off_orth": {
+            "est": 0.7072,
+            "lo": 0.6545,
+            "hi": 0.7456
+          },
+          "gain_ripple_off_orth": {
+            "est": 0.0898,
+            "lo": 0.0396,
+            "hi": 0.1537
+          },
+          "AUC_ripple_off_orth_hiorth": {
+            "est": 0.6456,
+            "lo": 0.5785,
+            "hi": 0.6916
+          },
+          "beta_ripple_off_orth": {
+            "est": -0.323,
+            "lo": -1.5522,
+            "hi": 0.3336
+          },
+          "drop_ripple_off_orth": {
+            "est": 0.0009,
+            "lo": -0.0003,
+            "hi": 0.0091
+          },
+          "AUC_ripple_frac": {
+            "est": 0.5663,
+            "lo": 0.4557,
+            "hi": 0.6188
+          },
+          "gain_ripple_frac": {
+            "est": 0.0111,
+            "lo": -0.0056,
+            "hi": 0.0567
+          },
+          "AUC_ripple_frac_hiorth": {
+            "est": 0.5363,
+            "lo": 0.4839,
+            "hi": 0.6392
+          },
+          "beta_ripple_frac": {
+            "est": -0.5057,
+            "lo": -0.8484,
+            "hi": -0.0534
+          },
+          "drop_ripple_frac": {
+            "est": 0.004,
+            "lo": -0.0,
+            "hi": 0.0096
+          },
+          "AUC_ripple_xint_orth": {
+            "est": 0.7719,
+            "lo": 0.7149,
+            "hi": 0.8269
+          },
+          "gain_ripple_xint_orth": {
+            "est": 0.1216,
+            "lo": 0.0687,
+            "hi": 0.2028
+          },
+          "AUC_ripple_xint_orth_hiorth": {
+            "est": 0.6698,
+            "lo": 0.5687,
+            "hi": 0.7776
+          },
+          "beta_ripple_xint_orth": {
+            "est": 0.6808,
+            "lo": -0.9754,
+            "hi": 4.0254
+          },
+          "drop_ripple_xint_orth": {
+            "est": 0.0001,
+            "lo": -0.0007,
+            "hi": 0.0052
+          },
+          "AUC_ripple_xint_in_orth": {
+            "est": 0.7032,
+            "lo": 0.6442,
+            "hi": 0.7788
+          },
+          "gain_ripple_xint_in_orth": {
+            "est": 0.1185,
+            "lo": 0.0682,
+            "hi": 0.1997
+          },
+          "AUC_ripple_xint_in_orth_hiorth": {
+            "est": 0.648,
+            "lo": 0.5451,
+            "hi": 0.7782
+          },
+          "beta_ripple_xint_in_orth": {
+            "est": 1.0706,
+            "lo": -1.7406,
+            "hi": 4.3783
+          },
+          "drop_ripple_xint_in_orth": {
+            "est": 0.0021,
+            "lo": -0.0007,
+            "hi": 0.0082
+          },
+          "AUC_gap_frac": {
+            "est": 0.87,
+            "lo": 0.7862,
+            "hi": 0.926
+          },
+          "gain_gap_frac": {
+            "est": 0.1154,
+            "lo": 0.0608,
+            "hi": 0.1769
+          },
+          "AUC_gap_frac_hiorth": {
+            "est": 0.8089,
+            "lo": 0.7069,
+            "hi": 0.9004
+          },
+          "beta_gap_frac": {
+            "est": 1.2127,
+            "lo": 0.5343,
+            "hi": 2.4047
+          },
+          "drop_gap_frac": {
+            "est": 0.0256,
+            "lo": 0.0047,
+            "hi": 0.04
+          }
+        },
+        "predict": "separation => gain_<f>>0 and AUC_<f>_hiorth>0.5: that feature distinguishes pernicious (high-orth -> FP) from harmless (high-orth -> no FP) beyond divergence",
+        "gap_residual_test": {
+          "status": "ok",
+          "n": 1056,
+          "n_fp": 308,
+          "n_gap_errors": 158,
+          "coef": {
+            "resid_R2": {
+              "est": 0.1309,
+              "lo": 0.0774,
+              "hi": 0.2327
+            },
+            "AUC_ripple_on_gap_errors": {
+              "est": 0.8491,
+              "lo": 0.6487,
+              "hi": 0.9949
+            },
+            "AUC_orth_gap": {
+              "est": 0.8894,
+              "lo": 0.8082,
+              "hi": 0.9449
+            },
+            "AUC_orth_gap_ripple": {
+              "est": 0.9319,
+              "lo": 0.9107,
+              "hi": 0.9685
+            },
+            "gain_ripple_block": {
+              "est": 0.0425,
+              "lo": 0.0132,
+              "hi": 0.1057
+            }
+          },
+          "predict": "complementary => resid_R2>0, AUC_ripple_on_gap_errors>0.5, gain_ripple_block>0"
+        }
+      },
+      "STR_swap_within": {
+        "status": "ok",
+        "n": 374,
+        "n_fp": 60,
+        "n_harmless": 314,
+        "q_threshold": 0.5,
+        "label": "ripple/STR_swap_within",
+        "feats": [
+          "ripple_in_orth",
+          "ripple_off_orth",
+          "ripple_frac",
+          "ripple_xint_orth",
+          "ripple_xint_in_orth",
+          "gap_frac"
+        ],
+        "coef": {
+          "AUC_orth": {
+            "est": 0.5917,
+            "lo": 0.4908,
+            "hi": 0.7034
+          },
+          "AUC_full": {
+            "est": 0.9124,
+            "lo": 0.9013,
+            "hi": 0.9953
+          },
+          "gain_full": {
+            "est": 0.3207,
+            "lo": 0.2579,
+            "hi": 0.4906
+          },
+          "AUC_ripple_in_orth": {
+            "est": 0.5125,
+            "lo": 0.3854,
+            "hi": 0.7962
+          },
+          "gain_ripple_in_orth": {
+            "est": 0.1896,
+            "lo": 0.0362,
+            "hi": 0.4308
+          },
+          "AUC_ripple_in_orth_hiorth": {
+            "est": 0.6421,
+            "lo": 0.3349,
+            "hi": 0.823
+          },
+          "beta_ripple_in_orth": {
+            "est": 0.0455,
+            "lo": -1.1554,
+            "hi": 2.1889
+          },
+          "drop_ripple_in_orth": {
+            "est": -0.0002,
+            "lo": -0.0027,
+            "hi": 0.0111
+          },
+          "AUC_ripple_off_orth": {
+            "est": 0.6942,
+            "lo": 0.4701,
+            "hi": 0.9084
+          },
+          "gain_ripple_off_orth": {
+            "est": 0.1863,
+            "lo": 0.0185,
+            "hi": 0.3889
+          },
+          "AUC_ripple_off_orth_hiorth": {
+            "est": 0.6791,
+            "lo": 0.5147,
+            "hi": 0.9142
+          },
+          "beta_ripple_off_orth": {
+            "est": 0.1016,
+            "lo": -1.8122,
+            "hi": 1.5035
+          },
+          "drop_ripple_off_orth": {
+            "est": -0.0005,
+            "lo": -0.0027,
+            "hi": 0.0113
+          },
+          "AUC_ripple_frac": {
+            "est": 0.7419,
+            "lo": 0.5407,
+            "hi": 0.8444
+          },
+          "gain_ripple_frac": {
+            "est": 0.129,
+            "lo": -0.009,
+            "hi": 0.2455
+          },
+          "AUC_ripple_frac_hiorth": {
+            "est": 0.6723,
+            "lo": 0.4906,
+            "hi": 0.8917
+          },
+          "beta_ripple_frac": {
+            "est": -1.4329,
+            "lo": -6.8963,
+            "hi": -0.616
+          },
+          "drop_ripple_frac": {
+            "est": 0.0331,
+            "lo": 0.0048,
+            "hi": 0.0557
+          },
+          "AUC_ripple_xint_orth": {
+            "est": 0.6615,
+            "lo": 0.5807,
+            "hi": 0.8315
+          },
+          "gain_ripple_xint_orth": {
+            "est": 0.2192,
+            "lo": 0.0925,
+            "hi": 0.4026
+          },
+          "AUC_ripple_xint_orth_hiorth": {
+            "est": 0.4801,
+            "lo": 0.4744,
+            "hi": 0.7128
+          },
+          "beta_ripple_xint_orth": {
+            "est": 0.1508,
+            "lo": -1.4641,
+            "hi": 1.1491
+          },
+          "drop_ripple_xint_orth": {
+            "est": -0.0013,
+            "lo": -0.0023,
+            "hi": 0.0101
+          },
+          "AUC_ripple_xint_in_orth": {
+            "est": 0.5117,
+            "lo": 0.3975,
+            "hi": 0.7798
+          },
+          "gain_ripple_xint_in_orth": {
+            "est": 0.1769,
+            "lo": 0.0229,
+            "hi": 0.4232
+          },
+          "AUC_ripple_xint_in_orth_hiorth": {
+            "est": 0.6541,
+            "lo": 0.3286,
+            "hi": 0.8483
+          },
+          "beta_ripple_xint_in_orth": {
+            "est": 1.3551,
+            "lo": 0.3424,
+            "hi": 4.9116
+          },
+          "drop_ripple_xint_in_orth": {
+            "est": 0.0124,
+            "lo": -0.0034,
+            "hi": 0.0376
+          },
+          "AUC_gap_frac": {
+            "est": 0.7879,
+            "lo": 0.6856,
+            "hi": 0.9034
+          },
+          "gain_gap_frac": {
+            "est": 0.1971,
+            "lo": 0.0749,
+            "hi": 0.3691
+          },
+          "AUC_gap_frac_hiorth": {
+            "est": 0.7842,
+            "lo": 0.7335,
+            "hi": 0.9096
+          },
+          "beta_gap_frac": {
+            "est": 1.3481,
+            "lo": 0.4978,
+            "hi": 3.0397
+          },
+          "drop_gap_frac": {
+            "est": 0.0211,
+            "lo": 0.0023,
+            "hi": 0.077
+          }
+        },
+        "predict": "separation => gain_<f>>0 and AUC_<f>_hiorth>0.5: that feature distinguishes pernicious (high-orth -> FP) from harmless (high-orth -> no FP) beyond divergence",
+        "gap_residual_test": {
+          "status": "ok",
+          "n": 374,
+          "n_fp": 60,
+          "n_gap_errors": 55,
+          "coef": {
+            "resid_R2": {
+              "est": 0.1692,
+              "lo": 0.1377,
+              "hi": 0.5033
+            },
+            "AUC_ripple_on_gap_errors": {
+              "est": 1.0,
+              "lo": NaN,
+              "hi": NaN
+            },
+            "AUC_orth_gap": {
+              "est": 0.7888,
+              "lo": 0.6857,
+              "hi": 0.9002
+            },
+            "AUC_orth_gap_ripple": {
+              "est": 0.9124,
+              "lo": 0.9013,
+              "hi": 0.9953
+            },
+            "gain_ripple_block": {
+              "est": 0.1236,
+              "lo": 0.0586,
+              "hi": 0.2933
+            }
+          },
+          "predict": "complementary => resid_R2>0, AUC_ripple_on_gap_errors>0.5, gain_ripple_block>0"
+        }
+      }
+    },
+    "predict": "off-manifold ripple => AUC_ripple_*_hiorth>0.5 and gain>0: the displacement c induces on the live circuit distinguishes pernicious FPs from harmless high-orth comps"
+  },
+  "FP_vs_TP": {
+    "status": "ok",
+    "by_strategy": {
+      "Gaussian_push": {
+        "status": "ok",
+        "n": 617,
+        "n_fp": 173,
+        "n_tp": 444,
+        "q_threshold": 0.5,
+        "feats": [
+          "gap_frac",
+          "local_gap_frac",
+          "excess_local_gap",
+          "kappa_dir",
+          "along_nonbase_max",
+          "orth_base",
+          "delta_norm",
+          "INT"
+        ],
+        "coef": {
+          "AUC_orth": {
+            "est": 0.8032,
+            "lo": 0.7737,
+            "hi": 0.8308
+          },
+          "AUC_full": {
+            "est": 0.9483,
+            "lo": 0.9366,
+            "hi": 0.9782
+          },
+          "gain_full": {
+            "est": 0.1451,
+            "lo": 0.1297,
+            "hi": 0.186
+          },
+          "AUC_gap_frac": {
+            "est": 0.567,
+            "lo": 0.5046,
+            "hi": 0.6746
+          },
+          "gain_gap_frac": {
+            "est": 0.0013,
+            "lo": -0.0027,
+            "hi": 0.0363
+          },
+          "AUC_gap_frac_hiorth": {
+            "est": 0.5675,
+            "lo": 0.4831,
+            "hi": 0.742
+          },
+          "beta_gap_frac": {
+            "est": 1.7612,
+            "lo": -0.6631,
+            "hi": 3.2432
+          },
+          "drop_gap_frac": {
+            "est": 0.0062,
+            "lo": -0.0006,
+            "hi": 0.0134
+          },
+          "AUC_local_gap_frac": {
+            "est": 0.8596,
+            "lo": 0.827,
+            "hi": 0.8995
+          },
+          "gain_local_gap_frac": {
+            "est": 0.0858,
+            "lo": 0.0616,
+            "hi": 0.1208
+          },
+          "AUC_local_gap_frac_hiorth": {
+            "est": 0.915,
+            "lo": 0.8949,
+            "hi": 0.9482
+          },
+          "beta_local_gap_frac": {
+            "est": 1.8343,
+            "lo": -0.1806,
+            "hi": 4.6541
+          },
+          "drop_local_gap_frac": {
+            "est": 0.0025,
+            "lo": -0.0009,
+            "hi": 0.0188
+          },
+          "AUC_excess_local_gap": {
+            "est": 0.8092,
+            "lo": 0.7596,
+            "hi": 0.8738
+          },
+          "gain_excess_local_gap": {
+            "est": 0.0581,
+            "lo": 0.0267,
+            "hi": 0.1026
+          },
+          "AUC_excess_local_gap_hiorth": {
+            "est": 0.8434,
+            "lo": 0.7902,
+            "hi": 0.8967
+          },
+          "beta_excess_local_gap": {
+            "est": 1.2098,
+            "lo": -2.3226,
+            "hi": 3.854
+          },
+          "drop_excess_local_gap": {
+            "est": 0.0027,
+            "lo": -0.0005,
+            "hi": 0.0099
+          },
+          "AUC_kappa_dir": {
+            "est": 0.4839,
+            "lo": 0.4399,
+            "hi": 0.5964
+          },
+          "gain_kappa_dir": {
+            "est": 0.0407,
+            "lo": 0.0128,
+            "hi": 0.0978
+          },
+          "AUC_kappa_dir_hiorth": {
+            "est": 0.3497,
+            "lo": 0.3228,
+            "hi": 0.6804
+          },
+          "beta_kappa_dir": {
+            "est": -0.7254,
+            "lo": -2.4338,
+            "hi": -0.116
+          },
+          "drop_kappa_dir": {
+            "est": 0.0042,
+            "lo": -0.0001,
+            "hi": 0.0189
+          },
+          "AUC_along_nonbase_max": {
+            "est": 0.5606,
+            "lo": 0.5091,
+            "hi": 0.5994
+          },
+          "gain_along_nonbase_max": {
+            "est": 0.0256,
+            "lo": 0.0023,
+            "hi": 0.0574
+          },
+          "AUC_along_nonbase_max_hiorth": {
+            "est": 0.5806,
+            "lo": 0.5272,
+            "hi": 0.6559
+          },
+          "beta_along_nonbase_max": {
+            "est": 0.2775,
+            "lo": -1.4695,
+            "hi": 1.659
+          },
+          "drop_along_nonbase_max": {
+            "est": -0.0,
+            "lo": -0.0006,
+            "hi": 0.0019
+          },
+          "AUC_orth_base": {
+            "est": 0.8032,
+            "lo": 0.7737,
+            "hi": 0.8308
+          },
+          "gain_orth_base": {
+            "est": 0.0,
+            "lo": 0.0,
+            "hi": 0.0
+          },
+          "AUC_orth_base_hiorth": {
+            "est": 0.7416,
+            "lo": 0.701,
+            "hi": 0.8606
+          },
+          "beta_orth_base": {
+            "est": -3.8085,
+            "lo": -8.1179,
+            "hi": -0.4581
+          },
+          "drop_orth_base": {
+            "est": 0.0003,
+            "lo": -0.0007,
+            "hi": 0.0052
+          },
+          "AUC_delta_norm": {
+            "est": 0.7365,
+            "lo": 0.7002,
+            "hi": 0.7701
+          },
+          "gain_delta_norm": {
+            "est": 0.0174,
+            "lo": 0.0006,
+            "hi": 0.0309
+          },
+          "AUC_delta_norm_hiorth": {
+            "est": 0.7317,
+            "lo": 0.687,
+            "hi": 0.815
+          },
+          "beta_delta_norm": {
+            "est": -2.1846,
+            "lo": -6.1586,
+            "hi": 0.6407
+          },
+          "drop_delta_norm": {
+            "est": 0.0001,
+            "lo": -0.0005,
+            "hi": 0.0026
+          },
+          "AUC_INT": {
+            "est": 0.4525,
+            "lo": 0.3829,
+            "hi": 0.6597
+          },
+          "gain_INT": {
+            "est": 0.0159,
+            "lo": 0.0023,
+            "hi": 0.0523
+          },
+          "AUC_INT_hiorth": {
+            "est": 0.6496,
+            "lo": 0.424,
+            "hi": 0.7673
+          },
+          "beta_INT": {
+            "est": -1.8416,
+            "lo": -3.3488,
+            "hi": -1.1699
+          },
+          "drop_INT": {
+            "est": 0.0306,
+            "lo": 0.0103,
+            "hi": 0.0515
+          }
+        },
+        "means": {
+          "gap_frac": {
+            "FP": 0.2358,
+            "TP": 0.255
+          },
+          "local_gap_frac": {
+            "FP": 0.625,
+            "TP": 0.2326
+          },
+          "excess_local_gap": {
+            "FP": 0.3892,
+            "TP": -0.0224
+          },
+          "kappa_dir": {
+            "FP": 0.0419,
+            "TP": 0.067
+          },
+          "along_nonbase_max": {
+            "FP": 3.1402,
+            "TP": 4.3194
+          },
+          "orth_base": {
+            "FP": 2.101,
+            "TP": 12.2667
+          },
+          "delta_norm": {
+            "FP": 4.2515,
+            "TP": 13.5603
+          },
+          "INT": {
+            "FP": 0.946,
+            "TP": 1.1853
+          }
+        },
+        "predict": "AUC_<f> > 0.5 => the instrument flags fabricated (FP) from genuine (TP) among matched-effect apparent hits; AUC ~ 0.5 => that geometry is shared with real mediators, so it cannot correct the attribution"
+      },
+      "Gaussian_self": {
+        "status": "ok",
+        "n": 1222,
+        "n_fp": 778,
+        "n_tp": 444,
+        "q_threshold": 0.5,
+        "feats": [
+          "gap_frac",
+          "local_gap_frac",
+          "excess_local_gap",
+          "kappa_dir",
+          "along_nonbase_max",
+          "orth_base",
+          "delta_norm",
+          "INT"
+        ],
+        "coef": {
+          "AUC_orth": {
+            "est": 0.5864,
+            "lo": 0.5455,
+            "hi": 0.634
+          },
+          "AUC_full": {
+            "est": 0.8112,
+            "lo": 0.7907,
+            "hi": 0.8401
+          },
+          "gain_full": {
+            "est": 0.2248,
+            "lo": 0.1765,
+            "hi": 0.273
+          },
+          "AUC_gap_frac": {
+            "est": 0.591,
+            "lo": 0.5519,
+            "hi": 0.6332
+          },
+          "gain_gap_frac": {
+            "est": 0.0086,
+            "lo": -0.0108,
+            "hi": 0.0491
+          },
+          "AUC_gap_frac_hiorth": {
+            "est": 0.6021,
+            "lo": 0.557,
+            "hi": 0.6613
+          },
+          "beta_gap_frac": {
+            "est": -0.0448,
+            "lo": -0.1661,
+            "hi": 0.0263
+          },
+          "drop_gap_frac": {
+            "est": -0.0,
+            "lo": -0.0,
+            "hi": 0.0
+          },
+          "AUC_local_gap_frac": {
+            "est": 0.5,
+            "lo": 0.5,
+            "hi": 0.5
+          },
+          "gain_local_gap_frac": {
+            "est": 0.0,
+            "lo": 0.0,
+            "hi": 0.0
+          },
+          "AUC_local_gap_frac_hiorth": {
+            "est": 0.5,
+            "lo": 0.5,
+            "hi": 0.5
+          },
+          "beta_local_gap_frac": {
+            "est": 0.0,
+            "lo": 0.0,
+            "hi": 0.0
+          },
+          "drop_local_gap_frac": {
+            "est": 0.0,
+            "lo": 0.0,
+            "hi": 0.0
+          },
+          "AUC_excess_local_gap": {
+            "est": 0.591,
+            "lo": 0.5519,
+            "hi": 0.6332
+          },
+          "gain_excess_local_gap": {
+            "est": 0.0086,
+            "lo": -0.0108,
+            "hi": 0.0491
+          },
+          "AUC_excess_local_gap_hiorth": {
+            "est": 0.6021,
+            "lo": 0.557,
+            "hi": 0.6613
+          },
+          "beta_excess_local_gap": {
+            "est": 0.0448,
+            "lo": -0.0263,
+            "hi": 0.1661
+          },
+          "drop_excess_local_gap": {
+            "est": -0.0,
+            "lo": -0.0,
+            "hi": 0.0
+          },
+          "AUC_kappa_dir": {
+            "est": 0.5792,
+            "lo": 0.5488,
+            "hi": 0.6165
+          },
+          "gain_kappa_dir": {
+            "est": 0.0058,
+            "lo": -0.0074,
+            "hi": 0.0194
+          },
+          "AUC_kappa_dir_hiorth": {
+            "est": 0.5346,
+            "lo": 0.4801,
+            "hi": 0.6163
+          },
+          "beta_kappa_dir": {
+            "est": 0.144,
+            "lo": 0.0033,
+            "hi": 0.3524
+          },
+          "drop_kappa_dir": {
+            "est": 0.0003,
+            "lo": -0.0012,
+            "hi": 0.0046
+          },
+          "AUC_along_nonbase_max": {
+            "est": 0.6651,
+            "lo": 0.6126,
+            "hi": 0.7089
+          },
+          "gain_along_nonbase_max": {
+            "est": 0.2197,
+            "lo": 0.1706,
+            "hi": 0.2605
+          },
+          "AUC_along_nonbase_max_hiorth": {
+            "est": 0.7463,
+            "lo": 0.6952,
+            "hi": 0.7979
+          },
+          "beta_along_nonbase_max": {
+            "est": 1.6079,
+            "lo": 1.2784,
+            "hi": 1.964
+          },
+          "drop_along_nonbase_max": {
+            "est": 0.04,
+            "lo": 0.0153,
+            "hi": 0.0759
+          },
+          "AUC_orth_base": {
+            "est": 0.5864,
+            "lo": 0.5455,
+            "hi": 0.634
+          },
+          "gain_orth_base": {
+            "est": 0.0,
+            "lo": 0.0,
+            "hi": 0.0
+          },
+          "AUC_orth_base_hiorth": {
+            "est": 0.5278,
+            "lo": 0.4923,
+            "hi": 0.6191
+          },
+          "beta_orth_base": {
+            "est": -4.1486,
+            "lo": -5.8719,
+            "hi": -3.1173
+          },
+          "drop_orth_base": {
+            "est": 0.0169,
+            "lo": 0.007,
+            "hi": 0.0381
+          },
+          "AUC_delta_norm": {
+            "est": 0.5435,
+            "lo": 0.5069,
+            "hi": 0.5899
+          },
+          "gain_delta_norm": {
+            "est": 0.1832,
+            "lo": 0.1174,
+            "hi": 0.2535
+          },
+          "AUC_delta_norm_hiorth": {
+            "est": 0.4916,
+            "lo": 0.4858,
+            "hi": 0.5714
+          },
+          "beta_delta_norm": {
+            "est": 2.7308,
+            "lo": 1.578,
+            "hi": 4.4141
+          },
+          "drop_delta_norm": {
+            "est": 0.0038,
+            "lo": -0.0002,
+            "hi": 0.0173
+          },
+          "AUC_INT": {
+            "est": 0.5,
+            "lo": 0.5,
+            "hi": 0.5
+          },
+          "gain_INT": {
+            "est": 0.0,
+            "lo": 0.0,
+            "hi": 0.0
+          },
+          "AUC_INT_hiorth": {
+            "est": 0.5,
+            "lo": 0.5,
+            "hi": 0.5
+          },
+          "beta_INT": {
+            "est": 0.0,
+            "lo": 0.0,
+            "hi": 0.0
+          },
+          "drop_INT": {
+            "est": 0.0,
+            "lo": 0.0,
+            "hi": 0.0
+          }
+        },
+        "means": {
+          "gap_frac": {
+            "FP": 0.2059,
+            "TP": -0.0827
+          },
+          "local_gap_frac": {
+            "FP": 0.0,
+            "TP": 0.0
+          },
+          "excess_local_gap": {
+            "FP": -0.2059,
+            "TP": 0.0827
+          },
+          "kappa_dir": {
+            "FP": 0.0074,
+            "TP": 0.0036
+          },
+          "along_nonbase_max": {
+            "FP": 18.9539,
+            "TP": 13.3565
+          },
+          "orth_base": {
+            "FP": 29.851,
+            "TP": 35.9501
+          },
+          "delta_norm": {
+            "FP": 34.5068,
+            "TP": 38.3231
+          },
+          "INT": {
+            "FP": 0.0,
+            "TP": 0.0
+          }
+        },
+        "predict": "AUC_<f> > 0.5 => the instrument flags fabricated (FP) from genuine (TP) among matched-effect apparent hits; AUC ~ 0.5 => that geometry is shared with real mediators, so it cannot correct the attribution"
+      },
+      "STR_push_cross": {
+        "status": "ok",
+        "n": 1400,
+        "n_fp": 642,
+        "n_tp": 758,
+        "q_threshold": 0.5,
+        "feats": [
+          "gap_frac",
+          "local_gap_frac",
+          "excess_local_gap",
+          "kappa_dir",
+          "along_target",
+          "along_nonbase_max",
+          "orth_base",
+          "delta_norm",
+          "INT"
+        ],
+        "coef": {
+          "AUC_orth": {
+            "est": 0.848,
+            "lo": 0.8161,
+            "hi": 0.8823
+          },
+          "AUC_full": {
+            "est": 0.9296,
+            "lo": 0.9072,
+            "hi": 0.9682
+          },
+          "gain_full": {
+            "est": 0.0816,
+            "lo": 0.058,
+            "hi": 0.1237
+          },
+          "AUC_gap_frac": {
+            "est": 0.6247,
+            "lo": 0.5296,
+            "hi": 0.6832
+          },
+          "gain_gap_frac": {
+            "est": 0.0023,
+            "lo": -0.0039,
+            "hi": 0.0248
+          },
+          "AUC_gap_frac_hiorth": {
+            "est": 0.6593,
+            "lo": 0.5373,
+            "hi": 0.722
+          },
+          "beta_gap_frac": {
+            "est": 0.5185,
+            "lo": -1.911,
+            "hi": 4.6071
+          },
+          "drop_gap_frac": {
+            "est": 0.0001,
+            "lo": -0.0002,
+            "hi": 0.0053
+          },
+          "AUC_local_gap_frac": {
+            "est": 0.835,
+            "lo": 0.7967,
+            "hi": 0.8903
+          },
+          "gain_local_gap_frac": {
+            "est": 0.0716,
+            "lo": 0.0454,
+            "hi": 0.1
+          },
+          "AUC_local_gap_frac_hiorth": {
+            "est": 0.8603,
+            "lo": 0.8163,
+            "hi": 0.9108
+          },
+          "beta_local_gap_frac": {
+            "est": 1.8325,
+            "lo": -0.357,
+            "hi": 5.4205
+          },
+          "drop_local_gap_frac": {
+            "est": 0.0015,
+            "lo": -0.0003,
+            "hi": 0.0087
+          },
+          "AUC_excess_local_gap": {
+            "est": 0.7807,
+            "lo": 0.7275,
+            "hi": 0.8296
+          },
+          "gain_excess_local_gap": {
+            "est": 0.0181,
+            "lo": 0.0073,
+            "hi": 0.0328
+          },
+          "AUC_excess_local_gap_hiorth": {
+            "est": 0.8159,
+            "lo": 0.7331,
+            "hi": 0.858
+          },
+          "beta_excess_local_gap": {
+            "est": -0.1128,
+            "lo": -5.2339,
+            "hi": 5.462
+          },
+          "drop_excess_local_gap": {
+            "est": 0.0,
+            "lo": -0.0003,
+            "hi": 0.0038
+          },
+          "AUC_kappa_dir": {
+            "est": 0.6037,
+            "lo": 0.5433,
+            "hi": 0.6526
+          },
+          "gain_kappa_dir": {
+            "est": -0.0006,
+            "lo": -0.004,
+            "hi": 0.0053
+          },
+          "AUC_kappa_dir_hiorth": {
+            "est": 0.6194,
+            "lo": 0.5056,
+            "hi": 0.6999
+          },
+          "beta_kappa_dir": {
+            "est": -0.2354,
+            "lo": -1.4981,
+            "hi": 0.0698
+          },
+          "drop_kappa_dir": {
+            "est": 0.0009,
+            "lo": -0.0003,
+            "hi": 0.0091
+          },
+          "AUC_along_target": {
+            "est": 0.6287,
+            "lo": 0.5706,
+            "hi": 0.6918
+          },
+          "gain_along_target": {
+            "est": 0.0214,
+            "lo": 0.006,
+            "hi": 0.0343
+          },
+          "AUC_along_target_hiorth": {
+            "est": 0.6993,
+            "lo": 0.6599,
+            "hi": 0.7348
+          },
+          "beta_along_target": {
+            "est": -0.9217,
+            "lo": -3.4884,
+            "hi": 0.6545
+          },
+          "drop_along_target": {
+            "est": 0.0004,
+            "lo": -0.0002,
+            "hi": 0.0012
+          },
+          "AUC_along_nonbase_max": {
+            "est": 0.6252,
+            "lo": 0.5718,
+            "hi": 0.6857
+          },
+          "gain_along_nonbase_max": {
+            "est": 0.0247,
+            "lo": 0.0078,
+            "hi": 0.0388
+          },
+          "AUC_along_nonbase_max_hiorth": {
+            "est": 0.6848,
+            "lo": 0.6491,
+            "hi": 0.7278
+          },
+          "beta_along_nonbase_max": {
+            "est": 0.0432,
+            "lo": -1.9599,
+            "hi": 3.9535
+          },
+          "drop_along_nonbase_max": {
+            "est": 0.0,
+            "lo": -0.0002,
+            "hi": 0.0013
+          },
+          "AUC_orth_base": {
+            "est": 0.848,
+            "lo": 0.8161,
+            "hi": 0.8823
+          },
+          "gain_orth_base": {
+            "est": 0.0,
+            "lo": 0.0,
+            "hi": 0.0
+          },
+          "AUC_orth_base_hiorth": {
+            "est": 0.7666,
+            "lo": 0.7017,
+            "hi": 0.8552
+          },
+          "beta_orth_base": {
+            "est": -4.4131,
+            "lo": -7.3618,
+            "hi": -2.8092
+          },
+          "drop_orth_base": {
+            "est": 0.0123,
+            "lo": 0.0017,
+            "hi": 0.0284
+          },
+          "AUC_delta_norm": {
+            "est": 0.7023,
+            "lo": 0.6448,
+            "hi": 0.7572
+          },
+          "gain_delta_norm": {
+            "est": 0.0312,
+            "lo": 0.0143,
+            "hi": 0.0495
+          },
+          "AUC_delta_norm_hiorth": {
+            "est": 0.6803,
+            "lo": 0.6176,
+            "hi": 0.7549
+          },
+          "beta_delta_norm": {
+            "est": 1.7842,
+            "lo": -4.5503,
+            "hi": 5.1864
+          },
+          "drop_delta_norm": {
+            "est": 0.001,
+            "lo": -0.0001,
+            "hi": 0.0069
+          },
+          "AUC_INT": {
+            "est": 0.6379,
+            "lo": 0.5491,
+            "hi": 0.7126
+          },
+          "gain_INT": {
+            "est": 0.005,
+            "lo": -0.0002,
+            "hi": 0.0328
+          },
+          "AUC_INT_hiorth": {
+            "est": 0.453,
+            "lo": 0.4488,
+            "hi": 0.6449
+          },
+          "beta_INT": {
+            "est": -0.4379,
+            "lo": -1.0619,
+            "hi": 0.1185
+          },
+          "drop_INT": {
+            "est": 0.0033,
+            "lo": -0.0005,
+            "hi": 0.0097
+          }
+        },
+        "means": {
+          "gap_frac": {
+            "FP": 0.0635,
+            "TP": 0.189
+          },
+          "local_gap_frac": {
+            "FP": 0.604,
+            "TP": 0.2383
+          },
+          "excess_local_gap": {
+            "FP": 0.5404,
+            "TP": 0.0493
+          },
+          "kappa_dir": {
+            "FP": 0.0147,
+            "TP": 0.0301
+          },
+          "along_target": {
+            "FP": 2.6257,
+            "TP": 5.0982
+          },
+          "along_nonbase_max": {
+            "FP": 2.7999,
+            "TP": 5.2904
+          },
+          "orth_base": {
+            "FP": 0.9421,
+            "TP": 4.9889
+          },
+          "delta_norm": {
+            "FP": 3.295,
+            "TP": 7.5457
+          },
+          "INT": {
+            "FP": 0.223,
+            "TP": 0.8503
+          }
+        },
+        "predict": "AUC_<f> > 0.5 => the instrument flags fabricated (FP) from genuine (TP) among matched-effect apparent hits; AUC ~ 0.5 => that geometry is shared with real mediators, so it cannot correct the attribution"
+      },
+      "STR_push_within": {
+        "status": "ok",
+        "n": 864,
+        "n_fp": 420,
+        "n_tp": 444,
+        "q_threshold": 0.5,
+        "feats": [
+          "gap_frac",
+          "local_gap_frac",
+          "excess_local_gap",
+          "kappa_dir",
+          "along_target",
+          "along_nonbase_max",
+          "orth_base",
+          "delta_norm",
+          "INT"
+        ],
+        "coef": {
+          "AUC_orth": {
+            "est": 0.6626,
+            "lo": 0.6197,
+            "hi": 0.7275
+          },
+          "AUC_full": {
+            "est": 0.9569,
+            "lo": 0.9484,
+            "hi": 0.9825
+          },
+          "gain_full": {
+            "est": 0.2943,
+            "lo": 0.2465,
+            "hi": 0.3457
+          },
+          "AUC_gap_frac": {
+            "est": 0.5966,
+            "lo": 0.5279,
+            "hi": 0.6638
+          },
+          "gain_gap_frac": {
+            "est": 0.0114,
+            "lo": -0.0038,
+            "hi": 0.0313
+          },
+          "AUC_gap_frac_hiorth": {
+            "est": 0.5564,
+            "lo": 0.4795,
+            "hi": 0.6814
+          },
+          "beta_gap_frac": {
+            "est": 0.0198,
+            "lo": -2.3897,
+            "hi": 2.0242
+          },
+          "drop_gap_frac": {
+            "est": 0.0,
+            "lo": -0.0007,
+            "hi": 0.0037
+          },
+          "AUC_local_gap_frac": {
+            "est": 0.8898,
+            "lo": 0.8705,
+            "hi": 0.9146
+          },
+          "gain_local_gap_frac": {
+            "est": 0.2763,
+            "lo": 0.2243,
+            "hi": 0.3282
+          },
+          "AUC_local_gap_frac_hiorth": {
+            "est": 0.8768,
+            "lo": 0.8244,
+            "hi": 0.9338
+          },
+          "beta_local_gap_frac": {
+            "est": 3.7604,
+            "lo": 1.7176,
+            "hi": 8.2757
+          },
+          "drop_local_gap_frac": {
+            "est": 0.0135,
+            "lo": 0.0013,
+            "hi": 0.0366
+          },
+          "AUC_excess_local_gap": {
+            "est": 0.8398,
+            "lo": 0.7983,
+            "hi": 0.8869
+          },
+          "gain_excess_local_gap": {
+            "est": 0.1975,
+            "lo": 0.1451,
+            "hi": 0.2526
+          },
+          "AUC_excess_local_gap_hiorth": {
+            "est": 0.8079,
+            "lo": 0.7644,
+            "hi": 0.8775
+          },
+          "beta_excess_local_gap": {
+            "est": -1.1675,
+            "lo": -6.2838,
+            "hi": 1.5855
+          },
+          "drop_excess_local_gap": {
+            "est": 0.0007,
+            "lo": -0.0003,
+            "hi": 0.0104
+          },
+          "AUC_kappa_dir": {
+            "est": 0.7089,
+            "lo": 0.6278,
+            "hi": 0.7758
+          },
+          "gain_kappa_dir": {
+            "est": 0.0933,
+            "lo": 0.0383,
+            "hi": 0.1573
+          },
+          "AUC_kappa_dir_hiorth": {
+            "est": 0.6887,
+            "lo": 0.6432,
+            "hi": 0.7697
+          },
+          "beta_kappa_dir": {
+            "est": -1.0354,
+            "lo": -3.8877,
+            "hi": -0.4004
+          },
+          "drop_kappa_dir": {
+            "est": 0.0099,
+            "lo": 0.0013,
+            "hi": 0.0258
+          },
+          "AUC_along_target": {
+            "est": 0.5453,
+            "lo": 0.4687,
+            "hi": 0.6082
+          },
+          "gain_along_target": {
+            "est": -0.0076,
+            "lo": -0.0193,
+            "hi": 0.0008
+          },
+          "AUC_along_target_hiorth": {
+            "est": 0.4834,
+            "lo": 0.4361,
+            "hi": 0.5857
+          },
+          "beta_along_target": {
+            "est": 3.8133,
+            "lo": -0.5619,
+            "hi": 5.4986
+          },
+          "drop_along_target": {
+            "est": 0.0019,
+            "lo": -0.0001,
+            "hi": 0.0037
+          },
+          "AUC_along_nonbase_max": {
+            "est": 0.4633,
+            "lo": 0.4239,
+            "hi": 0.5959
+          },
+          "gain_along_nonbase_max": {
+            "est": 0.008,
+            "lo": -0.0198,
+            "hi": 0.0539
+          },
+          "AUC_along_nonbase_max_hiorth": {
+            "est": 0.4322,
+            "lo": 0.3865,
+            "hi": 0.5382
+          },
+          "beta_along_nonbase_max": {
+            "est": 0.6426,
+            "lo": -0.7265,
+            "hi": 2.6248
+          },
+          "drop_along_nonbase_max": {
+            "est": 0.0008,
+            "lo": -0.0003,
+            "hi": 0.0042
+          },
+          "AUC_orth_base": {
+            "est": 0.6626,
+            "lo": 0.6197,
+            "hi": 0.7275
+          },
+          "gain_orth_base": {
+            "est": 0.0,
+            "lo": 0.0,
+            "hi": 0.0
+          },
+          "AUC_orth_base_hiorth": {
+            "est": 0.5662,
+            "lo": 0.4813,
+            "hi": 0.6539
+          },
+          "beta_orth_base": {
+            "est": -0.8087,
+            "lo": -1.9469,
+            "hi": -0.2895
+          },
+          "drop_orth_base": {
+            "est": -0.0007,
+            "lo": -0.0015,
+            "hi": 0.0047
+          },
+          "AUC_delta_norm": {
+            "est": 0.5679,
+            "lo": 0.4951,
+            "hi": 0.6252
+          },
+          "gain_delta_norm": {
+            "est": -0.0074,
+            "lo": -0.02,
+            "hi": 0.0008
+          },
+          "AUC_delta_norm_hiorth": {
+            "est": 0.5028,
+            "lo": 0.4571,
+            "hi": 0.5963
+          },
+          "beta_delta_norm": {
+            "est": -5.6769,
+            "lo": -7.9012,
+            "hi": -0.6598
+          },
+          "drop_delta_norm": {
+            "est": 0.0033,
+            "lo": -0.0,
+            "hi": 0.0069
+          },
+          "AUC_INT": {
+            "est": 0.5154,
+            "lo": 0.4613,
+            "hi": 0.5605
+          },
+          "gain_INT": {
+            "est": -0.0021,
+            "lo": -0.0121,
+            "hi": 0.0103
+          },
+          "AUC_INT_hiorth": {
+            "est": 0.5685,
+            "lo": 0.4955,
+            "hi": 0.6544
+          },
+          "beta_INT": {
+            "est": -0.4928,
+            "lo": -1.3091,
+            "hi": -0.0197
+          },
+          "drop_INT": {
+            "est": 0.0024,
+            "lo": -0.0005,
+            "hi": 0.0106
+          }
+        },
+        "means": {
+          "gap_frac": {
+            "FP": 0.209,
+            "TP": 0.2792
+          },
+          "local_gap_frac": {
+            "FP": 0.685,
+            "TP": 0.1792
+          },
+          "excess_local_gap": {
+            "FP": 0.476,
+            "TP": -0.1
+          },
+          "kappa_dir": {
+            "FP": 0.0211,
+            "TP": 0.092
+          },
+          "along_target": {
+            "FP": 3.8186,
+            "TP": 5.8893
+          },
+          "along_nonbase_max": {
+            "FP": 3.4028,
+            "TP": 3.9856
+          },
+          "orth_base": {
+            "FP": 0.8153,
+            "TP": 1.5058
+          },
+          "delta_norm": {
+            "FP": 3.9733,
+            "TP": 6.2312
+          },
+          "INT": {
+            "FP": 0.2281,
+            "TP": 0.8554
+          }
+        },
+        "predict": "AUC_<f> > 0.5 => the instrument flags fabricated (FP) from genuine (TP) among matched-effect apparent hits; AUC ~ 0.5 => that geometry is shared with real mediators, so it cannot correct the attribution"
+      },
+      "STR_swap_cross": {
+        "status": "ok",
+        "n": 2352,
+        "n_fp": 1594,
+        "n_tp": 758,
+        "q_threshold": 0.5,
+        "feats": [
+          "gap_frac",
+          "local_gap_frac",
+          "excess_local_gap",
+          "kappa_dir",
+          "along_target",
+          "along_nonbase_max",
+          "orth_base",
+          "delta_norm",
+          "INT"
+        ],
+        "coef": {
+          "AUC_orth": {
+            "est": 0.6899,
+            "lo": 0.6703,
+            "hi": 0.7175
+          },
+          "AUC_full": {
+            "est": 0.7997,
+            "lo": 0.7805,
+            "hi": 0.8434
+          },
+          "gain_full": {
+            "est": 0.1098,
+            "lo": 0.0891,
+            "hi": 0.1354
+          },
+          "AUC_gap_frac": {
+            "est": 0.5014,
+            "lo": 0.4847,
+            "hi": 0.5836
+          },
+          "gain_gap_frac": {
+            "est": 0.0014,
+            "lo": -0.0047,
+            "hi": 0.0141
+          },
+          "AUC_gap_frac_hiorth": {
+            "est": 0.4892,
+            "lo": 0.4624,
+            "hi": 0.6232
+          },
+          "beta_gap_frac": {
+            "est": 0.0068,
+            "lo": -0.7117,
+            "hi": 0.5606
+          },
+          "drop_gap_frac": {
+            "est": 0.0,
+            "lo": -0.001,
+            "hi": 0.0035
+          },
+          "AUC_local_gap_frac": {
+            "est": 0.5852,
+            "lo": 0.5476,
+            "hi": 0.6362
+          },
+          "gain_local_gap_frac": {
+            "est": 0.0858,
+            "lo": 0.0552,
+            "hi": 0.1181
+          },
+          "AUC_local_gap_frac_hiorth": {
+            "est": 0.6711,
+            "lo": 0.6378,
+            "hi": 0.7343
+          },
+          "beta_local_gap_frac": {
+            "est": 0.5893,
+            "lo": -0.9398,
+            "hi": 2.7046
+          },
+          "drop_local_gap_frac": {
+            "est": 0.0001,
+            "lo": -0.0008,
+            "hi": 0.0035
+          },
+          "AUC_excess_local_gap": {
+            "est": 0.5761,
+            "lo": 0.5337,
+            "hi": 0.6288
+          },
+          "gain_excess_local_gap": {
+            "est": 0.069,
+            "lo": 0.0435,
+            "hi": 0.1006
+          },
+          "AUC_excess_local_gap_hiorth": {
+            "est": 0.6552,
+            "lo": 0.6271,
+            "hi": 0.7064
+          },
+          "beta_excess_local_gap": {
+            "est": 0.2409,
+            "lo": -1.7895,
+            "hi": 1.7657
+          },
+          "drop_excess_local_gap": {
+            "est": 0.0005,
+            "lo": -0.0006,
+            "hi": 0.0039
+          },
+          "AUC_kappa_dir": {
+            "est": 0.4904,
+            "lo": 0.4492,
+            "hi": 0.533
+          },
+          "gain_kappa_dir": {
+            "est": 0.0002,
+            "lo": -0.0003,
+            "hi": 0.005
+          },
+          "AUC_kappa_dir_hiorth": {
+            "est": 0.5404,
+            "lo": 0.4837,
+            "hi": 0.6078
+          },
+          "beta_kappa_dir": {
+            "est": 0.4056,
+            "lo": 0.2452,
+            "hi": 0.7425
+          },
+          "drop_kappa_dir": {
+            "est": 0.0065,
+            "lo": 0.0032,
+            "hi": 0.0142
+          },
+          "AUC_along_target": {
+            "est": 0.519,
+            "lo": 0.4801,
+            "hi": 0.5597
+          },
+          "gain_along_target": {
+            "est": 0.0717,
+            "lo": 0.0396,
+            "hi": 0.0948
+          },
+          "AUC_along_target_hiorth": {
+            "est": 0.5968,
+            "lo": 0.5255,
+            "hi": 0.6593
+          },
+          "beta_along_target": {
+            "est": 0.6662,
+            "lo": -2.0706,
+            "hi": 1.454
+          },
+          "drop_along_target": {
+            "est": 0.0004,
+            "lo": -0.0006,
+            "hi": 0.0063
+          },
+          "AUC_along_nonbase_max": {
+            "est": 0.5196,
+            "lo": 0.4825,
+            "hi": 0.5579
+          },
+          "gain_along_nonbase_max": {
+            "est": 0.0723,
+            "lo": 0.0408,
+            "hi": 0.0984
+          },
+          "AUC_along_nonbase_max_hiorth": {
+            "est": 0.5942,
+            "lo": 0.5291,
+            "hi": 0.6498
+          },
+          "beta_along_nonbase_max": {
+            "est": 1.2974,
+            "lo": 0.3218,
+            "hi": 3.556
+          },
+          "drop_along_nonbase_max": {
+            "est": 0.0,
+            "lo": -0.0018,
+            "hi": 0.0063
+          },
+          "AUC_orth_base": {
+            "est": 0.6899,
+            "lo": 0.6703,
+            "hi": 0.7175
+          },
+          "gain_orth_base": {
+            "est": 0.0,
+            "lo": 0.0,
+            "hi": 0.0
+          },
+          "AUC_orth_base_hiorth": {
+            "est": 0.7154,
+            "lo": 0.6644,
+            "hi": 0.7605
+          },
+          "beta_orth_base": {
+            "est": -0.8323,
+            "lo": -1.1856,
+            "hi": -0.6837
+          },
+          "drop_orth_base": {
+            "est": 0.0224,
+            "lo": 0.0087,
+            "hi": 0.04
+          },
+          "AUC_delta_norm": {
+            "est": 0.5511,
+            "lo": 0.5098,
+            "hi": 0.6161
+          },
+          "gain_delta_norm": {
+            "est": 0.0463,
+            "lo": 0.0103,
+            "hi": 0.0763
+          },
+          "AUC_delta_norm_hiorth": {
+            "est": 0.5265,
+            "lo": 0.4912,
+            "hi": 0.6024
+          },
+          "beta_delta_norm": {
+            "est": -1.7597,
+            "lo": -2.2994,
+            "hi": -1.1611
+          },
+          "drop_delta_norm": {
+            "est": 0.0081,
+            "lo": -0.0017,
+            "hi": 0.0189
+          },
+          "AUC_INT": {
+            "est": 0.5138,
+            "lo": 0.4941,
+            "hi": 0.5467
+          },
+          "gain_INT": {
+            "est": 0.0021,
+            "lo": -0.0017,
+            "hi": 0.0097
+          },
+          "AUC_INT_hiorth": {
+            "est": 0.5514,
+            "lo": 0.5139,
+            "hi": 0.5862
+          },
+          "beta_INT": {
+            "est": -0.1814,
+            "lo": -0.3023,
+            "hi": -0.0622
+          },
+          "drop_INT": {
+            "est": 0.0006,
+            "lo": -0.0008,
+            "hi": 0.0037
+          }
+        },
+        "means": {
+          "gap_frac": {
+            "FP": 0.4388,
+            "TP": 0.4208
+          },
+          "local_gap_frac": {
+            "FP": 1.6041,
+            "TP": 1.2138
+          },
+          "excess_local_gap": {
+            "FP": 1.1653,
+            "TP": 0.793
+          },
+          "kappa_dir": {
+            "FP": 0.0692,
+            "TP": 0.0421
+          },
+          "along_target": {
+            "FP": 13.4106,
+            "TP": 13.0159
+          },
+          "along_nonbase_max": {
+            "FP": 13.8365,
+            "TP": 13.4276
+          },
+          "orth_base": {
+            "FP": 4.7105,
+            "TP": 9.1754
+          },
+          "delta_norm": {
+            "FP": 14.6957,
+            "TP": 16.649
+          },
+          "INT": {
+            "FP": -0.091,
+            "TP": -0.0058
+          }
+        },
+        "predict": "AUC_<f> > 0.5 => the instrument flags fabricated (FP) from genuine (TP) among matched-effect apparent hits; AUC ~ 0.5 => that geometry is shared with real mediators, so it cannot correct the attribution"
+      },
+      "STR_swap_within": {
+        "status": "ok",
+        "n": 306,
+        "n_fp": 156,
+        "n_tp": 150,
+        "q_threshold": 0.5,
+        "feats": [
+          "gap_frac",
+          "local_gap_frac",
+          "excess_local_gap",
+          "kappa_dir",
+          "along_target",
+          "along_nonbase_max",
+          "orth_base",
+          "delta_norm",
+          "INT"
+        ],
+        "coef": {
+          "AUC_orth": {
+            "est": 0.7782,
+            "lo": 0.7239,
+            "hi": 0.8234
+          },
+          "AUC_full": {
+            "est": 0.8801,
+            "lo": 0.835,
+            "hi": 0.9455
+          },
+          "gain_full": {
+            "est": 0.1019,
+            "lo": 0.0789,
+            "hi": 0.1515
+          },
+          "AUC_gap_frac": {
+            "est": 0.5686,
+            "lo": 0.4975,
+            "hi": 0.6751
+          },
+          "gain_gap_frac": {
+            "est": -0.0029,
+            "lo": -0.0099,
+            "hi": 0.0173
+          },
+          "AUC_gap_frac_hiorth": {
+            "est": 0.5666,
+            "lo": 0.4916,
+            "hi": 0.7611
+          },
+          "beta_gap_frac": {
+            "est": 0.4674,
+            "lo": -0.5736,
+            "hi": 1.4976
+          },
+          "drop_gap_frac": {
+            "est": 0.0033,
+            "lo": -0.0019,
+            "hi": 0.0172
+          },
+          "AUC_local_gap_frac": {
+            "est": 0.5835,
+            "lo": 0.4905,
+            "hi": 0.6812
+          },
+          "gain_local_gap_frac": {
+            "est": 0.0461,
+            "lo": 0.0092,
+            "hi": 0.1076
+          },
+          "AUC_local_gap_frac_hiorth": {
+            "est": 0.7561,
+            "lo": 0.5722,
+            "hi": 0.9847
+          },
+          "beta_local_gap_frac": {
+            "est": 0.4594,
+            "lo": -1.21,
+            "hi": 2.3289
+          },
+          "drop_local_gap_frac": {
+            "est": 0.0026,
+            "lo": -0.0019,
+            "hi": 0.0227
+          },
+          "AUC_excess_local_gap": {
+            "est": 0.621,
+            "lo": 0.5499,
+            "hi": 0.7053
+          },
+          "gain_excess_local_gap": {
+            "est": 0.0345,
+            "lo": 0.0049,
+            "hi": 0.0922
+          },
+          "AUC_excess_local_gap_hiorth": {
+            "est": 0.7093,
+            "lo": 0.5648,
+            "hi": 0.942
+          },
+          "beta_excess_local_gap": {
+            "est": 0.2874,
+            "lo": -2.2586,
+            "hi": 2.3372
+          },
+          "drop_excess_local_gap": {
+            "est": 0.0,
+            "lo": -0.0027,
+            "hi": 0.0162
+          },
+          "AUC_kappa_dir": {
+            "est": 0.7809,
+            "lo": 0.7154,
+            "hi": 0.8419
+          },
+          "gain_kappa_dir": {
+            "est": 0.0544,
+            "lo": 0.0209,
+            "hi": 0.0864
+          },
+          "AUC_kappa_dir_hiorth": {
+            "est": 0.8095,
+            "lo": 0.7017,
+            "hi": 0.9376
+          },
+          "beta_kappa_dir": {
+            "est": -1.2949,
+            "lo": -3.0662,
+            "hi": -0.5182
+          },
+          "drop_kappa_dir": {
+            "est": 0.0211,
+            "lo": -0.0001,
+            "hi": 0.0536
+          },
+          "AUC_along_target": {
+            "est": 0.5058,
+            "lo": 0.4911,
+            "hi": 0.6183
+          },
+          "gain_along_target": {
+            "est": 0.0139,
+            "lo": -0.0046,
+            "hi": 0.0484
+          },
+          "AUC_along_target_hiorth": {
+            "est": 0.5313,
+            "lo": 0.4982,
+            "hi": 0.6957
+          },
+          "beta_along_target": {
+            "est": 0.0195,
+            "lo": -0.9021,
+            "hi": 0.9155
+          },
+          "drop_along_target": {
+            "est": 0.0,
+            "lo": -0.0005,
+            "hi": 0.0005
+          },
+          "AUC_along_nonbase_max": {
+            "est": 0.6351,
+            "lo": 0.5207,
+            "hi": 0.7076
+          },
+          "gain_along_nonbase_max": {
+            "est": 0.0346,
+            "lo": -0.0005,
+            "hi": 0.0675
+          },
+          "AUC_along_nonbase_max_hiorth": {
+            "est": 0.6076,
+            "lo": 0.4842,
+            "hi": 0.7995
+          },
+          "beta_along_nonbase_max": {
+            "est": 0.7329,
+            "lo": -0.5863,
+            "hi": 3.1866
+          },
+          "drop_along_nonbase_max": {
+            "est": 0.0016,
+            "lo": -0.0032,
+            "hi": 0.0357
+          },
+          "AUC_orth_base": {
+            "est": 0.7782,
+            "lo": 0.7239,
+            "hi": 0.8234
+          },
+          "gain_orth_base": {
+            "est": 0.0,
+            "lo": 0.0,
+            "hi": 0.0
+          },
+          "AUC_orth_base_hiorth": {
+            "est": 0.6988,
+            "lo": 0.5857,
+            "hi": 0.8221
+          },
+          "beta_orth_base": {
+            "est": -1.2316,
+            "lo": -2.3113,
+            "hi": -0.6257
+          },
+          "drop_orth_base": {
+            "est": 0.0324,
+            "lo": 0.0079,
+            "hi": 0.0526
+          },
+          "AUC_delta_norm": {
+            "est": 0.5014,
+            "lo": 0.4879,
+            "hi": 0.6269
+          },
+          "gain_delta_norm": {
+            "est": 0.014,
+            "lo": -0.0046,
+            "hi": 0.0482
+          },
+          "AUC_delta_norm_hiorth": {
+            "est": 0.5216,
+            "lo": 0.4956,
+            "hi": 0.6942
+          },
+          "beta_delta_norm": {
+            "est": -0.6011,
+            "lo": -1.9964,
+            "hi": 0.2382
+          },
+          "drop_delta_norm": {
+            "est": 0.0,
+            "lo": -0.0005,
+            "hi": 0.0011
+          },
+          "AUC_INT": {
+            "est": 0.5191,
+            "lo": 0.4871,
+            "hi": 0.6013
+          },
+          "gain_INT": {
+            "est": -0.0004,
+            "lo": -0.0068,
+            "hi": 0.0153
+          },
+          "AUC_INT_hiorth": {
+            "est": 0.5736,
+            "lo": 0.4646,
+            "hi": 0.6673
+          },
+          "beta_INT": {
+            "est": -0.1458,
+            "lo": -0.7081,
+            "hi": 0.1694
+          },
+          "drop_INT": {
+            "est": 0.0012,
+            "lo": -0.0025,
+            "hi": 0.0194
+          }
+        },
+        "means": {
+          "gap_frac": {
+            "FP": 0.4266,
+            "TP": 0.4937
+          },
+          "local_gap_frac": {
+            "FP": 0.8022,
+            "TP": 0.6254
+          },
+          "excess_local_gap": {
+            "FP": 0.3756,
+            "TP": 0.1318
+          },
+          "kappa_dir": {
+            "FP": 0.0336,
+            "TP": 0.2096
+          },
+          "along_target": {
+            "FP": 8.0426,
+            "TP": 7.7342
+          },
+          "along_nonbase_max": {
+            "FP": 7.4704,
+            "TP": 5.787
+          },
+          "orth_base": {
+            "FP": 0.3108,
+            "TP": 0.6983
+          },
+          "delta_norm": {
+            "FP": 8.0523,
+            "TP": 7.7894
+          },
+          "INT": {
+            "FP": -0.5241,
+            "TP": -0.2391
+          }
+        },
+        "predict": "AUC_<f> > 0.5 => the instrument flags fabricated (FP) from genuine (TP) among matched-effect apparent hits; AUC ~ 0.5 => that geometry is shared with real mediators, so it cannot correct the attribution"
+      }
+    }
+  },
+  "FP_vs_TP_NIE": {
+    "status": "ok",
+    "by_strategy": {
+      "Gaussian_push": {
+        "status": "ok",
+        "n": 617,
+        "n_fp": 173,
+        "n_tp": 444,
+        "q_threshold": 0.5,
+        "feats": [
+          "gap_frac",
+          "local_gap_frac",
+          "excess_local_gap",
+          "kappa_dir",
+          "along_nonbase_max",
+          "orth_base",
+          "delta_norm",
+          "INT"
+        ],
+        "coef": {
+          "AUC_nie": {
+            "est": 0.777,
+            "lo": 0.7519,
+            "hi": 0.8032
+          },
+          "AUC_full": {
+            "est": 0.9549,
+            "lo": 0.9477,
+            "hi": 0.9807
+          },
+          "gain_full": {
+            "est": 0.1779,
+            "lo": 0.157,
+            "hi": 0.2212
+          },
+          "AUC_gap_frac": {
+            "est": 0.567,
+            "lo": 0.5046,
+            "hi": 0.6746
+          },
+          "gain_gap_frac": {
+            "est": 0.0368,
+            "lo": -0.0037,
+            "hi": 0.0812
+          },
+          "AUC_gap_frac_hiNIE": {
+            "est": 0.5198,
+            "lo": 0.4812,
+            "hi": 0.6562
+          },
+          "beta_gap_frac": {
+            "est": 1.7668,
+            "lo": -0.5014,
+            "hi": 3.2385
+          },
+          "drop_gap_frac": {
+            "est": 0.005,
+            "lo": -0.0008,
+            "hi": 0.0108
+          },
+          "AUC_local_gap_frac": {
+            "est": 0.8596,
+            "lo": 0.827,
+            "hi": 0.8995
+          },
+          "gain_local_gap_frac": {
+            "est": 0.1429,
+            "lo": 0.1182,
+            "hi": 0.1771
+          },
+          "AUC_local_gap_frac_hiNIE": {
+            "est": 0.9431,
+            "lo": 0.865,
+            "hi": 0.9697
+          },
+          "beta_local_gap_frac": {
+            "est": 1.6881,
+            "lo": 0.1856,
+            "hi": 4.9495
+          },
+          "drop_local_gap_frac": {
+            "est": 0.0022,
+            "lo": -0.0014,
+            "hi": 0.0137
+          },
+          "AUC_excess_local_gap": {
+            "est": 0.8092,
+            "lo": 0.7596,
+            "hi": 0.8738
+          },
+          "gain_excess_local_gap": {
+            "est": 0.0925,
+            "lo": 0.052,
+            "hi": 0.1351
+          },
+          "AUC_excess_local_gap_hiNIE": {
+            "est": 0.8154,
+            "lo": 0.4541,
+            "hi": 0.9317
+          },
+          "beta_excess_local_gap": {
+            "est": 1.1959,
+            "lo": -2.9285,
+            "hi": 3.6881
+          },
+          "drop_excess_local_gap": {
+            "est": 0.0012,
+            "lo": -0.0009,
+            "hi": 0.0054
+          },
+          "AUC_kappa_dir": {
+            "est": 0.4839,
+            "lo": 0.4399,
+            "hi": 0.5964
+          },
+          "gain_kappa_dir": {
+            "est": 0.0017,
+            "lo": -0.0003,
+            "hi": 0.0297
+          },
+          "AUC_kappa_dir_hiNIE": {
+            "est": 0.4289,
+            "lo": 0.3567,
+            "hi": 0.6203
+          },
+          "beta_kappa_dir": {
+            "est": -0.2582,
+            "lo": -2.1796,
+            "hi": 0.4892
+          },
+          "drop_kappa_dir": {
+            "est": 0.0007,
+            "lo": -0.0004,
+            "hi": 0.0096
+          },
+          "AUC_along_nonbase_max": {
+            "est": 0.5606,
+            "lo": 0.5091,
+            "hi": 0.5994
+          },
+          "gain_along_nonbase_max": {
+            "est": 0.0743,
+            "lo": 0.0422,
+            "hi": 0.1052
+          },
+          "AUC_along_nonbase_max_hiNIE": {
+            "est": 0.5546,
+            "lo": 0.4882,
+            "hi": 0.6521
+          },
+          "beta_along_nonbase_max": {
+            "est": 0.8185,
+            "lo": -1.294,
+            "hi": 3.6368
+          },
+          "drop_along_nonbase_max": {
+            "est": -0.0003,
+            "lo": -0.001,
+            "hi": 0.0037
+          },
+          "AUC_orth_base": {
+            "est": 0.8032,
+            "lo": 0.7737,
+            "hi": 0.8308
+          },
+          "gain_orth_base": {
+            "est": 0.06,
+            "lo": 0.041,
+            "hi": 0.0812
+          },
+          "AUC_orth_base_hiNIE": {
+            "est": 0.7151,
+            "lo": 0.635,
+            "hi": 0.7674
+          },
+          "beta_orth_base": {
+            "est": -2.7293,
+            "lo": -7.0107,
+            "hi": 0.8631
+          },
+          "drop_orth_base": {
+            "est": 0.0005,
+            "lo": -0.0006,
+            "hi": 0.0047
+          },
+          "AUC_delta_norm": {
+            "est": 0.7365,
+            "lo": 0.7002,
+            "hi": 0.7701
+          },
+          "gain_delta_norm": {
+            "est": 0.0028,
+            "lo": -0.0016,
+            "hi": 0.0166
+          },
+          "AUC_delta_norm_hiNIE": {
+            "est": 0.7275,
+            "lo": 0.6397,
+            "hi": 0.8017
+          },
+          "beta_delta_norm": {
+            "est": 0.1088,
+            "lo": -4.0785,
+            "hi": 3.9486
+          },
+          "drop_delta_norm": {
+            "est": 0.0,
+            "lo": -0.0002,
+            "hi": 0.002
+          },
+          "AUC_INT": {
+            "est": 0.4525,
+            "lo": 0.3829,
+            "hi": 0.6597
+          },
+          "gain_INT": {
+            "est": -0.0028,
+            "lo": -0.0078,
+            "hi": 0.0458
+          },
+          "AUC_INT_hiNIE": {
+            "est": 0.6977,
+            "lo": 0.4417,
+            "hi": 0.7845
+          },
+          "beta_INT": {
+            "est": -1.6025,
+            "lo": -3.2827,
+            "hi": -0.6282
+          },
+          "drop_INT": {
+            "est": 0.0148,
+            "lo": 0.0009,
+            "hi": 0.0342
+          }
+        },
+        "means": {
+          "gap_frac": {
+            "FP": 0.2358,
+            "TP": 0.255
+          },
+          "local_gap_frac": {
+            "FP": 0.625,
+            "TP": 0.2326
+          },
+          "excess_local_gap": {
+            "FP": 0.3892,
+            "TP": -0.0224
+          },
+          "kappa_dir": {
+            "FP": 0.0419,
+            "TP": 0.067
+          },
+          "along_nonbase_max": {
+            "FP": 3.1402,
+            "TP": 4.3194
+          },
+          "orth_base": {
+            "FP": 2.101,
+            "TP": 12.2667
+          },
+          "delta_norm": {
+            "FP": 4.2515,
+            "TP": 13.5603
+          },
+          "INT": {
+            "FP": 0.946,
+            "TP": 1.1853
+          }
+        },
+        "predict": "gain_<f> > 0 => f discriminates FP from TP AFTER controlling for |NIE|; AUC_<f>_hiNIE > 0.5 => f works among the highest-effect components"
+      },
+      "Gaussian_self": {
+        "status": "ok",
+        "n": 1222,
+        "n_fp": 778,
+        "n_tp": 444,
+        "q_threshold": 0.5,
+        "feats": [
+          "gap_frac",
+          "local_gap_frac",
+          "excess_local_gap",
+          "kappa_dir",
+          "along_nonbase_max",
+          "orth_base",
+          "delta_norm",
+          "INT"
+        ],
+        "coef": {
+          "AUC_nie": {
+            "est": 0.5958,
+            "lo": 0.5705,
+            "hi": 0.6236
+          },
+          "AUC_full": {
+            "est": 0.8138,
+            "lo": 0.7929,
+            "hi": 0.8404
+          },
+          "gain_full": {
+            "est": 0.2181,
+            "lo": 0.1829,
+            "hi": 0.2536
+          },
+          "AUC_gap_frac": {
+            "est": 0.591,
+            "lo": 0.5519,
+            "hi": 0.6332
+          },
+          "gain_gap_frac": {
+            "est": 0.0303,
+            "lo": 0.0071,
+            "hi": 0.0603
+          },
+          "AUC_gap_frac_hiNIE": {
+            "est": 0.599,
+            "lo": 0.5439,
+            "hi": 0.6473
+          },
+          "beta_gap_frac": {
+            "est": -0.0414,
+            "lo": -0.1579,
+            "hi": 0.0279
+          },
+          "drop_gap_frac": {
+            "est": 0.0,
+            "lo": -0.0,
+            "hi": 0.0
+          },
+          "AUC_local_gap_frac": {
+            "est": 0.5,
+            "lo": 0.5,
+            "hi": 0.5
+          },
+          "gain_local_gap_frac": {
+            "est": 0.0,
+            "lo": 0.0,
+            "hi": 0.0
+          },
+          "AUC_local_gap_frac_hiNIE": {
+            "est": 0.5,
+            "lo": 0.5,
+            "hi": 0.5
+          },
+          "beta_local_gap_frac": {
+            "est": 0.0,
+            "lo": 0.0,
+            "hi": 0.0
+          },
+          "drop_local_gap_frac": {
+            "est": 0.0,
+            "lo": 0.0,
+            "hi": 0.0
+          },
+          "AUC_excess_local_gap": {
+            "est": 0.591,
+            "lo": 0.5519,
+            "hi": 0.6332
+          },
+          "gain_excess_local_gap": {
+            "est": 0.0303,
+            "lo": 0.0071,
+            "hi": 0.0603
+          },
+          "AUC_excess_local_gap_hiNIE": {
+            "est": 0.599,
+            "lo": 0.5439,
+            "hi": 0.6473
+          },
+          "beta_excess_local_gap": {
+            "est": 0.0414,
+            "lo": -0.0279,
+            "hi": 0.1579
+          },
+          "drop_excess_local_gap": {
+            "est": 0.0,
+            "lo": -0.0,
+            "hi": 0.0
+          },
+          "AUC_kappa_dir": {
+            "est": 0.5792,
+            "lo": 0.5488,
+            "hi": 0.6165
+          },
+          "gain_kappa_dir": {
+            "est": 0.0154,
+            "lo": -0.0005,
+            "hi": 0.0384
+          },
+          "AUC_kappa_dir_hiNIE": {
+            "est": 0.5886,
+            "lo": 0.5398,
+            "hi": 0.6252
+          },
+          "beta_kappa_dir": {
+            "est": 0.1313,
+            "lo": -0.019,
+            "hi": 0.3498
+          },
+          "drop_kappa_dir": {
+            "est": 0.0003,
+            "lo": -0.0008,
+            "hi": 0.0039
+          },
+          "AUC_along_nonbase_max": {
+            "est": 0.6651,
+            "lo": 0.6126,
+            "hi": 0.7089
+          },
+          "gain_along_nonbase_max": {
+            "est": 0.1135,
+            "lo": 0.0542,
+            "hi": 0.1683
+          },
+          "AUC_along_nonbase_max_hiNIE": {
+            "est": 0.6543,
+            "lo": 0.5968,
+            "hi": 0.7008
+          },
+          "beta_along_nonbase_max": {
+            "est": 1.5219,
+            "lo": 1.1896,
+            "hi": 1.87
+          },
+          "drop_along_nonbase_max": {
+            "est": 0.032,
+            "lo": 0.0125,
+            "hi": 0.0542
+          },
+          "AUC_orth_base": {
+            "est": 0.5864,
+            "lo": 0.5455,
+            "hi": 0.634
+          },
+          "gain_orth_base": {
+            "est": 0.0009,
+            "lo": -0.0036,
+            "hi": 0.0316
+          },
+          "AUC_orth_base_hiNIE": {
+            "est": 0.585,
+            "lo": 0.5405,
+            "hi": 0.63
+          },
+          "beta_orth_base": {
+            "est": -4.389,
+            "lo": -5.9357,
+            "hi": -3.3937
+          },
+          "drop_orth_base": {
+            "est": 0.0193,
+            "lo": 0.0103,
+            "hi": 0.0374
+          },
+          "AUC_delta_norm": {
+            "est": 0.5435,
+            "lo": 0.5069,
+            "hi": 0.5899
+          },
+          "gain_delta_norm": {
+            "est": 0.0017,
+            "lo": -0.0047,
+            "hi": 0.0322
+          },
+          "AUC_delta_norm_hiNIE": {
+            "est": 0.5477,
+            "lo": 0.4918,
+            "hi": 0.5899
+          },
+          "beta_delta_norm": {
+            "est": 3.1295,
+            "lo": 1.9535,
+            "hi": 4.533
+          },
+          "drop_delta_norm": {
+            "est": 0.0065,
+            "lo": 0.0014,
+            "hi": 0.0185
+          },
+          "AUC_INT": {
+            "est": 0.5,
+            "lo": 0.5,
+            "hi": 0.5
+          },
+          "gain_INT": {
+            "est": 0.0,
+            "lo": 0.0,
+            "hi": 0.0
+          },
+          "AUC_INT_hiNIE": {
+            "est": 0.5,
+            "lo": 0.5,
+            "hi": 0.5
+          },
+          "beta_INT": {
+            "est": 0.0,
+            "lo": 0.0,
+            "hi": 0.0
+          },
+          "drop_INT": {
+            "est": 0.0,
+            "lo": 0.0,
+            "hi": 0.0
+          }
+        },
+        "means": {
+          "gap_frac": {
+            "FP": 0.2059,
+            "TP": -0.0827
+          },
+          "local_gap_frac": {
+            "FP": 0.0,
+            "TP": 0.0
+          },
+          "excess_local_gap": {
+            "FP": -0.2059,
+            "TP": 0.0827
+          },
+          "kappa_dir": {
+            "FP": 0.0074,
+            "TP": 0.0036
+          },
+          "along_nonbase_max": {
+            "FP": 18.9539,
+            "TP": 13.3565
+          },
+          "orth_base": {
+            "FP": 29.851,
+            "TP": 35.9501
+          },
+          "delta_norm": {
+            "FP": 34.5068,
+            "TP": 38.3231
+          },
+          "INT": {
+            "FP": 0.0,
+            "TP": 0.0
+          }
+        },
+        "predict": "gain_<f> > 0 => f discriminates FP from TP AFTER controlling for |NIE|; AUC_<f>_hiNIE > 0.5 => f works among the highest-effect components"
+      },
+      "STR_push_cross": {
+        "status": "ok",
+        "n": 1400,
+        "n_fp": 642,
+        "n_tp": 758,
+        "q_threshold": 0.5,
+        "feats": [
+          "gap_frac",
+          "local_gap_frac",
+          "excess_local_gap",
+          "kappa_dir",
+          "along_target",
+          "along_nonbase_max",
+          "orth_base",
+          "delta_norm",
+          "INT"
+        ],
+        "coef": {
+          "AUC_nie": {
+            "est": 0.7573,
+            "lo": 0.7062,
+            "hi": 0.7863
+          },
+          "AUC_full": {
+            "est": 0.9346,
+            "lo": 0.9177,
+            "hi": 0.9708
+          },
+          "gain_full": {
+            "est": 0.1772,
+            "lo": 0.1386,
+            "hi": 0.2583
+          },
+          "AUC_gap_frac": {
+            "est": 0.6247,
+            "lo": 0.5296,
+            "hi": 0.6832
+          },
+          "gain_gap_frac": {
+            "est": 0.0115,
+            "lo": -0.0006,
+            "hi": 0.0668
+          },
+          "AUC_gap_frac_hiNIE": {
+            "est": 0.6066,
+            "lo": 0.5031,
+            "hi": 0.7239
+          },
+          "beta_gap_frac": {
+            "est": 0.6043,
+            "lo": -1.8267,
+            "hi": 4.4856
+          },
+          "drop_gap_frac": {
+            "est": 0.0002,
+            "lo": -0.0003,
+            "hi": 0.0061
+          },
+          "AUC_local_gap_frac": {
+            "est": 0.835,
+            "lo": 0.7967,
+            "hi": 0.8903
+          },
+          "gain_local_gap_frac": {
+            "est": 0.1294,
+            "lo": 0.0886,
+            "hi": 0.1942
+          },
+          "AUC_local_gap_frac_hiNIE": {
+            "est": 0.8662,
+            "lo": 0.8323,
+            "hi": 0.9062
+          },
+          "beta_local_gap_frac": {
+            "est": 1.9397,
+            "lo": -0.2583,
+            "hi": 5.1023
+          },
+          "drop_local_gap_frac": {
+            "est": 0.0007,
+            "lo": -0.0005,
+            "hi": 0.0084
+          },
+          "AUC_excess_local_gap": {
+            "est": 0.7807,
+            "lo": 0.7275,
+            "hi": 0.8296
+          },
+          "gain_excess_local_gap": {
+            "est": 0.0465,
+            "lo": 0.0152,
+            "hi": 0.0963
+          },
+          "AUC_excess_local_gap_hiNIE": {
+            "est": 0.7835,
+            "lo": 0.6911,
+            "hi": 0.8467
+          },
+          "beta_excess_local_gap": {
+            "est": -0.3129,
+            "lo": -5.66,
+            "hi": 5.1225
+          },
+          "drop_excess_local_gap": {
+            "est": -0.0001,
+            "lo": -0.0007,
+            "hi": 0.0037
+          },
+          "AUC_kappa_dir": {
+            "est": 0.6037,
+            "lo": 0.5433,
+            "hi": 0.6526
+          },
+          "gain_kappa_dir": {
+            "est": -0.0024,
+            "lo": -0.007,
+            "hi": 0.0228
+          },
+          "AUC_kappa_dir_hiNIE": {
+            "est": 0.5451,
+            "lo": 0.487,
+            "hi": 0.6655
+          },
+          "beta_kappa_dir": {
+            "est": -0.1784,
+            "lo": -1.5028,
+            "hi": 0.1634
+          },
+          "drop_kappa_dir": {
+            "est": 0.0002,
+            "lo": -0.0003,
+            "hi": 0.0087
+          },
+          "AUC_along_target": {
+            "est": 0.6287,
+            "lo": 0.5706,
+            "hi": 0.6918
+          },
+          "gain_along_target": {
+            "est": 0.0191,
+            "lo": -0.0029,
+            "hi": 0.0421
+          },
+          "AUC_along_target_hiNIE": {
+            "est": 0.6652,
+            "lo": 0.6059,
+            "hi": 0.7267
+          },
+          "beta_along_target": {
+            "est": -0.4574,
+            "lo": -3.0098,
+            "hi": 0.9854
+          },
+          "drop_along_target": {
+            "est": -0.0001,
+            "lo": -0.0001,
+            "hi": 0.0014
+          },
+          "AUC_along_nonbase_max": {
+            "est": 0.6252,
+            "lo": 0.5718,
+            "hi": 0.6857
+          },
+          "gain_along_nonbase_max": {
+            "est": 0.0237,
+            "lo": -0.0025,
+            "hi": 0.0497
+          },
+          "AUC_along_nonbase_max_hiNIE": {
+            "est": 0.6543,
+            "lo": 0.602,
+            "hi": 0.7175
+          },
+          "beta_along_nonbase_max": {
+            "est": -0.5968,
+            "lo": -2.8891,
+            "hi": 3.6491
+          },
+          "drop_along_nonbase_max": {
+            "est": 0.0002,
+            "lo": -0.0001,
+            "hi": 0.0022
+          },
+          "AUC_orth_base": {
+            "est": 0.848,
+            "lo": 0.8161,
+            "hi": 0.8823
+          },
+          "gain_orth_base": {
+            "est": 0.09,
+            "lo": 0.0653,
+            "hi": 0.1485
+          },
+          "AUC_orth_base_hiNIE": {
+            "est": 0.8286,
+            "lo": 0.8022,
+            "hi": 0.8705
+          },
+          "beta_orth_base": {
+            "est": -4.347,
+            "lo": -7.2225,
+            "hi": -2.7717
+          },
+          "drop_orth_base": {
+            "est": 0.0108,
+            "lo": 0.0011,
+            "hi": 0.0267
+          },
+          "AUC_delta_norm": {
+            "est": 0.7023,
+            "lo": 0.6448,
+            "hi": 0.7572
+          },
+          "gain_delta_norm": {
+            "est": -0.0013,
+            "lo": -0.0046,
+            "hi": 0.0265
+          },
+          "AUC_delta_norm_hiNIE": {
+            "est": 0.7065,
+            "lo": 0.6298,
+            "hi": 0.7804
+          },
+          "beta_delta_norm": {
+            "est": 2.9434,
+            "lo": -3.5681,
+            "hi": 6.7684
+          },
+          "drop_delta_norm": {
+            "est": 0.0015,
+            "lo": -0.0,
+            "hi": 0.0117
+          },
+          "AUC_INT": {
+            "est": 0.6379,
+            "lo": 0.5491,
+            "hi": 0.7126
+          },
+          "gain_INT": {
+            "est": 0.0388,
+            "lo": 0.0098,
+            "hi": 0.1048
+          },
+          "AUC_INT_hiNIE": {
+            "est": 0.5595,
+            "lo": 0.4853,
+            "hi": 0.6846
+          },
+          "beta_INT": {
+            "est": -0.3436,
+            "lo": -0.9233,
+            "hi": 0.2165
+          },
+          "drop_INT": {
+            "est": 0.0018,
+            "lo": -0.0004,
+            "hi": 0.0078
+          }
+        },
+        "means": {
+          "gap_frac": {
+            "FP": 0.0635,
+            "TP": 0.189
+          },
+          "local_gap_frac": {
+            "FP": 0.604,
+            "TP": 0.2383
+          },
+          "excess_local_gap": {
+            "FP": 0.5404,
+            "TP": 0.0493
+          },
+          "kappa_dir": {
+            "FP": 0.0147,
+            "TP": 0.0301
+          },
+          "along_target": {
+            "FP": 2.6257,
+            "TP": 5.0982
+          },
+          "along_nonbase_max": {
+            "FP": 2.7999,
+            "TP": 5.2904
+          },
+          "orth_base": {
+            "FP": 0.9421,
+            "TP": 4.9889
+          },
+          "delta_norm": {
+            "FP": 3.295,
+            "TP": 7.5457
+          },
+          "INT": {
+            "FP": 0.223,
+            "TP": 0.8503
+          }
+        },
+        "predict": "gain_<f> > 0 => f discriminates FP from TP AFTER controlling for |NIE|; AUC_<f>_hiNIE > 0.5 => f works among the highest-effect components"
+      },
+      "STR_push_within": {
+        "status": "ok",
+        "n": 864,
+        "n_fp": 420,
+        "n_tp": 444,
+        "q_threshold": 0.5,
+        "feats": [
+          "gap_frac",
+          "local_gap_frac",
+          "excess_local_gap",
+          "kappa_dir",
+          "along_target",
+          "along_nonbase_max",
+          "orth_base",
+          "delta_norm",
+          "INT"
+        ],
+        "coef": {
+          "AUC_nie": {
+            "est": 0.7113,
+            "lo": 0.6692,
+            "hi": 0.7493
+          },
+          "AUC_full": {
+            "est": 0.9588,
+            "lo": 0.9506,
+            "hi": 0.9866
+          },
+          "gain_full": {
+            "est": 0.2475,
+            "lo": 0.2226,
+            "hi": 0.283
+          },
+          "AUC_gap_frac": {
+            "est": 0.5966,
+            "lo": 0.5279,
+            "hi": 0.6638
+          },
+          "gain_gap_frac": {
+            "est": 0.0336,
+            "lo": 0.0079,
+            "hi": 0.0698
+          },
+          "AUC_gap_frac_hiNIE": {
+            "est": 0.5796,
+            "lo": 0.5081,
+            "hi": 0.7074
+          },
+          "beta_gap_frac": {
+            "est": -0.1528,
+            "lo": -2.7615,
+            "hi": 1.9437
+          },
+          "drop_gap_frac": {
+            "est": 0.0001,
+            "lo": -0.0005,
+            "hi": 0.0054
+          },
+          "AUC_local_gap_frac": {
+            "est": 0.8898,
+            "lo": 0.8705,
+            "hi": 0.9146
+          },
+          "gain_local_gap_frac": {
+            "est": 0.2156,
+            "lo": 0.1856,
+            "hi": 0.2485
+          },
+          "AUC_local_gap_frac_hiNIE": {
+            "est": 0.9291,
+            "lo": 0.8868,
+            "hi": 0.9628
+          },
+          "beta_local_gap_frac": {
+            "est": 3.9091,
+            "lo": 1.6633,
+            "hi": 8.7177
+          },
+          "drop_local_gap_frac": {
+            "est": 0.0151,
+            "lo": 0.0013,
+            "hi": 0.0406
+          },
+          "AUC_excess_local_gap": {
+            "est": 0.8398,
+            "lo": 0.7983,
+            "hi": 0.8869
+          },
+          "gain_excess_local_gap": {
+            "est": 0.137,
+            "lo": 0.099,
+            "hi": 0.1765
+          },
+          "AUC_excess_local_gap_hiNIE": {
+            "est": 0.8631,
+            "lo": 0.8195,
+            "hi": 0.9169
+          },
+          "beta_excess_local_gap": {
+            "est": -1.5165,
+            "lo": -6.9949,
+            "hi": 1.448
+          },
+          "drop_excess_local_gap": {
+            "est": 0.0012,
+            "lo": -0.0003,
+            "hi": 0.013
+          },
+          "AUC_kappa_dir": {
+            "est": 0.7089,
+            "lo": 0.6278,
+            "hi": 0.7758
+          },
+          "gain_kappa_dir": {
+            "est": 0.0438,
+            "lo": -0.0004,
+            "hi": 0.0957
+          },
+          "AUC_kappa_dir_hiNIE": {
+            "est": 0.7164,
+            "lo": 0.6508,
+            "hi": 0.7835
+          },
+          "beta_kappa_dir": {
+            "est": -0.8668,
+            "lo": -3.6641,
+            "hi": -0.2428
+          },
+          "drop_kappa_dir": {
+            "est": 0.0051,
+            "lo": 0.0001,
+            "hi": 0.0133
+          },
+          "AUC_along_target": {
+            "est": 0.5453,
+            "lo": 0.4687,
+            "hi": 0.6082
+          },
+          "gain_along_target": {
+            "est": 0.0771,
+            "lo": 0.0392,
+            "hi": 0.1291
+          },
+          "AUC_along_target_hiNIE": {
+            "est": 0.5,
+            "lo": 0.4335,
+            "hi": 0.6239
+          },
+          "beta_along_target": {
+            "est": 4.2133,
+            "lo": -0.6078,
+            "hi": 6.0202
+          },
+          "drop_along_target": {
+            "est": 0.002,
+            "lo": -0.0,
+            "hi": 0.004
+          },
+          "AUC_along_nonbase_max": {
+            "est": 0.4633,
+            "lo": 0.4239,
+            "hi": 0.5959
+          },
+          "gain_along_nonbase_max": {
+            "est": 0.123,
+            "lo": 0.0908,
+            "hi": 0.1717
+          },
+          "AUC_along_nonbase_max_hiNIE": {
+            "est": 0.4084,
+            "lo": 0.3869,
+            "hi": 0.6769
+          },
+          "beta_along_nonbase_max": {
+            "est": 0.6164,
+            "lo": -0.6162,
+            "hi": 2.5562
+          },
+          "drop_along_nonbase_max": {
+            "est": 0.0005,
+            "lo": -0.0004,
+            "hi": 0.004
+          },
+          "AUC_orth_base": {
+            "est": 0.6626,
+            "lo": 0.6197,
+            "hi": 0.7275
+          },
+          "gain_orth_base": {
+            "est": 0.0192,
+            "lo": -0.0088,
+            "hi": 0.0508
+          },
+          "AUC_orth_base_hiNIE": {
+            "est": 0.5169,
+            "lo": 0.4951,
+            "hi": 0.6429
+          },
+          "beta_orth_base": {
+            "est": -0.7586,
+            "lo": -1.9112,
+            "hi": -0.2238
+          },
+          "drop_orth_base": {
+            "est": 0.0,
+            "lo": -0.0019,
+            "hi": 0.0046
+          },
+          "AUC_delta_norm": {
+            "est": 0.5679,
+            "lo": 0.4951,
+            "hi": 0.6252
+          },
+          "gain_delta_norm": {
+            "est": 0.0672,
+            "lo": 0.0249,
+            "hi": 0.1235
+          },
+          "AUC_delta_norm_hiNIE": {
+            "est": 0.5123,
+            "lo": 0.4441,
+            "hi": 0.629
+          },
+          "beta_delta_norm": {
+            "est": -5.4852,
+            "lo": -7.745,
+            "hi": 0.0017
+          },
+          "drop_delta_norm": {
+            "est": 0.0029,
+            "lo": 0.0,
+            "hi": 0.006
+          },
+          "AUC_INT": {
+            "est": 0.5154,
+            "lo": 0.4613,
+            "hi": 0.5605
+          },
+          "gain_INT": {
+            "est": 0.0273,
+            "lo": 0.0018,
+            "hi": 0.0695
+          },
+          "AUC_INT_hiNIE": {
+            "est": 0.5546,
+            "lo": 0.4695,
+            "hi": 0.6353
+          },
+          "beta_INT": {
+            "est": -0.3693,
+            "lo": -1.3333,
+            "hi": 0.1545
+          },
+          "drop_INT": {
+            "est": 0.0015,
+            "lo": -0.0004,
+            "hi": 0.0085
+          }
+        },
+        "means": {
+          "gap_frac": {
+            "FP": 0.209,
+            "TP": 0.2792
+          },
+          "local_gap_frac": {
+            "FP": 0.685,
+            "TP": 0.1792
+          },
+          "excess_local_gap": {
+            "FP": 0.476,
+            "TP": -0.1
+          },
+          "kappa_dir": {
+            "FP": 0.0211,
+            "TP": 0.092
+          },
+          "along_target": {
+            "FP": 3.8186,
+            "TP": 5.8893
+          },
+          "along_nonbase_max": {
+            "FP": 3.4028,
+            "TP": 3.9856
+          },
+          "orth_base": {
+            "FP": 0.8153,
+            "TP": 1.5058
+          },
+          "delta_norm": {
+            "FP": 3.9733,
+            "TP": 6.2312
+          },
+          "INT": {
+            "FP": 0.2281,
+            "TP": 0.8554
+          }
+        },
+        "predict": "gain_<f> > 0 => f discriminates FP from TP AFTER controlling for |NIE|; AUC_<f>_hiNIE > 0.5 => f works among the highest-effect components"
+      },
+      "STR_swap_cross": {
+        "status": "ok",
+        "n": 2352,
+        "n_fp": 1594,
+        "n_tp": 758,
+        "q_threshold": 0.5,
+        "feats": [
+          "gap_frac",
+          "local_gap_frac",
+          "excess_local_gap",
+          "kappa_dir",
+          "along_target",
+          "along_nonbase_max",
+          "orth_base",
+          "delta_norm",
+          "INT"
+        ],
+        "coef": {
+          "AUC_nie": {
+            "est": 0.5957,
+            "lo": 0.5657,
+            "hi": 0.6379
+          },
+          "AUC_full": {
+            "est": 0.8084,
+            "lo": 0.7891,
+            "hi": 0.8499
+          },
+          "gain_full": {
+            "est": 0.2127,
+            "lo": 0.1649,
+            "hi": 0.264
+          },
+          "AUC_gap_frac": {
+            "est": 0.5014,
+            "lo": 0.4847,
+            "hi": 0.5836
+          },
+          "gain_gap_frac": {
+            "est": 0.0185,
+            "lo": -0.0041,
+            "hi": 0.0523
+          },
+          "AUC_gap_frac_hiNIE": {
+            "est": 0.4945,
+            "lo": 0.4798,
+            "hi": 0.597
+          },
+          "beta_gap_frac": {
+            "est": -0.0368,
+            "lo": -0.7009,
+            "hi": 0.5583
+          },
+          "drop_gap_frac": {
+            "est": -0.0001,
+            "lo": -0.001,
+            "hi": 0.0038
+          },
+          "AUC_local_gap_frac": {
+            "est": 0.5852,
+            "lo": 0.5476,
+            "hi": 0.6362
+          },
+          "gain_local_gap_frac": {
+            "est": 0.0525,
+            "lo": 0.0267,
+            "hi": 0.0885
+          },
+          "AUC_local_gap_frac_hiNIE": {
+            "est": 0.547,
+            "lo": 0.5,
+            "hi": 0.5895
+          },
+          "beta_local_gap_frac": {
+            "est": 0.6346,
+            "lo": -1.0043,
+            "hi": 2.5715
+          },
+          "drop_local_gap_frac": {
+            "est": 0.0002,
+            "lo": -0.0006,
+            "hi": 0.0036
+          },
+          "AUC_excess_local_gap": {
+            "est": 0.5761,
+            "lo": 0.5337,
+            "hi": 0.6288
+          },
+          "gain_excess_local_gap": {
+            "est": 0.0424,
+            "lo": 0.0189,
+            "hi": 0.0765
+          },
+          "AUC_excess_local_gap_hiNIE": {
+            "est": 0.5401,
+            "lo": 0.5,
+            "hi": 0.5838
+          },
+          "beta_excess_local_gap": {
+            "est": 0.2422,
+            "lo": -1.506,
+            "hi": 1.8519
+          },
+          "drop_excess_local_gap": {
+            "est": 0.0004,
+            "lo": -0.0005,
+            "hi": 0.0038
+          },
+          "AUC_kappa_dir": {
+            "est": 0.4904,
+            "lo": 0.4492,
+            "hi": 0.533
+          },
+          "gain_kappa_dir": {
+            "est": 0.0103,
+            "lo": -0.0095,
+            "hi": 0.0286
+          },
+          "AUC_kappa_dir_hiNIE": {
+            "est": 0.5401,
+            "lo": 0.4863,
+            "hi": 0.5912
+          },
+          "beta_kappa_dir": {
+            "est": 0.319,
+            "lo": 0.1834,
+            "hi": 0.5911
+          },
+          "drop_kappa_dir": {
+            "est": 0.0018,
+            "lo": 0.0002,
+            "hi": 0.0071
+          },
+          "AUC_along_target": {
+            "est": 0.519,
+            "lo": 0.4801,
+            "hi": 0.5597
+          },
+          "gain_along_target": {
+            "est": 0.0261,
+            "lo": -0.0012,
+            "hi": 0.0618
+          },
+          "AUC_along_target_hiNIE": {
+            "est": 0.531,
+            "lo": 0.4777,
+            "hi": 0.5898
+          },
+          "beta_along_target": {
+            "est": 0.4808,
+            "lo": -1.9639,
+            "hi": 1.1719
+          },
+          "drop_along_target": {
+            "est": -0.0,
+            "lo": -0.0008,
+            "hi": 0.0032
+          },
+          "AUC_along_nonbase_max": {
+            "est": 0.5196,
+            "lo": 0.4825,
+            "hi": 0.5579
+          },
+          "gain_along_nonbase_max": {
+            "est": 0.0247,
+            "lo": -0.0009,
+            "hi": 0.0617
+          },
+          "AUC_along_nonbase_max_hiNIE": {
+            "est": 0.5285,
+            "lo": 0.476,
+            "hi": 0.5839
+          },
+          "beta_along_nonbase_max": {
+            "est": 1.7262,
+            "lo": 0.7854,
+            "hi": 3.6156
+          },
+          "drop_along_nonbase_max": {
+            "est": 0.0021,
+            "lo": -0.0012,
+            "hi": 0.0079
+          },
+          "AUC_orth_base": {
+            "est": 0.6899,
+            "lo": 0.6703,
+            "hi": 0.7175
+          },
+          "gain_orth_base": {
+            "est": 0.0983,
+            "lo": 0.0476,
+            "hi": 0.14
+          },
+          "AUC_orth_base_hiNIE": {
+            "est": 0.7265,
+            "lo": 0.6943,
+            "hi": 0.7538
+          },
+          "beta_orth_base": {
+            "est": -0.9618,
+            "lo": -1.4026,
+            "hi": -0.7966
+          },
+          "drop_orth_base": {
+            "est": 0.031,
+            "lo": 0.0173,
+            "hi": 0.0484
+          },
+          "AUC_delta_norm": {
+            "est": 0.5511,
+            "lo": 0.5098,
+            "hi": 0.6161
+          },
+          "gain_delta_norm": {
+            "est": -0.0074,
+            "lo": -0.0124,
+            "hi": 0.0207
+          },
+          "AUC_delta_norm_hiNIE": {
+            "est": 0.571,
+            "lo": 0.5109,
+            "hi": 0.654
+          },
+          "beta_delta_norm": {
+            "est": -2.1463,
+            "lo": -2.8109,
+            "hi": -1.4225
+          },
+          "drop_delta_norm": {
+            "est": 0.0145,
+            "lo": 0.0025,
+            "hi": 0.0251
+          },
+          "AUC_INT": {
+            "est": 0.5138,
+            "lo": 0.4941,
+            "hi": 0.5467
+          },
+          "gain_INT": {
+            "est": 0.0062,
+            "lo": -0.0047,
+            "hi": 0.0204
+          },
+          "AUC_INT_hiNIE": {
+            "est": 0.5536,
+            "lo": 0.5107,
+            "hi": 0.5934
+          },
+          "beta_INT": {
+            "est": -0.2514,
+            "lo": -0.3423,
+            "hi": -0.1587
+          },
+          "drop_INT": {
+            "est": 0.0018,
+            "lo": -0.0003,
+            "hi": 0.006
+          }
+        },
+        "means": {
+          "gap_frac": {
+            "FP": 0.4388,
+            "TP": 0.4208
+          },
+          "local_gap_frac": {
+            "FP": 1.6041,
+            "TP": 1.2138
+          },
+          "excess_local_gap": {
+            "FP": 1.1653,
+            "TP": 0.793
+          },
+          "kappa_dir": {
+            "FP": 0.0692,
+            "TP": 0.0421
+          },
+          "along_target": {
+            "FP": 13.4106,
+            "TP": 13.0159
+          },
+          "along_nonbase_max": {
+            "FP": 13.8365,
+            "TP": 13.4276
+          },
+          "orth_base": {
+            "FP": 4.7105,
+            "TP": 9.1754
+          },
+          "delta_norm": {
+            "FP": 14.6957,
+            "TP": 16.649
+          },
+          "INT": {
+            "FP": -0.091,
+            "TP": -0.0058
+          }
+        },
+        "predict": "gain_<f> > 0 => f discriminates FP from TP AFTER controlling for |NIE|; AUC_<f>_hiNIE > 0.5 => f works among the highest-effect components"
+      },
+      "STR_swap_within": {
+        "status": "ok",
+        "n": 306,
+        "n_fp": 156,
+        "n_tp": 150,
+        "q_threshold": 0.5,
+        "feats": [
+          "gap_frac",
+          "local_gap_frac",
+          "excess_local_gap",
+          "kappa_dir",
+          "along_target",
+          "along_nonbase_max",
+          "orth_base",
+          "delta_norm",
+          "INT"
+        ],
+        "coef": {
+          "AUC_nie": {
+            "est": 0.6933,
+            "lo": 0.6663,
+            "hi": 0.7393
+          },
+          "AUC_full": {
+            "est": 0.8866,
+            "lo": 0.8454,
+            "hi": 0.9505
+          },
+          "gain_full": {
+            "est": 0.1933,
+            "lo": 0.1443,
+            "hi": 0.265
+          },
+          "AUC_gap_frac": {
+            "est": 0.5686,
+            "lo": 0.4975,
+            "hi": 0.6751
+          },
+          "gain_gap_frac": {
+            "est": 0.0204,
+            "lo": -0.0123,
+            "hi": 0.111
+          },
+          "AUC_gap_frac_hiNIE": {
+            "est": 0.5832,
+            "lo": 0.4793,
+            "hi": 0.7239
+          },
+          "beta_gap_frac": {
+            "est": 0.3456,
+            "lo": -0.719,
+            "hi": 1.3166
+          },
+          "drop_gap_frac": {
+            "est": 0.002,
+            "lo": -0.0019,
+            "hi": 0.0158
+          },
+          "AUC_local_gap_frac": {
+            "est": 0.5835,
+            "lo": 0.4905,
+            "hi": 0.6812
+          },
+          "gain_local_gap_frac": {
+            "est": 0.0734,
+            "lo": 0.0101,
+            "hi": 0.1236
+          },
+          "AUC_local_gap_frac_hiNIE": {
+            "est": 0.5306,
+            "lo": 0.4632,
+            "hi": 0.7498
+          },
+          "beta_local_gap_frac": {
+            "est": 0.2947,
+            "lo": -1.3392,
+            "hi": 2.2391
+          },
+          "drop_local_gap_frac": {
+            "est": -0.0002,
+            "lo": -0.0014,
+            "hi": 0.0207
+          },
+          "AUC_excess_local_gap": {
+            "est": 0.621,
+            "lo": 0.5499,
+            "hi": 0.7053
+          },
+          "gain_excess_local_gap": {
+            "est": 0.0473,
+            "lo": -0.0067,
+            "hi": 0.1069
+          },
+          "AUC_excess_local_gap_hiNIE": {
+            "est": 0.5043,
+            "lo": 0.4914,
+            "hi": 0.714
+          },
+          "beta_excess_local_gap": {
+            "est": 0.3413,
+            "lo": -2.311,
+            "hi": 2.3459
+          },
+          "drop_excess_local_gap": {
+            "est": 0.0013,
+            "lo": -0.0018,
+            "hi": 0.0189
+          },
+          "AUC_kappa_dir": {
+            "est": 0.7809,
+            "lo": 0.7154,
+            "hi": 0.8419
+          },
+          "gain_kappa_dir": {
+            "est": 0.0715,
+            "lo": 0.013,
+            "hi": 0.1196
+          },
+          "AUC_kappa_dir_hiNIE": {
+            "est": 0.7794,
+            "lo": 0.6895,
+            "hi": 0.8541
+          },
+          "beta_kappa_dir": {
+            "est": -0.6215,
+            "lo": -2.5407,
+            "hi": 0.5163
+          },
+          "drop_kappa_dir": {
+            "est": 0.0044,
+            "lo": -0.0024,
+            "hi": 0.0219
+          },
+          "AUC_along_target": {
+            "est": 0.5058,
+            "lo": 0.4911,
+            "hi": 0.6183
+          },
+          "gain_along_target": {
+            "est": 0.1268,
+            "lo": 0.0301,
+            "hi": 0.1687
+          },
+          "AUC_along_target_hiNIE": {
+            "est": 0.5406,
+            "lo": 0.5004,
+            "hi": 0.7709
+          },
+          "beta_along_target": {
+            "est": 0.444,
+            "lo": -0.4255,
+            "hi": 1.4341
+          },
+          "drop_along_target": {
+            "est": -0.0,
+            "lo": -0.0004,
+            "hi": 0.0006
+          },
+          "AUC_along_nonbase_max": {
+            "est": 0.6351,
+            "lo": 0.5207,
+            "hi": 0.7076
+          },
+          "gain_along_nonbase_max": {
+            "est": 0.1507,
+            "lo": 0.042,
+            "hi": 0.223
+          },
+          "AUC_along_nonbase_max_hiNIE": {
+            "est": 0.6445,
+            "lo": 0.5104,
+            "hi": 0.7841
+          },
+          "beta_along_nonbase_max": {
+            "est": 0.6465,
+            "lo": -0.7359,
+            "hi": 2.5169
+          },
+          "drop_along_nonbase_max": {
+            "est": 0.0029,
+            "lo": -0.002,
+            "hi": 0.0205
+          },
+          "AUC_orth_base": {
+            "est": 0.7782,
+            "lo": 0.7239,
+            "hi": 0.8234
+          },
+          "gain_orth_base": {
+            "est": 0.0897,
+            "lo": 0.0246,
+            "hi": 0.1635
+          },
+          "AUC_orth_base_hiNIE": {
+            "est": 0.8544,
+            "lo": 0.7637,
+            "hi": 0.9203
+          },
+          "beta_orth_base": {
+            "est": -1.0177,
+            "lo": -2.1257,
+            "hi": -0.3486
+          },
+          "drop_orth_base": {
+            "est": 0.0258,
+            "lo": 0.0004,
+            "hi": 0.0439
+          },
+          "AUC_delta_norm": {
+            "est": 0.5014,
+            "lo": 0.4879,
+            "hi": 0.6269
+          },
+          "gain_delta_norm": {
+            "est": 0.1234,
+            "lo": 0.0169,
+            "hi": 0.1662
+          },
+          "AUC_delta_norm_hiNIE": {
+            "est": 0.546,
+            "lo": 0.4997,
+            "hi": 0.7884
+          },
+          "beta_delta_norm": {
+            "est": -0.5269,
+            "lo": -2.0026,
+            "hi": 0.6539
+          },
+          "drop_delta_norm": {
+            "est": 0.0001,
+            "lo": -0.0003,
+            "hi": 0.0013
+          },
+          "AUC_INT": {
+            "est": 0.5191,
+            "lo": 0.4871,
+            "hi": 0.6013
+          },
+          "gain_INT": {
+            "est": 0.0518,
+            "lo": -0.0019,
+            "hi": 0.1369
+          },
+          "AUC_INT_hiNIE": {
+            "est": 0.5351,
+            "lo": 0.4702,
+            "hi": 0.6756
+          },
+          "beta_INT": {
+            "est": -0.1828,
+            "lo": -0.8625,
+            "hi": 0.1767
+          },
+          "drop_INT": {
+            "est": 0.0003,
+            "lo": -0.0033,
+            "hi": 0.0216
+          }
+        },
+        "means": {
+          "gap_frac": {
+            "FP": 0.4266,
+            "TP": 0.4937
+          },
+          "local_gap_frac": {
+            "FP": 0.8022,
+            "TP": 0.6254
+          },
+          "excess_local_gap": {
+            "FP": 0.3756,
+            "TP": 0.1318
+          },
+          "kappa_dir": {
+            "FP": 0.0336,
+            "TP": 0.2096
+          },
+          "along_target": {
+            "FP": 8.0426,
+            "TP": 7.7342
+          },
+          "along_nonbase_max": {
+            "FP": 7.4704,
+            "TP": 5.787
+          },
+          "orth_base": {
+            "FP": 0.3108,
+            "TP": 0.6983
+          },
+          "delta_norm": {
+            "FP": 8.0523,
+            "TP": 7.7894
+          },
+          "INT": {
+            "FP": -0.5241,
+            "TP": -0.2391
+          }
+        },
+        "predict": "gain_<f> > 0 => f discriminates FP from TP AFTER controlling for |NIE|; AUC_<f>_hiNIE > 0.5 => f works among the highest-effect components"
+      }
+    }
+  },
+  "FN_vs_TN": {
+    "status": "ok",
+    "by_strategy": {
+      "Gaussian_push": {
+        "status": "ok",
+        "n": 3073,
+        "n_fn": 438,
+        "n_tn": 2635,
+        "q_threshold": 0.5,
+        "feats": [
+          "gap_frac",
+          "local_gap_frac",
+          "excess_local_gap",
+          "kappa_dir",
+          "along_nonbase_max",
+          "orth_base",
+          "delta_norm",
+          "INT"
+        ],
+        "coef": {
+          "AUC_orth": {
+            "est": 0.4783,
+            "lo": 0.4473,
+            "hi": 0.5064
+          },
+          "AUC_full": {
+            "est": 0.8433,
+            "lo": 0.8187,
+            "hi": 0.8777
+          },
+          "gain_full": {
+            "est": 0.3649,
+            "lo": 0.3413,
+            "hi": 0.4062
+          },
+          "AUC_gap_frac": {
+            "est": 0.5161,
+            "lo": 0.4827,
+            "hi": 0.575
+          },
+          "gain_gap_frac": {
+            "est": 0.0268,
+            "lo": -0.0006,
+            "hi": 0.1069
+          },
+          "AUC_gap_frac_hiorth": {
+            "est": 0.528,
+            "lo": 0.4727,
+            "hi": 0.6416
+          },
+          "beta_gap_frac": {
+            "est": -0.321,
+            "lo": -1.1413,
+            "hi": 0.508
+          },
+          "drop_gap_frac": {
+            "est": -0.0003,
+            "lo": -0.002,
+            "hi": 0.0027
+          },
+          "AUC_local_gap_frac": {
+            "est": 0.7308,
+            "lo": 0.6984,
+            "hi": 0.7546
+          },
+          "gain_local_gap_frac": {
+            "est": 0.3492,
+            "lo": 0.3119,
+            "hi": 0.3853
+          },
+          "AUC_local_gap_frac_hiorth": {
+            "est": 0.8231,
+            "lo": 0.7397,
+            "hi": 0.8888
+          },
+          "beta_local_gap_frac": {
+            "est": -3.7218,
+            "lo": -5.6597,
+            "hi": -1.0399
+          },
+          "drop_local_gap_frac": {
+            "est": 0.0095,
+            "lo": 0.0002,
+            "hi": 0.0255
+          },
+          "AUC_excess_local_gap": {
+            "est": 0.723,
+            "lo": 0.6722,
+            "hi": 0.7551
+          },
+          "gain_excess_local_gap": {
+            "est": 0.3287,
+            "lo": 0.2752,
+            "hi": 0.3741
+          },
+          "AUC_excess_local_gap_hiorth": {
+            "est": 0.7621,
+            "lo": 0.6369,
+            "hi": 0.8497
+          },
+          "beta_excess_local_gap": {
+            "est": 0.8789,
+            "lo": -1.8808,
+            "hi": 2.0019
+          },
+          "drop_excess_local_gap": {
+            "est": 0.0009,
+            "lo": -0.0009,
+            "hi": 0.0052
+          },
+          "AUC_kappa_dir": {
+            "est": 0.498,
+            "lo": 0.4796,
+            "hi": 0.5576
+          },
+          "gain_kappa_dir": {
+            "est": 0.0137,
+            "lo": -0.0006,
+            "hi": 0.0696
+          },
+          "AUC_kappa_dir_hiorth": {
+            "est": 0.5297,
+            "lo": 0.4819,
+            "hi": 0.6151
+          },
+          "beta_kappa_dir": {
+            "est": 0.4382,
+            "lo": 0.1377,
+            "hi": 0.8048
+          },
+          "drop_kappa_dir": {
+            "est": 0.0026,
+            "lo": -0.0008,
+            "hi": 0.0121
+          },
+          "AUC_along_nonbase_max": {
+            "est": 0.6428,
+            "lo": 0.6085,
+            "hi": 0.6672
+          },
+          "gain_along_nonbase_max": {
+            "est": 0.3329,
+            "lo": 0.2904,
+            "hi": 0.3749
+          },
+          "AUC_along_nonbase_max_hiorth": {
+            "est": 0.5914,
+            "lo": 0.4643,
+            "hi": 0.6711
+          },
+          "beta_along_nonbase_max": {
+            "est": -2.738,
+            "lo": -6.413,
+            "hi": -0.3214
+          },
+          "drop_along_nonbase_max": {
+            "est": 0.0037,
+            "lo": -0.0006,
+            "hi": 0.0217
+          },
+          "AUC_orth_base": {
+            "est": 0.4783,
+            "lo": 0.4473,
+            "hi": 0.5064
+          },
+          "gain_orth_base": {
+            "est": 0.0,
+            "lo": 0.0,
+            "hi": 0.0
+          },
+          "AUC_orth_base_hiorth": {
+            "est": 0.8429,
+            "lo": 0.7468,
+            "hi": 0.9171
+          },
+          "beta_orth_base": {
+            "est": -0.6255,
+            "lo": -1.7348,
+            "hi": -0.0948
+          },
+          "drop_orth_base": {
+            "est": 0.0017,
+            "lo": -0.0015,
+            "hi": 0.0065
+          },
+          "AUC_delta_norm": {
+            "est": 0.4197,
+            "lo": 0.4064,
+            "hi": 0.6034
+          },
+          "gain_delta_norm": {
+            "est": 0.3239,
+            "lo": 0.2825,
+            "hi": 0.3594
+          },
+          "AUC_delta_norm_hiorth": {
+            "est": 0.6724,
+            "lo": 0.6086,
+            "hi": 0.7443
+          },
+          "beta_delta_norm": {
+            "est": 4.7721,
+            "lo": 2.3581,
+            "hi": 8.6111
+          },
+          "drop_delta_norm": {
+            "est": 0.0106,
+            "lo": 0.0016,
+            "hi": 0.0295
+          },
+          "AUC_INT": {
+            "est": 0.5249,
+            "lo": 0.4695,
+            "hi": 0.5756
+          },
+          "gain_INT": {
+            "est": -0.0011,
+            "lo": -0.0058,
+            "hi": 0.0507
+          },
+          "AUC_INT_hiorth": {
+            "est": 0.6407,
+            "lo": 0.536,
+            "hi": 0.7111
+          },
+          "beta_INT": {
+            "est": 0.041,
+            "lo": -0.41,
+            "hi": 0.5509
+          },
+          "drop_INT": {
+            "est": 0.0002,
+            "lo": -0.0027,
+            "hi": 0.0044
+          }
+        },
+        "means": {
+          "gap_frac": {
+            "FN": -0.0016,
+            "TN": 0.0215
+          },
+          "local_gap_frac": {
+            "FN": 0.0973,
+            "TN": 0.3188
+          },
+          "excess_local_gap": {
+            "FN": 0.0989,
+            "TN": 0.2972
+          },
+          "kappa_dir": {
+            "FN": 0.006,
+            "TN": 0.007
+          },
+          "along_nonbase_max": {
+            "FN": 0.4948,
+            "TN": 0.8312
+          },
+          "orth_base": {
+            "FN": 0.6856,
+            "TN": 0.1637
+          },
+          "delta_norm": {
+            "FN": 0.9719,
+            "TN": 0.9005
+          },
+          "INT": {
+            "FN": 0.0886,
+            "TN": 0.0286
+          }
+        },
+        "predict": "AUC_<f> > 0.5 => the instrument detects missed circuit members (FN) among low-effect components; AUC ~ 0.5 => FN and TN are indistinguishable"
+      },
+      "Gaussian_self": {
+        "status": "ok",
+        "n": 2468,
+        "n_fn": 438,
+        "n_tn": 2030,
+        "q_threshold": 0.5,
+        "feats": [
+          "gap_frac",
+          "local_gap_frac",
+          "excess_local_gap",
+          "kappa_dir",
+          "along_nonbase_max",
+          "orth_base",
+          "delta_norm",
+          "INT"
+        ],
+        "coef": {
+          "AUC_orth": {
+            "est": 0.5929,
+            "lo": 0.5663,
+            "hi": 0.6257
+          },
+          "AUC_full": {
+            "est": 0.8553,
+            "lo": 0.8405,
+            "hi": 0.8729
+          },
+          "gain_full": {
+            "est": 0.2624,
+            "lo": 0.2288,
+            "hi": 0.2925
+          },
+          "AUC_gap_frac": {
+            "est": 0.5603,
+            "lo": 0.4937,
+            "hi": 0.6033
+          },
+          "gain_gap_frac": {
+            "est": -0.0229,
+            "lo": -0.0349,
+            "hi": 0.0209
+          },
+          "AUC_gap_frac_hiorth": {
+            "est": 0.4946,
+            "lo": 0.4804,
+            "hi": 0.5661
+          },
+          "beta_gap_frac": {
+            "est": 0.0761,
+            "lo": -0.0946,
+            "hi": 0.3043
+          },
+          "drop_gap_frac": {
+            "est": 0.0,
+            "lo": -0.0,
+            "hi": 0.0
+          },
+          "AUC_local_gap_frac": {
+            "est": 0.5,
+            "lo": 0.5,
+            "hi": 0.5
+          },
+          "gain_local_gap_frac": {
+            "est": 0.0,
+            "lo": 0.0,
+            "hi": 0.0
+          },
+          "AUC_local_gap_frac_hiorth": {
+            "est": 0.5,
+            "lo": 0.5,
+            "hi": 0.5
+          },
+          "beta_local_gap_frac": {
+            "est": 0.0,
+            "lo": 0.0,
+            "hi": 0.0
+          },
+          "drop_local_gap_frac": {
+            "est": 0.0,
+            "lo": 0.0,
+            "hi": 0.0
+          },
+          "AUC_excess_local_gap": {
+            "est": 0.5603,
+            "lo": 0.4937,
+            "hi": 0.6033
+          },
+          "gain_excess_local_gap": {
+            "est": -0.0229,
+            "lo": -0.0349,
+            "hi": 0.0209
+          },
+          "AUC_excess_local_gap_hiorth": {
+            "est": 0.4946,
+            "lo": 0.4804,
+            "hi": 0.5661
+          },
+          "beta_excess_local_gap": {
+            "est": -0.0761,
+            "lo": -0.3043,
+            "hi": 0.0946
+          },
+          "drop_excess_local_gap": {
+            "est": 0.0,
+            "lo": -0.0,
+            "hi": 0.0
+          },
+          "AUC_kappa_dir": {
+            "est": 0.6358,
+            "lo": 0.5702,
+            "hi": 0.6906
+          },
+          "gain_kappa_dir": {
+            "est": 0.0137,
+            "lo": -0.0227,
+            "hi": 0.0682
+          },
+          "AUC_kappa_dir_hiorth": {
+            "est": 0.6342,
+            "lo": 0.5705,
+            "hi": 0.6983
+          },
+          "beta_kappa_dir": {
+            "est": 0.0367,
+            "lo": -0.1908,
+            "hi": 0.2018
+          },
+          "drop_kappa_dir": {
+            "est": 0.0,
+            "lo": -0.0007,
+            "hi": 0.0027
+          },
+          "AUC_along_nonbase_max": {
+            "est": 0.6398,
+            "lo": 0.6003,
+            "hi": 0.6709
+          },
+          "gain_along_nonbase_max": {
+            "est": 0.2554,
+            "lo": 0.2205,
+            "hi": 0.2868
+          },
+          "AUC_along_nonbase_max_hiorth": {
+            "est": 0.7999,
+            "lo": 0.7627,
+            "hi": 0.8302
+          },
+          "beta_along_nonbase_max": {
+            "est": -3.2199,
+            "lo": -3.9617,
+            "hi": -2.7224
+          },
+          "drop_along_nonbase_max": {
+            "est": 0.0496,
+            "lo": 0.0235,
+            "hi": 0.0719
+          },
+          "AUC_orth_base": {
+            "est": 0.5929,
+            "lo": 0.5663,
+            "hi": 0.6257
+          },
+          "gain_orth_base": {
+            "est": 0.0,
+            "lo": 0.0,
+            "hi": 0.0
+          },
+          "AUC_orth_base_hiorth": {
+            "est": 0.5441,
+            "lo": 0.4961,
+            "hi": 0.5765
+          },
+          "beta_orth_base": {
+            "est": 5.3529,
+            "lo": 4.1479,
+            "hi": 6.8709
+          },
+          "drop_orth_base": {
+            "est": 0.0285,
+            "lo": 0.0052,
+            "hi": 0.0578
+          },
+          "AUC_delta_norm": {
+            "est": 0.4592,
+            "lo": 0.4499,
+            "hi": 0.571
+          },
+          "gain_delta_norm": {
+            "est": 0.2122,
+            "lo": 0.1755,
+            "hi": 0.2541
+          },
+          "AUC_delta_norm_hiorth": {
+            "est": 0.6186,
+            "lo": 0.5745,
+            "hi": 0.6458
+          },
+          "beta_delta_norm": {
+            "est": -3.086,
+            "lo": -4.2545,
+            "hi": -1.9353
+          },
+          "drop_delta_norm": {
+            "est": 0.0042,
+            "lo": -0.0016,
+            "hi": 0.0191
+          },
+          "AUC_INT": {
+            "est": 0.5,
+            "lo": 0.5,
+            "hi": 0.5
+          },
+          "gain_INT": {
+            "est": 0.0,
+            "lo": 0.0,
+            "hi": 0.0
+          },
+          "AUC_INT_hiorth": {
+            "est": 0.5,
+            "lo": 0.5,
+            "hi": 0.5
+          },
+          "beta_INT": {
+            "est": 0.0,
+            "lo": 0.0,
+            "hi": 0.0
+          },
+          "drop_INT": {
+            "est": 0.0,
+            "lo": 0.0,
+            "hi": 0.0
+          }
+        },
+        "means": {
+          "gap_frac": {
+            "FN": 0.1812,
+            "TN": 0.1579
+          },
+          "local_gap_frac": {
+            "FN": 0.0,
+            "TN": 0.0
+          },
+          "excess_local_gap": {
+            "FN": -0.1812,
+            "TN": -0.1579
+          },
+          "kappa_dir": {
+            "FN": 0.0111,
+            "TN": 0.0095
+          },
+          "along_nonbase_max": {
+            "FN": 2.9654,
+            "TN": 4.9881
+          },
+          "orth_base": {
+            "FN": 6.978,
+            "TN": 6.2482
+          },
+          "delta_norm": {
+            "FN": 7.5426,
+            "TN": 7.7531
+          },
+          "INT": {
+            "FN": 0.0,
+            "TN": 0.0
+          }
+        },
+        "predict": "AUC_<f> > 0.5 => the instrument detects missed circuit members (FN) among low-effect components; AUC ~ 0.5 => FN and TN are indistinguishable"
+      },
+      "STR_push_cross": {
+        "status": "ok",
+        "n": 4990,
+        "n_fn": 754,
+        "n_tn": 4236,
+        "q_threshold": 0.5,
+        "feats": [
+          "gap_frac",
+          "local_gap_frac",
+          "excess_local_gap",
+          "kappa_dir",
+          "along_target",
+          "along_nonbase_max",
+          "orth_base",
+          "delta_norm",
+          "INT"
+        ],
+        "coef": {
+          "AUC_orth": {
+            "est": 0.4887,
+            "lo": 0.4608,
+            "hi": 0.5177
+          },
+          "AUC_full": {
+            "est": 0.8378,
+            "lo": 0.8207,
+            "hi": 0.8671
+          },
+          "gain_full": {
+            "est": 0.3492,
+            "lo": 0.3269,
+            "hi": 0.3894
+          },
+          "AUC_gap_frac": {
+            "est": 0.4832,
+            "lo": 0.4653,
+            "hi": 0.5226
+          },
+          "gain_gap_frac": {
+            "est": 0.0195,
+            "lo": -0.0043,
+            "hi": 0.062
+          },
+          "AUC_gap_frac_hiorth": {
+            "est": 0.5078,
+            "lo": 0.4795,
+            "hi": 0.5482
+          },
+          "beta_gap_frac": {
+            "est": -0.6965,
+            "lo": -1.8213,
+            "hi": -0.1548
+          },
+          "drop_gap_frac": {
+            "est": 0.0015,
+            "lo": -0.0011,
+            "hi": 0.0053
+          },
+          "AUC_local_gap_frac": {
+            "est": 0.7349,
+            "lo": 0.7101,
+            "hi": 0.7599
+          },
+          "gain_local_gap_frac": {
+            "est": 0.3467,
+            "lo": 0.3157,
+            "hi": 0.38
+          },
+          "AUC_local_gap_frac_hiorth": {
+            "est": 0.8389,
+            "lo": 0.7819,
+            "hi": 0.9037
+          },
+          "beta_local_gap_frac": {
+            "est": -1.4589,
+            "lo": -2.5737,
+            "hi": 0.8061
+          },
+          "drop_local_gap_frac": {
+            "est": 0.0003,
+            "lo": -0.002,
+            "hi": 0.0055
+          },
+          "AUC_excess_local_gap": {
+            "est": 0.7128,
+            "lo": 0.6927,
+            "hi": 0.7346
+          },
+          "gain_excess_local_gap": {
+            "est": 0.3208,
+            "lo": 0.2925,
+            "hi": 0.3591
+          },
+          "AUC_excess_local_gap_hiorth": {
+            "est": 0.7655,
+            "lo": 0.7224,
+            "hi": 0.8225
+          },
+          "beta_excess_local_gap": {
+            "est": -1.9271,
+            "lo": -5.3627,
+            "hi": -0.8267
+          },
+          "drop_excess_local_gap": {
+            "est": 0.0013,
+            "lo": -0.0011,
+            "hi": 0.0051
+          },
+          "AUC_kappa_dir": {
+            "est": 0.4808,
+            "lo": 0.4637,
+            "hi": 0.5441
+          },
+          "gain_kappa_dir": {
+            "est": 0.0095,
+            "lo": -0.0001,
+            "hi": 0.0652
+          },
+          "AUC_kappa_dir_hiorth": {
+            "est": 0.5223,
+            "lo": 0.4755,
+            "hi": 0.5675
+          },
+          "beta_kappa_dir": {
+            "est": -0.0752,
+            "lo": -0.2482,
+            "hi": 0.0929
+          },
+          "drop_kappa_dir": {
+            "est": -0.0002,
+            "lo": -0.002,
+            "hi": 0.0013
+          },
+          "AUC_along_target": {
+            "est": 0.6087,
+            "lo": 0.5862,
+            "hi": 0.6303
+          },
+          "gain_along_target": {
+            "est": 0.3233,
+            "lo": 0.295,
+            "hi": 0.3531
+          },
+          "AUC_along_target_hiorth": {
+            "est": 0.514,
+            "lo": 0.4848,
+            "hi": 0.5508
+          },
+          "beta_along_target": {
+            "est": 0.005,
+            "lo": -1.3864,
+            "hi": 4.7548
+          },
+          "drop_along_target": {
+            "est": -0.0,
+            "lo": -0.0007,
+            "hi": 0.0043
+          },
+          "AUC_along_nonbase_max": {
+            "est": 0.6076,
+            "lo": 0.5856,
+            "hi": 0.6281
+          },
+          "gain_along_nonbase_max": {
+            "est": 0.3258,
+            "lo": 0.2973,
+            "hi": 0.3499
+          },
+          "AUC_along_nonbase_max_hiorth": {
+            "est": 0.5101,
+            "lo": 0.4775,
+            "hi": 0.5543
+          },
+          "beta_along_nonbase_max": {
+            "est": -2.0414,
+            "lo": -7.5402,
+            "hi": 0.3833
+          },
+          "drop_along_nonbase_max": {
+            "est": 0.0007,
+            "lo": -0.0013,
+            "hi": 0.0081
+          },
+          "AUC_orth_base": {
+            "est": 0.4887,
+            "lo": 0.4608,
+            "hi": 0.5177
+          },
+          "gain_orth_base": {
+            "est": 0.0,
+            "lo": 0.0,
+            "hi": 0.0
+          },
+          "AUC_orth_base_hiorth": {
+            "est": 0.8433,
+            "lo": 0.8021,
+            "hi": 0.9036
+          },
+          "beta_orth_base": {
+            "est": 0.5124,
+            "lo": 0.017,
+            "hi": 1.3575
+          },
+          "drop_orth_base": {
+            "est": 0.0007,
+            "lo": -0.001,
+            "hi": 0.005
+          },
+          "AUC_delta_norm": {
+            "est": 0.4218,
+            "lo": 0.4132,
+            "hi": 0.5957
+          },
+          "gain_delta_norm": {
+            "est": 0.3144,
+            "lo": 0.2849,
+            "hi": 0.3408
+          },
+          "AUC_delta_norm_hiorth": {
+            "est": 0.6119,
+            "lo": 0.5784,
+            "hi": 0.6821
+          },
+          "beta_delta_norm": {
+            "est": 2.8682,
+            "lo": 0.1085,
+            "hi": 5.1384
+          },
+          "drop_delta_norm": {
+            "est": 0.0015,
+            "lo": -0.0006,
+            "hi": 0.0105
+          },
+          "AUC_INT": {
+            "est": 0.5329,
+            "lo": 0.4756,
+            "hi": 0.5657
+          },
+          "gain_INT": {
+            "est": 0.0008,
+            "lo": -0.0006,
+            "hi": 0.0548
+          },
+          "AUC_INT_hiorth": {
+            "est": 0.5732,
+            "lo": 0.4923,
+            "hi": 0.63
+          },
+          "beta_INT": {
+            "est": -0.1392,
+            "lo": -0.4759,
+            "hi": 0.1081
+          },
+          "drop_INT": {
+            "est": 0.0002,
+            "lo": -0.0009,
+            "hi": 0.0041
+          }
+        },
+        "means": {
+          "gap_frac": {
+            "FN": -0.0262,
+            "TN": -0.0135
+          },
+          "local_gap_frac": {
+            "FN": 0.0592,
+            "TN": 0.2463
+          },
+          "excess_local_gap": {
+            "FN": 0.0854,
+            "TN": 0.2597
+          },
+          "kappa_dir": {
+            "FN": -0.003,
+            "TN": -0.0019
+          },
+          "along_target": {
+            "FN": 0.4513,
+            "TN": 0.6467
+          },
+          "along_nonbase_max": {
+            "FN": 0.4881,
+            "TN": 0.6911
+          },
+          "orth_base": {
+            "FN": 0.4462,
+            "TN": 0.1363
+          },
+          "delta_norm": {
+            "FN": 0.7205,
+            "TN": 0.7496
+          },
+          "INT": {
+            "FN": 0.0658,
+            "TN": 0.0096
+          }
+        },
+        "predict": "AUC_<f> > 0.5 => the instrument detects missed circuit members (FN) among low-effect components; AUC ~ 0.5 => FN and TN are indistinguishable"
+      },
+      "STR_push_within": {
+        "status": "ok",
+        "n": 2826,
+        "n_fn": 438,
+        "n_tn": 2388,
+        "q_threshold": 0.5,
+        "feats": [
+          "gap_frac",
+          "local_gap_frac",
+          "excess_local_gap",
+          "kappa_dir",
+          "along_target",
+          "along_nonbase_max",
+          "orth_base",
+          "delta_norm",
+          "INT"
+        ],
+        "coef": {
+          "AUC_orth": {
+            "est": 0.4781,
+            "lo": 0.4479,
+            "hi": 0.5
+          },
+          "AUC_full": {
+            "est": 0.8196,
+            "lo": 0.7753,
+            "hi": 0.8654
+          },
+          "gain_full": {
+            "est": 0.3415,
+            "lo": 0.2927,
+            "hi": 0.3926
+          },
+          "AUC_gap_frac": {
+            "est": 0.5193,
+            "lo": 0.4778,
+            "hi": 0.576
+          },
+          "gain_gap_frac": {
+            "est": 0.0016,
+            "lo": -0.0014,
+            "hi": 0.108
+          },
+          "AUC_gap_frac_hiorth": {
+            "est": 0.5782,
+            "lo": 0.4776,
+            "hi": 0.6912
+          },
+          "beta_gap_frac": {
+            "est": 0.4245,
+            "lo": -0.495,
+            "hi": 1.2285
+          },
+          "drop_gap_frac": {
+            "est": -0.0021,
+            "lo": -0.0042,
+            "hi": 0.0073
+          },
+          "AUC_local_gap_frac": {
+            "est": 0.7094,
+            "lo": 0.6674,
+            "hi": 0.742
+          },
+          "gain_local_gap_frac": {
+            "est": 0.3393,
+            "lo": 0.2992,
+            "hi": 0.3783
+          },
+          "AUC_local_gap_frac_hiorth": {
+            "est": 0.814,
+            "lo": 0.7198,
+            "hi": 0.8819
+          },
+          "beta_local_gap_frac": {
+            "est": -3.1496,
+            "lo": -5.7678,
+            "hi": -1.2553
+          },
+          "drop_local_gap_frac": {
+            "est": 0.009,
+            "lo": -0.0002,
+            "hi": 0.0215
+          },
+          "AUC_excess_local_gap": {
+            "est": 0.6748,
+            "lo": 0.6164,
+            "hi": 0.735
+          },
+          "gain_excess_local_gap": {
+            "est": 0.2732,
+            "lo": 0.2127,
+            "hi": 0.3544
+          },
+          "AUC_excess_local_gap_hiorth": {
+            "est": 0.6739,
+            "lo": 0.4589,
+            "hi": 0.8007
+          },
+          "beta_excess_local_gap": {
+            "est": 0.693,
+            "lo": -1.1888,
+            "hi": 2.4291
+          },
+          "drop_excess_local_gap": {
+            "est": -0.0017,
+            "lo": -0.0039,
+            "hi": 0.0041
+          },
+          "AUC_kappa_dir": {
+            "est": 0.5167,
+            "lo": 0.4792,
+            "hi": 0.58
+          },
+          "gain_kappa_dir": {
+            "est": 0.016,
+            "lo": -0.0001,
+            "hi": 0.0783
+          },
+          "AUC_kappa_dir_hiorth": {
+            "est": 0.5752,
+            "lo": 0.487,
+            "hi": 0.692
+          },
+          "beta_kappa_dir": {
+            "est": -0.1622,
+            "lo": -0.3557,
+            "hi": 0.0153
+          },
+          "drop_kappa_dir": {
+            "est": -0.0022,
+            "lo": -0.0087,
+            "hi": 0.006
+          },
+          "AUC_along_target": {
+            "est": 0.6044,
+            "lo": 0.581,
+            "hi": 0.6333
+          },
+          "gain_along_target": {
+            "est": 0.2494,
+            "lo": 0.2061,
+            "hi": 0.2922
+          },
+          "AUC_along_target_hiorth": {
+            "est": 0.4935,
+            "lo": 0.4755,
+            "hi": 0.5759
+          },
+          "beta_along_target": {
+            "est": 1.8104,
+            "lo": -2.1775,
+            "hi": 6.4983
+          },
+          "drop_along_target": {
+            "est": 0.0002,
+            "lo": -0.001,
+            "hi": 0.0039
+          },
+          "AUC_along_nonbase_max": {
+            "est": 0.6263,
+            "lo": 0.5984,
+            "hi": 0.6613
+          },
+          "gain_along_nonbase_max": {
+            "est": 0.2822,
+            "lo": 0.2355,
+            "hi": 0.3282
+          },
+          "AUC_along_nonbase_max_hiorth": {
+            "est": 0.5996,
+            "lo": 0.5144,
+            "hi": 0.6776
+          },
+          "beta_along_nonbase_max": {
+            "est": -2.7761,
+            "lo": -6.1797,
+            "hi": -1.485
+          },
+          "drop_along_nonbase_max": {
+            "est": 0.0018,
+            "lo": -0.0028,
+            "hi": 0.0101
+          },
+          "AUC_orth_base": {
+            "est": 0.4781,
+            "lo": 0.4479,
+            "hi": 0.5
+          },
+          "gain_orth_base": {
+            "est": 0.0,
+            "lo": 0.0,
+            "hi": 0.0
+          },
+          "AUC_orth_base_hiorth": {
+            "est": 0.7677,
+            "lo": 0.7173,
+            "hi": 0.8235
+          },
+          "beta_orth_base": {
+            "est": 0.3749,
+            "lo": -0.2772,
+            "hi": 1.0357
+          },
+          "drop_orth_base": {
+            "est": 0.0016,
+            "lo": -0.0013,
+            "hi": 0.0068
+          },
+          "AUC_delta_norm": {
+            "est": 0.5935,
+            "lo": 0.4268,
+            "hi": 0.621
+          },
+          "gain_delta_norm": {
+            "est": 0.248,
+            "lo": 0.2021,
+            "hi": 0.289
+          },
+          "AUC_delta_norm_hiorth": {
+            "est": 0.5422,
+            "lo": 0.4944,
+            "hi": 0.6023
+          },
+          "beta_delta_norm": {
+            "est": 1.6841,
+            "lo": -2.7857,
+            "hi": 7.0615
+          },
+          "drop_delta_norm": {
+            "est": 0.0,
+            "lo": -0.0017,
+            "hi": 0.0043
+          },
+          "AUC_INT": {
+            "est": 0.5293,
+            "lo": 0.4938,
+            "hi": 0.568
+          },
+          "gain_INT": {
+            "est": -0.0026,
+            "lo": -0.0088,
+            "hi": 0.0346
+          },
+          "AUC_INT_hiorth": {
+            "est": 0.5868,
+            "lo": 0.5327,
+            "hi": 0.6416
+          },
+          "beta_INT": {
+            "est": 0.0574,
+            "lo": -0.3472,
+            "hi": 0.9814
+          },
+          "drop_INT": {
+            "est": 0.0006,
+            "lo": -0.0035,
+            "hi": 0.0129
+          }
+        },
+        "means": {
+          "gap_frac": {
+            "FN": -0.0409,
+            "TN": -0.0126
+          },
+          "local_gap_frac": {
+            "FN": 0.0612,
+            "TN": 0.2191
+          },
+          "excess_local_gap": {
+            "FN": 0.102,
+            "TN": 0.2317
+          },
+          "kappa_dir": {
+            "FN": -0.017,
+            "TN": -0.0036
+          },
+          "along_target": {
+            "FN": 0.4418,
+            "TN": 0.6567
+          },
+          "along_nonbase_max": {
+            "FN": 0.322,
+            "TN": 0.6186
+          },
+          "orth_base": {
+            "FN": 0.2156,
+            "TN": 0.1056
+          },
+          "delta_norm": {
+            "FN": 0.5085,
+            "TN": 0.672
+          },
+          "INT": {
+            "FN": 0.0967,
+            "TN": 0.0236
+          }
+        },
+        "predict": "AUC_<f> > 0.5 => the instrument detects missed circuit members (FN) among low-effect components; AUC ~ 0.5 => FN and TN are indistinguishable"
+      },
+      "STR_swap_cross": {
+        "status": "ok",
+        "n": 4038,
+        "n_fn": 754,
+        "n_tn": 3284,
+        "q_threshold": 0.5,
+        "feats": [
+          "gap_frac",
+          "local_gap_frac",
+          "excess_local_gap",
+          "kappa_dir",
+          "along_target",
+          "along_nonbase_max",
+          "orth_base",
+          "delta_norm",
+          "INT"
+        ],
+        "coef": {
+          "AUC_orth": {
+            "est": 0.6035,
+            "lo": 0.5677,
+            "hi": 0.6374
+          },
+          "AUC_full": {
+            "est": 0.8048,
+            "lo": 0.7872,
+            "hi": 0.8484
+          },
+          "gain_full": {
+            "est": 0.2014,
+            "lo": 0.1773,
+            "hi": 0.253
+          },
+          "AUC_gap_frac": {
+            "est": 0.4826,
+            "lo": 0.472,
+            "hi": 0.5377
+          },
+          "gain_gap_frac": {
+            "est": -0.0011,
+            "lo": -0.0024,
+            "hi": 0.0191
+          },
+          "AUC_gap_frac_hiorth": {
+            "est": 0.5028,
+            "lo": 0.4906,
+            "hi": 0.5392
+          },
+          "beta_gap_frac": {
+            "est": -0.0547,
+            "lo": -0.4612,
+            "hi": 0.5672
+          },
+          "drop_gap_frac": {
+            "est": -0.0001,
+            "lo": -0.0007,
+            "hi": 0.0033
+          },
+          "AUC_local_gap_frac": {
+            "est": 0.6283,
+            "lo": 0.5998,
+            "hi": 0.6587
+          },
+          "gain_local_gap_frac": {
+            "est": 0.1784,
+            "lo": 0.1566,
+            "hi": 0.2189
+          },
+          "AUC_local_gap_frac_hiorth": {
+            "est": 0.7612,
+            "lo": 0.7419,
+            "hi": 0.795
+          },
+          "beta_local_gap_frac": {
+            "est": -2.4987,
+            "lo": -5.1081,
+            "hi": -1.4951
+          },
+          "drop_local_gap_frac": {
+            "est": 0.0115,
+            "lo": 0.0011,
+            "hi": 0.0238
+          },
+          "AUC_excess_local_gap": {
+            "est": 0.6202,
+            "lo": 0.5928,
+            "hi": 0.6542
+          },
+          "gain_excess_local_gap": {
+            "est": 0.1406,
+            "lo": 0.1124,
+            "hi": 0.1749
+          },
+          "AUC_excess_local_gap_hiorth": {
+            "est": 0.7345,
+            "lo": 0.7004,
+            "hi": 0.7695
+          },
+          "beta_excess_local_gap": {
+            "est": -0.1311,
+            "lo": -1.477,
+            "hi": 2.5059
+          },
+          "drop_excess_local_gap": {
+            "est": 0.0002,
+            "lo": -0.0008,
+            "hi": 0.0043
+          },
+          "AUC_kappa_dir": {
+            "est": 0.53,
+            "lo": 0.462,
+            "hi": 0.5699
+          },
+          "gain_kappa_dir": {
+            "est": 0.0008,
+            "lo": -0.011,
+            "hi": 0.0067
+          },
+          "AUC_kappa_dir_hiorth": {
+            "est": 0.5459,
+            "lo": 0.4826,
+            "hi": 0.5884
+          },
+          "beta_kappa_dir": {
+            "est": -0.036,
+            "lo": -0.1989,
+            "hi": 0.156
+          },
+          "drop_kappa_dir": {
+            "est": 0.0005,
+            "lo": -0.0014,
+            "hi": 0.0044
+          },
+          "AUC_along_target": {
+            "est": 0.5204,
+            "lo": 0.4974,
+            "hi": 0.5553
+          },
+          "gain_along_target": {
+            "est": 0.0677,
+            "lo": 0.0466,
+            "hi": 0.0928
+          },
+          "AUC_along_target_hiorth": {
+            "est": 0.702,
+            "lo": 0.653,
+            "hi": 0.749
+          },
+          "beta_along_target": {
+            "est": -1.4975,
+            "lo": -3.1082,
+            "hi": 0.5719
+          },
+          "drop_along_target": {
+            "est": 0.002,
+            "lo": -0.0002,
+            "hi": 0.0127
+          },
+          "AUC_along_nonbase_max": {
+            "est": 0.5177,
+            "lo": 0.4947,
+            "hi": 0.5534
+          },
+          "gain_along_nonbase_max": {
+            "est": 0.0679,
+            "lo": 0.0462,
+            "hi": 0.0939
+          },
+          "AUC_along_nonbase_max_hiorth": {
+            "est": 0.7001,
+            "lo": 0.6551,
+            "hi": 0.7449
+          },
+          "beta_along_nonbase_max": {
+            "est": -1.8716,
+            "lo": -5.0019,
+            "hi": 0.2205
+          },
+          "drop_along_nonbase_max": {
+            "est": -0.0001,
+            "lo": -0.0035,
+            "hi": 0.0076
+          },
+          "AUC_orth_base": {
+            "est": 0.6035,
+            "lo": 0.5677,
+            "hi": 0.6374
+          },
+          "gain_orth_base": {
+            "est": 0.0,
+            "lo": 0.0,
+            "hi": 0.0
+          },
+          "AUC_orth_base_hiorth": {
+            "est": 0.527,
+            "lo": 0.4833,
+            "hi": 0.6043
+          },
+          "beta_orth_base": {
+            "est": 1.1572,
+            "lo": 0.9752,
+            "hi": 1.5892
+          },
+          "drop_orth_base": {
+            "est": 0.0483,
+            "lo": 0.0202,
+            "hi": 0.0778
+          },
+          "AUC_delta_norm": {
+            "est": 0.4733,
+            "lo": 0.4668,
+            "hi": 0.5742
+          },
+          "gain_delta_norm": {
+            "est": 0.0691,
+            "lo": 0.0363,
+            "hi": 0.0933
+          },
+          "AUC_delta_norm_hiorth": {
+            "est": 0.6531,
+            "lo": 0.5941,
+            "hi": 0.7055
+          },
+          "beta_delta_norm": {
+            "est": 3.8536,
+            "lo": 2.7229,
+            "hi": 5.4668
+          },
+          "drop_delta_norm": {
+            "est": 0.0154,
+            "lo": -0.0017,
+            "hi": 0.0283
+          },
+          "AUC_INT": {
+            "est": 0.5439,
+            "lo": 0.4941,
+            "hi": 0.6227
+          },
+          "gain_INT": {
+            "est": -0.0011,
+            "lo": -0.0112,
+            "hi": 0.0278
+          },
+          "AUC_INT_hiorth": {
+            "est": 0.5047,
+            "lo": 0.4899,
+            "hi": 0.5722
+          },
+          "beta_INT": {
+            "est": -0.1688,
+            "lo": -0.3286,
+            "hi": 0.029
+          },
+          "drop_INT": {
+            "est": 0.0007,
+            "lo": -0.0012,
+            "hi": 0.0084
+          }
+        },
+        "means": {
+          "gap_frac": {
+            "FN": 0.0038,
+            "TN": 0.0181
+          },
+          "local_gap_frac": {
+            "FN": 0.5034,
+            "TN": 0.8134
+          },
+          "excess_local_gap": {
+            "FN": 0.4996,
+            "TN": 0.7953
+          },
+          "kappa_dir": {
+            "FN": 0.0078,
+            "TN": 0.0075
+          },
+          "along_target": {
+            "FN": 3.9089,
+            "TN": 4.3648
+          },
+          "along_nonbase_max": {
+            "FN": 4.0811,
+            "TN": 4.4958
+          },
+          "orth_base": {
+            "FN": 2.0189,
+            "TN": 1.2726
+          },
+          "delta_norm": {
+            "FN": 4.5117,
+            "TN": 4.6132
+          },
+          "INT": {
+            "FN": -0.7452,
+            "TN": -0.5076
+          }
+        },
+        "predict": "AUC_<f> > 0.5 => the instrument detects missed circuit members (FN) among low-effect components; AUC ~ 0.5 => FN and TN are indistinguishable"
+      },
+      "STR_swap_within": {
+        "status": "ok",
+        "n": 924,
+        "n_fn": 144,
+        "n_tn": 780,
+        "q_threshold": 0.5,
+        "feats": [
+          "gap_frac",
+          "local_gap_frac",
+          "excess_local_gap",
+          "kappa_dir",
+          "along_target",
+          "along_nonbase_max",
+          "orth_base",
+          "delta_norm",
+          "INT"
+        ],
+        "coef": {
+          "AUC_orth": {
+            "est": 0.6548,
+            "lo": 0.5898,
+            "hi": 0.7409
+          },
+          "AUC_full": {
+            "est": 0.8494,
+            "lo": 0.8191,
+            "hi": 0.9115
+          },
+          "gain_full": {
+            "est": 0.1946,
+            "lo": 0.1411,
+            "hi": 0.2675
+          },
+          "AUC_gap_frac": {
+            "est": 0.4754,
+            "lo": 0.4253,
+            "hi": 0.6323
+          },
+          "gain_gap_frac": {
+            "est": -0.0033,
+            "lo": -0.0205,
+            "hi": 0.0618
+          },
+          "AUC_gap_frac_hiorth": {
+            "est": 0.5553,
+            "lo": 0.475,
+            "hi": 0.6416
+          },
+          "beta_gap_frac": {
+            "est": -0.4005,
+            "lo": -2.0791,
+            "hi": 1.2221
+          },
+          "drop_gap_frac": {
+            "est": 0.0042,
+            "lo": -0.0027,
+            "hi": 0.0279
+          },
+          "AUC_local_gap_frac": {
+            "est": 0.5946,
+            "lo": 0.5435,
+            "hi": 0.6465
+          },
+          "gain_local_gap_frac": {
+            "est": 0.0722,
+            "lo": 0.0238,
+            "hi": 0.1569
+          },
+          "AUC_local_gap_frac_hiorth": {
+            "est": 0.7189,
+            "lo": 0.6124,
+            "hi": 0.8309
+          },
+          "beta_local_gap_frac": {
+            "est": -0.8285,
+            "lo": -2.6726,
+            "hi": 0.5362
+          },
+          "drop_local_gap_frac": {
+            "est": -0.0048,
+            "lo": -0.009,
+            "hi": 0.013
+          },
+          "AUC_excess_local_gap": {
+            "est": 0.5539,
+            "lo": 0.4636,
+            "hi": 0.659
+          },
+          "gain_excess_local_gap": {
+            "est": 0.057,
+            "lo": 0.0115,
+            "hi": 0.0984
+          },
+          "AUC_excess_local_gap_hiorth": {
+            "est": 0.5862,
+            "lo": 0.4319,
+            "hi": 0.7434
+          },
+          "beta_excess_local_gap": {
+            "est": -0.0307,
+            "lo": -1.828,
+            "hi": 1.927
+          },
+          "drop_excess_local_gap": {
+            "est": 0.0002,
+            "lo": -0.0041,
+            "hi": 0.0177
+          },
+          "AUC_kappa_dir": {
+            "est": 0.5744,
+            "lo": 0.4726,
+            "hi": 0.6951
+          },
+          "gain_kappa_dir": {
+            "est": 0.0631,
+            "lo": 0.0126,
+            "hi": 0.1022
+          },
+          "AUC_kappa_dir_hiorth": {
+            "est": 0.5527,
+            "lo": 0.4682,
+            "hi": 0.7553
+          },
+          "beta_kappa_dir": {
+            "est": 0.6282,
+            "lo": -0.003,
+            "hi": 1.1403
+          },
+          "drop_kappa_dir": {
+            "est": 0.0138,
+            "lo": -0.0015,
+            "hi": 0.0486
+          },
+          "AUC_along_target": {
+            "est": 0.7219,
+            "lo": 0.666,
+            "hi": 0.7788
+          },
+          "gain_along_target": {
+            "est": 0.1037,
+            "lo": 0.0013,
+            "hi": 0.178
+          },
+          "AUC_along_target_hiorth": {
+            "est": 0.5907,
+            "lo": 0.4893,
+            "hi": 0.7129
+          },
+          "beta_along_target": {
+            "est": -0.3152,
+            "lo": -1.7214,
+            "hi": 1.6534
+          },
+          "drop_along_target": {
+            "est": -0.0,
+            "lo": -0.0002,
+            "hi": 0.0008
+          },
+          "AUC_along_nonbase_max": {
+            "est": 0.6301,
+            "lo": 0.5719,
+            "hi": 0.6856
+          },
+          "gain_along_nonbase_max": {
+            "est": 0.0571,
+            "lo": -0.0138,
+            "hi": 0.1386
+          },
+          "AUC_along_nonbase_max_hiorth": {
+            "est": 0.5692,
+            "lo": 0.4916,
+            "hi": 0.6943
+          },
+          "beta_along_nonbase_max": {
+            "est": -2.0693,
+            "lo": -3.0375,
+            "hi": -0.9746
+          },
+          "drop_along_nonbase_max": {
+            "est": 0.0193,
+            "lo": -0.0009,
+            "hi": 0.0468
+          },
+          "AUC_orth_base": {
+            "est": 0.6548,
+            "lo": 0.5898,
+            "hi": 0.7409
+          },
+          "gain_orth_base": {
+            "est": 0.0,
+            "lo": 0.0,
+            "hi": 0.0
+          },
+          "AUC_orth_base_hiorth": {
+            "est": 0.8082,
+            "lo": 0.7462,
+            "hi": 0.8519
+          },
+          "beta_orth_base": {
+            "est": 0.5921,
+            "lo": 0.2713,
+            "hi": 1.2341
+          },
+          "drop_orth_base": {
+            "est": 0.0045,
+            "lo": -0.0099,
+            "hi": 0.0373
+          },
+          "AUC_delta_norm": {
+            "est": 0.7268,
+            "lo": 0.6689,
+            "hi": 0.7828
+          },
+          "gain_delta_norm": {
+            "est": 0.1048,
+            "lo": 0.0008,
+            "hi": 0.1782
+          },
+          "AUC_delta_norm_hiorth": {
+            "est": 0.6014,
+            "lo": 0.4884,
+            "hi": 0.7191
+          },
+          "beta_delta_norm": {
+            "est": 3.0712,
+            "lo": 0.9607,
+            "hi": 4.6505
+          },
+          "drop_delta_norm": {
+            "est": 0.0011,
+            "lo": -0.0005,
+            "hi": 0.0037
+          },
+          "AUC_INT": {
+            "est": 0.5592,
+            "lo": 0.4923,
+            "hi": 0.6363
+          },
+          "gain_INT": {
+            "est": 0.0423,
+            "lo": 0.0058,
+            "hi": 0.0754
+          },
+          "AUC_INT_hiorth": {
+            "est": 0.571,
+            "lo": 0.473,
+            "hi": 0.6669
+          },
+          "beta_INT": {
+            "est": -0.3173,
+            "lo": -0.4721,
+            "hi": -0.1136
+          },
+          "drop_INT": {
+            "est": 0.0056,
+            "lo": -0.0023,
+            "hi": 0.0132
+          }
+        },
+        "means": {
+          "gap_frac": {
+            "FN": -0.1208,
+            "TN": 0.0196
+          },
+          "local_gap_frac": {
+            "FN": 0.6276,
+            "TN": 0.765
+          },
+          "excess_local_gap": {
+            "FN": 0.7484,
+            "TN": 0.7454
+          },
+          "kappa_dir": {
+            "FN": 0.0113,
+            "TN": -0.0035
+          },
+          "along_target": {
+            "FN": 5.3754,
+            "TN": 3.8025
+          },
+          "along_nonbase_max": {
+            "FN": 4.341,
+            "TN": 3.5203
+          },
+          "orth_base": {
+            "FN": 0.541,
+            "TN": 0.1834
+          },
+          "delta_norm": {
+            "FN": 5.447,
+            "TN": 3.8098
+          },
+          "INT": {
+            "FN": -0.6713,
+            "TN": -0.225
+          }
+        },
+        "predict": "AUC_<f> > 0.5 => the instrument detects missed circuit members (FN) among low-effect components; AUC ~ 0.5 => FN and TN are indistinguishable"
+      }
+    }
+  },
+  "MED_orth_base_to_INT_to_NIE": {
+    "status": "ok",
+    "n": 5814,
+    "coef": {
+      "a(orth->INT)": {
+        "est": -0.1828,
+        "lo": -0.2371,
+        "hi": -0.1069
+      },
+      "b(INT->NIE)": {
+        "est": 0.2214,
+        "lo": 0.1144,
+        "hi": 0.2988
+      },
+      "c_total(orth->NIE)": {
+        "est": 0.5568,
+        "lo": 0.5025,
+        "hi": 0.6172
+      },
+      "c'_direct": {
+        "est": 0.5973,
+        "lo": 0.5499,
+        "hi": 0.6506
+      },
+      "indirect(a*b)": {
+        "est": -0.0405,
+        "lo": -0.0603,
+        "hi": -0.0176
+      },
+      "prop_mediated": {
+        "est": -0.0727,
+        "lo": -0.1151,
+        "hi": -0.0301
+      }
+    },
+    "predict": "dormancy => indirect (a*b) large, prop_mediated high (INT carries orth_base)"
+  },
+  "P5_STR_push": {
+    "status": "ok",
+    "n": 4230,
+    "strategy": "STR",
+    "coef": {
+      "push_along_target": {
+        "est": 0.0994,
+        "lo": -0.0714,
+        "hi": 0.2557
+      },
+      "push_orth_base": {
+        "est": 0.0131,
+        "lo": -0.2205,
+        "hi": 0.1797
+      }
+    },
+    "predict": "mediation => downstream INT scales with push_along_target (STR) / push_orth_base (Gaussian)"
+  },
+  "P5_Gaussian_push": {
+    "status": "ok",
+    "n": 2430,
+    "strategy": "Gaussian",
+    "coef": {
+      "push_orth_base": {
+        "est": 0.2191,
+        "lo": 0.1736,
+        "hi": 0.2586
+      }
+    },
+    "predict": "mediation => downstream INT scales with push_along_target (STR) / push_orth_base (Gaussian)"
+  },
+  "DOSE_STR_swap": {
+    "status": "ok",
+    "label": "STR_swap",
+    "by_alpha": {
+      "a0.3": {
+        "n": 2130,
+        "mean_INT": -0.0734,
+        "mean_absNIE_FP": 0.4012,
+        "m1_orth_base_beta": -0.0184
+      },
+      "a1": {
+        "n": 2130,
+        "mean_INT": -0.3921,
+        "mean_absNIE_FP": 2.385,
+        "m1_orth_base_beta": -0.1118
+      },
+      "a3": {
+        "n": 2130,
+        "mean_INT": -0.6511,
+        "mean_absNIE_FP": 7.4809,
+        "m1_orth_base_beta": -0.128
+      }
+    },
+    "cross_alpha_regression": {
+      "r2": 0.335,
+      "n": 4878,
+      "coef": {
+        "alpha": {
+          "est": 0.2458,
+          "lo": 0.143,
+          "hi": 0.3262
+        },
+        "orth_base": {
+          "est": 0.3964,
+          "lo": 0.289,
+          "hi": 0.5049
+        }
+      }
+    },
+    "predict": "dormancy => mean_INT, |NIE|_FP and orth_base slope rise with alpha; cross_alpha beta_alpha = dose-response strength"
+  },
+  "DOSE_Gaussian_push": {
+    "status": "ok",
+    "label": "Gaussian_push",
+    "by_alpha": {
+      "a0.3": {
+        "n": 810,
+        "mean_INT": 0.0457,
+        "mean_absNIE_FP": 0.0599,
+        "m1_orth_base_beta": 0.6437
+      },
+      "a1": {
+        "n": 810,
+        "mean_INT": 0.241,
+        "mean_absNIE_FP": 0.2528,
+        "m1_orth_base_beta": 0.6335
+      },
+      "a3": {
+        "n": 810,
+        "mean_INT": 0.706,
+        "mean_absNIE_FP": 0.4331,
+        "m1_orth_base_beta": 0.7878
+      }
+    },
+    "cross_alpha_regression": {
+      "r2": 0.719,
+      "n": 2052,
+      "coef": {
+        "alpha": {
+          "est": 0.0991,
+          "lo": 0.0729,
+          "hi": 0.1258
+        },
+        "orth_base": {
+          "est": 0.816,
+          "lo": 0.73,
+          "hi": 0.8866
+        }
+      }
+    },
+    "predict": "dormancy => mean_INT, |NIE|_FP and orth_base slope rise with alpha; cross_alpha beta_alpha = dose-response strength"
+  },
+  "NULL_STR_vs_Gaussian_push": {
+    "status": "ok",
+    "n_paired": 3438,
+    "mean_STR_minus_Gauss": -0.078,
+    "frac_positive": 0.296,
+    "predict": "task-structured recruits more => STR-push INT > Gaussian-push INT"
+  }
+}

@@ -1,0 +1,94 @@
+\begin{table}[t]
+\centering
+\caption{FN vs.\ TN logistic regression (below-threshold population). FN $=$ in-circuit components with $|$NIE$|$ below per-combo median (dormant circuit members); TN $=$ off-circuit below threshold. Base model: $\mathrm{orth}_b$, $\mathrm{along}_s$ ($+\ \mathrm{along}_t$ for cross). All strategies with pairwise interactions. * $=$ 95\% cluster-bootstrap CI excludes 0.}
+\label{tab:fntn-ripple}
+\small
+
+\medskip
+\textbf{swap (within)} ($n=924$, FN$=144$, TN$=780$)
+
+\begin{tabular}{l r r r r r r}
+\toprule
+ & base & $+$in & $+$off & $+$frac & $+$xint & $+$block \\
+\midrule
+AUC & 0.760 & 0.881 & 0.759 & 0.812 & 0.884 & 0.901 \\
+$\mathrm{orth}_b(\delta)$ & $+0.77$* & $+0.66$* & $+0.76$* & $+0.88$* & $+0.49$* & $+0.59$* \\
+$\mathrm{along}_s(\delta)$ & $+0.45$ & $+0.06$ & $+0.43$ & $+0.62$* & $+0.25$ & $+0.34$ \\
+ripple (in-task) & -- & $+1.40$* & -- & -- & -- & $+0.95$* \\
+ripple (off-task) & -- & -- & $+0.06$ & -- & -- & $-0.68$* \\
+ripple frac & -- & -- & -- & $+1.10$* & -- & $+0.22$ \\
+ripple (xint in-task) & -- & -- & -- & -- & $+1.44$* & $+0.81$* \\
+\bottomrule
+\end{tabular}
+
+\medskip
+\textbf{swap (cross)} ($n=4038$, FN$=754$, TN$=3284$)
+
+\begin{tabular}{l r r r r r r}
+\toprule
+ & base & $+$in & $+$off & $+$frac & $+$xint & $+$block \\
+\midrule
+AUC & 0.672 & 0.774 & 0.668 & 0.682 & 0.754 & 0.770 \\
+$\mathrm{orth}_b(\delta)$ & $+0.69$* & $+0.75$* & $+0.67$* & $+0.76$* & $+0.69$* & $+0.77$* \\
+$\mathrm{along}_s(\delta)$ & $+1.31$ & $+0.97$ & $+1.28$ & $+1.34$ & $+1.29$ & $+1.09$ \\
+$\mathrm{along}_t(\delta)$ & $-1.92$ & $-2.26$ & $-1.92$ & $-2.05$ & $-2.32$ & $-2.37$* \\
+ripple (in-task) & -- & $+0.97$* & -- & -- & -- & $+0.99$* \\
+ripple (off-task) & -- & -- & $+0.12$ & -- & -- & $-0.28$* \\
+ripple frac & -- & -- & -- & $+0.35$* & -- & $-0.18$ \\
+ripple (xint in-task) & -- & -- & -- & -- & $+0.81$* & $+0.18$ \\
+\bottomrule
+\end{tabular}
+
+\medskip
+\textbf{STR push (within)} ($n=2791$, FN$=403$, TN$=2388$)
+
+\begin{tabular}{l r r r r r r}
+\toprule
+ & base & $+$in & $+$off & $+$frac & $+$xint & $+$block \\
+\midrule
+AUC & 0.780 & 0.769 & 0.782 & 0.801 & 0.780 & 0.789 \\
+$\mathrm{orth}_b(\delta)$ & $+0.99$* & $+0.94$* & $+1.25$* & $+1.11$* & $+0.91$* & $+1.36$* \\
+$\mathrm{along}_s(\delta)$ & $-1.65$* & $-2.14$* & $-1.47$* & $-1.71$* & $-1.90$* & $-2.19$* \\
+ripple (in-task) & -- & $+0.57$* & -- & -- & -- & $+0.94$ \\
+ripple (off-task) & -- & -- & $-0.74$* & -- & -- & $-0.93$* \\
+ripple frac & -- & -- & -- & $+0.42$* & -- & $+0.17$ \\
+ripple (xint in-task) & -- & -- & -- & -- & $+0.38$* & $-0.30$ \\
+\bottomrule
+\end{tabular}
+
+\medskip
+\textbf{STR push (cross)} ($n=4891$, FN$=655$, TN$=4236$)
+
+\begin{tabular}{l r r r r r r}
+\toprule
+ & base & $+$in & $+$off & $+$frac & $+$xint & $+$block \\
+\midrule
+AUC & 0.783 & 0.782 & 0.790 & 0.802 & 0.783 & 0.804 \\
+$\mathrm{orth}_b(\delta)$ & $+1.19$* & $+1.24$* & $+1.44$* & $+1.47$* & $+1.19$* & $+1.85$* \\
+$\mathrm{along}_s(\delta)$ & $-1.70$* & $-1.87$* & $-1.76$* & $-2.07$* & $-1.68$* & $-1.96$* \\
+$\mathrm{along}_t(\delta)$ & $-0.24$ & $-0.25$ & $-0.08$ & $+0.01$ & $-0.25$ & $-0.27$ \\
+ripple (in-task) & -- & $+0.22$ & -- & -- & -- & $+0.79$ \\
+ripple (off-task) & -- & -- & $-0.66$* & -- & -- & $-0.61$* \\
+ripple frac & -- & -- & -- & $+0.56$* & -- & $+0.52$* \\
+ripple (xint in-task) & -- & -- & -- & -- & $-0.02$ & $-0.90$ \\
+\bottomrule
+\end{tabular}
+
+\medskip
+\textbf{Gaussian push} ($n=3035$, FN$=400$, TN$=2635$)
+
+\begin{tabular}{l r r r r r r}
+\toprule
+ & base & $+$in & $+$off & $+$frac & $+$xint & $+$block \\
+\midrule
+AUC & 0.798 & 0.796 & 0.807 & 0.813 & 0.798 & 0.814 \\
+$\mathrm{orth}_b(\delta)$ & $+1.01$* & $+0.93$* & $+1.49$* & $+1.16$* & $+0.92$* & $+1.56$* \\
+$\mathrm{along}_s(\delta)$ & $-1.57$* & $-1.80$* & $-1.46$* & $-1.63$* & $-1.72$* & $-1.60$* \\
+ripple (in-task) & -- & $+0.35$* & -- & -- & -- & $+0.11$ \\
+ripple (off-task) & -- & -- & $-1.01$* & -- & -- & $-0.90$* \\
+ripple frac & -- & -- & -- & $+0.51$* & -- & $+0.39$* \\
+ripple (xint in-task) & -- & -- & -- & -- & $+0.28$ & $-0.06$ \\
+\bottomrule
+\end{tabular}
+
+\end{table}

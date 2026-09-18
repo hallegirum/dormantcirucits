@@ -1,0 +1,25 @@
+     swap (within)      local curv  0.697  [0.559, 0.836]  
+     swap (within)            orth  0.619  [0.510, 0.738]  
+     swap (within)           along  0.753  [0.631, 0.880]  
+     swap (within)     best ripple  0.840  [0.709, 0.946]  xint
+     swap (within)    ripple block  0.886  [0.798, 0.979]  
+      swap (cross)      local curv  0.654  [0.598, 0.724]  
+      swap (cross)            orth  0.604  [0.569, 0.663]  
+      swap (cross)           along  0.618  [0.569, 0.669]  
+      swap (cross)     best ripple  0.623  [0.555, 0.678]  in
+      swap (cross)    ripple block  0.759  [0.721, 0.803]  
+     push (within)      local curv  0.832  [0.767, 0.905]  
+     push (within)            orth  0.636  [0.544, 0.712]  
+     push (within)           along  0.713  [0.622, 0.821]  
+     push (within)     best ripple  0.546  [0.435, 0.678]  in
+     push (within)    ripple block  0.712  [0.649, 0.834]  
+      push (cross)      local curv  0.823  [0.780, 0.894]  
+      push (cross)            orth  0.798  [0.729, 0.870]  
+      push (cross)           along  0.612  [0.537, 0.689]  
+      push (cross)     best ripple  0.577  [0.441, 0.640]  off
+      push (cross)    ripple block  0.683  [0.637, 0.767]  
+     Gaussian push      local curv  0.801  [0.751, 0.851]  
+     Gaussian push            orth  0.654  [0.592, 0.717]  
+     Gaussian push           along  0.735  [0.662, 0.811]  
+     Gaussian push     best ripple  0.708  [0.632, 0.775]  in
+     Gaussian push    ripple block  0.801  [0.731, 0.868]  
