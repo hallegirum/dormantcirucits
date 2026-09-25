@@ -1,30 +1,32 @@
 
-swap (within) (n=153, FP=95, TP=58, AUC=0.961 [0.919, 1.000])
-  $\mathrm{orth}_b(\delta)$: -2.18 [-4.36, -1.39]*
-  $\mathrm{along}_s(\delta)$: +0.86 [+0.18, +3.21]*
-       local curvature: +1.92 [+0.55, +4.17]*
-  best ripple (r_xint_in): -3.30 [-7.11, -0.62]*
+swap (within) (n=153, FP=95, TP=58, AUC=0.960 [0.920, 1.000])
+  $\mathrm{orth}_b(\delta)$: -2.00 [-4.50, -1.31]*
+  $\mathrm{along}_s(\delta)$: +0.90 [+0.07, +4.40]*
+       local curvature: +1.67 [+0.34, +3.92]*
+  best ripple (r_xint_in): -3.01 [-6.44, -0.55]*
 
-swap (cross) (n=1176, FP=881, TP=295, AUC=0.837 [0.796, 0.892])
-  $\mathrm{orth}_b(\delta)$: -0.95 [-1.70, -0.58]*
-  $\mathrm{along}_s(\delta)$: +0.61 [+0.18, +0.98]*
-       local curvature: +0.81 [+0.31, +1.81]*
-    best ripple (r_in): -1.45 [-2.30, -0.86]*
+swap (cross) (n=1176, FP=881, TP=295, AUC=0.838 [0.796, 0.894])
+  $\mathrm{orth}_b(\delta)$: -0.95 [-1.72, -0.60]*
+  $\mathrm{along}_s(\delta)$: +2.45 [-1.80, +4.76]
+  $\mathrm{along}_t(\delta)$: -1.78 [-4.13, +2.31]
+       local curvature: +0.79 [+0.31, +1.73]*
+    best ripple (r_in): -1.48 [-2.30, -0.90]*
 
-push (within) (n=384, FP=290, TP=94, AUC=0.885 [0.828, 0.979])
-  $\mathrm{orth}_b(\delta)$: -0.76 [-1.85, -0.27]*
-  $\mathrm{along}_s(\delta)$: +0.99 [-0.24, +7.49]
-       local curvature: +1.07 [-0.41, +3.94]
-    best ripple (r_in): -1.25 [-3.55, -0.39]*
+push (within) (n=384, FP=290, TP=94, AUC=0.887 [0.833, 0.986])
+  $\mathrm{orth}_b(\delta)$: -0.67 [-1.37, -0.15]*
+  $\mathrm{along}_s(\delta)$: +1.14 [-0.06, +9.69]
+       local curvature: +0.96 [-1.39, +3.70]
+    best ripple (r_in): -1.30 [-3.64, -0.44]*
 
-push (cross) (n=636, FP=457, TP=179, AUC=0.870 [0.838, 0.963])
-  $\mathrm{orth}_b(\delta)$: -1.10 [-2.15, -0.51]*
-  $\mathrm{along}_s(\delta)$: +0.14 [-0.94, +1.22]
-       local curvature: +1.70 [+0.62, +4.44]*
-    best ripple (r_in): -1.02 [-3.83, -0.16]*
+push (cross) (n=636, FP=457, TP=179, AUC=0.871 [0.839, 0.963])
+  $\mathrm{orth}_b(\delta)$: -1.13 [-2.16, -0.57]*
+  $\mathrm{along}_s(\delta)$: +0.55 [-0.28, +4.22]
+  $\mathrm{along}_t(\delta)$: -0.36 [-4.19, +0.47]
+       local curvature: +1.65 [+0.50, +4.41]*
+    best ripple (r_in): -1.03 [-3.84, -0.17]*
 
-Gauss.\ push (n=258, FP=145, TP=113, AUC=0.968 [0.941, 0.998])
-  $\mathrm{orth}_b(\delta)$: -0.41 [-1.56, +1.73]
-  $\mathrm{along}_s(\delta)$: ---
-       local curvature: +4.36 [+3.16, +8.79]*
-    best ripple (r_in): -3.77 [-8.18, +0.34]
+Gauss.\ push (n=258, FP=145, TP=113, AUC=0.971 [0.944, 0.999])
+  $\mathrm{orth}_b(\delta)$: -0.41 [-1.77, +1.58]
+  $\mathrm{along}_s(\delta)$: +0.63 [-0.85, +2.68]
+       local curvature: +3.85 [+2.39, +8.83]*
+    best ripple (r_in): -3.83 [-8.57, +0.66]

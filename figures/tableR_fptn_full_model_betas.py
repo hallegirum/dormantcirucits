@@ -1,7 +1,13 @@
-"""Table R (FP vs TN) — Full model betas: orth + along + local curvature + ripple block.
+"""Table R (FP vs TN) — Full model betas: nested logistic regressions.
 
-FP-vs-TN: off-circuit only. FP = |NIE| >= per-combo median of in-circuit |NIE|;
-TN = off-circuit below threshold. C=10.0, seed=0. Bootstrap CIs over combos, B=500.
+Nested columns:
+  base (orth, along) → +curv → +ripple → +curv,ripple → curv+ripple (no along)
+
+The last column drops along to reveal ripple's effect in push regimes
+where along absorbs curvature variance.
+
+Shows best ripple (by |beta|) + ripple_xint (sign-flip metric).
+Per-strategy best curvature. C=10.0, B=500.
 
 Usage:
     python figures/tableR_fptn_full_model_betas.py [--csv PATH]
@@ -22,20 +28,30 @@ BUCKETS = [
     ("Gaussian_push",    "Gauss.\\ push"),
 ]
 
+CURV_MAP = {
+    "STR_swap_within": ("gap_frac",       "downstream curv."),
+    "STR_swap_cross":  ("gap_frac",       "downstream curv."),
+    "STR_push_within": ("local_gap_frac", "local curvature"),
+    "STR_push_cross":  ("local_gap_frac", "local curvature"),
+    "Gaussian_push":   ("gap_frac",       "downstream curv."),
+}
+
 RIPPLE_ALL = ["ripple_in_orth", "ripple_off_orth", "ripple_frac", "ripple_xint_in_orth"]
+XINT = "ripple_xint_in_orth"
 
 RIPPLE_DISPLAY = {
-    "ripple_in_orth":     r"$\mathrm{ripple}_\mathrm{in}$",
-    "ripple_off_orth":    r"$\mathrm{ripple}_\mathrm{off}$",
-    "ripple_frac":        r"$\mathrm{ripple}_\mathrm{frac}$",
+    "ripple_in_orth":      r"$\mathrm{ripple}_\mathrm{in}$",
+    "ripple_off_orth":     r"$\mathrm{ripple}_\mathrm{off}$",
+    "ripple_frac":         r"$\mathrm{ripple}_\mathrm{frac}$",
     "ripple_xint_in_orth": r"$\mathrm{ripple}_\mathrm{xint}$",
 }
 
-BASE_FEATS_DISPLAY = [
-    ("orth_base",     r"$\mathrm{orth}_b(\delta)$"),
-    ("along_target",  r"$\mathrm{along}_s(\delta)$"),
-    ("gap_frac",      "downstream curv."),
-]
+RIPPLE_DISPLAY_TXT = {
+    "ripple_in_orth":      "r_in",
+    "ripple_off_orth":     "r_off",
+    "ripple_frac":         "r_frac",
+    "ripple_xint_in_orth": "r_xint_in",
+}
 
 
 def _strat_bucket(row):
@@ -75,7 +91,7 @@ def zscore(df, feats):
 def fmt_beta(b, lo, hi):
     sig = (lo > 0 and hi > 0) or (lo < 0 and hi < 0)
     star = "*" if sig else ""
-    return f"${b:+.2f}${star}", f"{b:+.2f} [{lo:+.2f}, {hi:+.2f}]{star}"
+    return f"${b:+.2f}${'^*' if sig else ''}$", f"{b:+.2f}{star}"
 
 
 def main():
@@ -93,10 +109,17 @@ def main():
     tex_blocks = []
 
     for bkey, blabel in BUCKETS:
+        curv_feat, curv_label = CURV_MAP[bkey]
+        is_cross = "cross" in bkey
         pool = build_fptn_population(df, bkey)
-        base_feats = ["orth_base", "along_target"] if bkey != "Gaussian_push" else ["orth_base"]
-        all_feats = base_feats + ["gap_frac"] + RIPPLE_ALL
-        pool = zscore(pool, all_feats)
+
+        base_feats = ["orth_base", "along_nonbase_max"]
+        if is_cross:
+            base_feats.append("along_target")
+
+        all_feats = base_feats + [curv_feat] + RIPPLE_ALL
+        no_along_feats = ["orth_base", curv_feat] + RIPPLE_ALL
+        pool = zscore(pool, list(set(all_feats)))
 
         z_all = [f"z_{f}" for f in all_feats]
         clean = pool.dropna(subset=z_all + ["label", "combo"])
@@ -105,64 +128,18 @@ def main():
         combos = clean["combo"].values
         mask = np.all(np.isfinite(X), axis=1)
         X, y, combos = X[mask], y[mask], combos[mask]
-
-        lr = LogisticRegression(max_iter=2000, C=10.0)
-        lr.fit(X, y)
-        auc = roc_auc_score(y, lr.predict_proba(X)[:, 1])
-        betas = {all_feats[i]: lr.coef_[0][i] for i in range(len(all_feats))}
-
-        rng = np.random.RandomState(0)
+        clean = clean[mask].reset_index(drop=True)
         uc = np.unique(combos)
-        beta_boots, auc_boots = [], []
-        for _ in range(args.B):
-            idx_c = rng.choice(uc, size=len(uc), replace=True)
-            idx = np.concatenate([np.where(combos == c)[0] for c in idx_c])
-            Xb, yb = X[idx], y[idx]
-            if len(np.unique(yb)) < 2:
-                continue
-            try:
-                lrb = LogisticRegression(max_iter=2000, C=10.0)
-                lrb.fit(Xb, yb)
-                beta_boots.append(lrb.coef_[0])
-                auc_boots.append(roc_auc_score(yb, lrb.predict_proba(Xb)[:, 1]))
-            except Exception:
-                continue
-
-        beta_boots = np.array(beta_boots)
-
-        best_rip = max(RIPPLE_ALL, key=lambda f: abs(betas[f]))
-        best_rip_label = RIPPLE_DISPLAY[best_rip]
 
         n_fp = int((y == 1).sum())
         n_tn = int((y == 0).sum())
 
-        txt_lines.append(f"\n{blabel} (n={len(y)}, FP={n_fp}, TN={n_tn}, "
-                         f"AUC={auc:.3f})")
-        for feat, dname in BASE_FEATS_DISPLAY:
-            if feat not in betas:
-                txt_lines.append(f"  {dname:>20s}: ---")
-                continue
-            idx_f = all_feats.index(feat)
-            b = betas[feat]
-            lo = np.percentile(beta_boots[:, idx_f], 2.5)
-            hi = np.percentile(beta_boots[:, idx_f], 97.5)
-            _, txt_val = fmt_beta(b, lo, hi)
-            txt_lines.append(f"  {dname:>20s}: {txt_val}")
-
-        rip_short = best_rip.replace("ripple_", "r_").replace("_orth", "")
-        idx_f = all_feats.index(best_rip)
-        b = betas[best_rip]
-        lo = np.percentile(beta_boots[:, idx_f], 2.5)
-        hi = np.percentile(beta_boots[:, idx_f], 97.5)
-        _, txt_rip = fmt_beta(b, lo, hi)
-        txt_lines.append(f"  {'best ripple (' + rip_short + ')':>20s}: {txt_rip}")
-
-        # --- TEX ---
         model_configs = [
-            ("base", base_feats),
-            ("+curv", base_feats + ["gap_frac"]),
-            ("+ripple", base_feats + RIPPLE_ALL),
-            ("+curv,ripple", all_feats),
+            ("base",           base_feats),
+            ("+curv",          base_feats + [curv_feat]),
+            ("+ripple",        base_feats + RIPPLE_ALL),
+            ("+curv,ripple",   all_feats),
+            ("curv+rip\\,(-al)", no_along_feats),
         ]
 
         model_results = {}
@@ -175,9 +152,9 @@ def main():
             betas_m = {mfeats[i]: lrm.coef_[0][i] for i in range(len(mfeats))}
 
             boots_m = []
-            rng2 = np.random.RandomState(0)
+            rng = np.random.RandomState(0)
             for _ in range(args.B):
-                idx_c = rng2.choice(uc, size=len(uc), replace=True)
+                idx_c = rng.choice(uc, size=len(uc), replace=True)
                 idx = np.concatenate([np.where(combos == c)[0] for c in idx_c])
                 Xb, yb = Xm[idx], y[idx]
                 if len(np.unique(yb)) < 2:
@@ -191,69 +168,100 @@ def main():
             boots_m = np.array(boots_m)
             model_results[mname] = (betas_m, boots_m, mfeats, aucm)
 
-        tex_label = blabel
+        full_betas = model_results["+curv,ripple"][0]
+        best_rip = max(RIPPLE_ALL, key=lambda f: abs(full_betas[f]))
+
+        ripple_show = [(best_rip, True)]
+        if best_rip != XINT:
+            ripple_show.append((XINT, False))
+
+        display_feats = [
+            ("orth_base",          r"$\mathrm{orth}_b(\delta)$", "orth_b(d)"),
+            ("along_nonbase_max",  r"$\mathrm{along}_s(\delta)$", "along_s(d)"),
+        ]
+        if is_cross:
+            display_feats.append(("along_target", r"$\mathrm{along}_t(\delta)$", "along_t(d)"))
+        display_feats.append((curv_feat, curv_label,
+                              "local_curv" if curv_feat == "local_gap_frac" else "dwnstrm_curv"))
+
+        def get_beta_ci(mname, feat):
+            betas_m, boots_m, mf, _ = model_results[mname]
+            if feat not in betas_m:
+                return None, None, None
+            idx_f = mf.index(feat)
+            b = betas_m[feat]
+            lo = np.percentile(boots_m[:, idx_f], 2.5)
+            hi = np.percentile(boots_m[:, idx_f], 97.5)
+            return b, lo, hi
+
+        # --- TXT ---
+        full_auc = model_results["+curv,ripple"][3]
+        no_along_auc = model_results["curv+rip\\,(-al)"][3]
+        txt_lines.append(f"\n{blabel} (n={len(y)}, FP={n_fp}, TN={n_tn}, "
+                         f"AUC={full_auc:.3f}, curv={curv_label})")
+        col_names = ["base", "+curv", "+ripple", "+curv,rip", "c+r(-al)"]
+        header = f"{'':>18s}" + "".join(f"  {c:>10s}" for c in col_names)
+        txt_lines.append(header)
+        txt_lines.append("-" * len(header))
+
+        for feat, _, dname_txt in display_feats:
+            row = f"{dname_txt:>18s}"
+            for mname, _ in model_configs:
+                b, lo, hi = get_beta_ci(mname, feat)
+                if b is not None:
+                    _, short = fmt_beta(b, lo, hi)
+                    row += f"  {short:>10s}"
+                else:
+                    row += f"  {'--':>10s}"
+            txt_lines.append(row)
+
+        for rf, is_best in ripple_show:
+            tag = " (best)" if is_best else ""
+            dname = RIPPLE_DISPLAY_TXT[rf] + tag
+            row = f"{dname:>18s}"
+            for mname, _ in model_configs:
+                b, lo, hi = get_beta_ci(mname, rf)
+                if b is not None:
+                    _, short = fmt_beta(b, lo, hi)
+                    row += f"  {short:>10s}"
+                else:
+                    row += f"  {'--':>10s}"
+            txt_lines.append(row)
+
+        # --- TEX ---
         tex_rows = []
-        tex_rows.append(f"\\medskip\n\\textbf{{{tex_label}}} "
-                        f"($n={len(y)}$, FP$={n_fp}$, TN$={n_tn}$)\n")
+        tex_rows.append(f"\\medskip\n\\textbf{{{blabel}}} "
+                        f"($n={len(y)}$, FP$={n_fp}$, TN$={n_tn}$; "
+                        f"curv $=$ {curv_label})\n")
         tex_rows.append("\\begin{tabular}{l r r r r r}")
         tex_rows.append("\\toprule")
         tex_rows.append(
-            f" & base & $+$curv & $+$ripple & $+$curv,ripple & AUC \\\\")
+            f" & base & $+$curv & $+$ripple & $+$curv,rip & curv$+$rip ($-$al) \\\\")
         tex_rows.append("\\midrule")
 
-        for feat, dname in BASE_FEATS_DISPLAY:
-            if feat not in betas:
-                continue
-            cells = [dname]
-            for mname, mfeats in model_configs:
-                betas_m, boots_m, mf, _ = model_results[mname]
-                if feat in betas_m:
-                    idx_f = mf.index(feat)
-                    b = betas_m[feat]
-                    lo = np.percentile(boots_m[:, idx_f], 2.5)
-                    hi = np.percentile(boots_m[:, idx_f], 97.5)
+        for feat, dname_tex, _ in display_feats:
+            cells = [dname_tex]
+            for mname, _ in model_configs:
+                b, lo, hi = get_beta_ci(mname, feat)
+                if b is not None:
                     tex_val, _ = fmt_beta(b, lo, hi)
                     cells.append(tex_val)
                 else:
                     cells.append("--")
-            cells.append("")
             tex_rows.append(" & ".join(cells) + " \\\\")
 
-        rip_cells = [best_rip_label]
-        for mname, mfeats in model_configs:
-            betas_m, boots_m, mf, _ = model_results[mname]
-            if best_rip in betas_m:
-                idx_f = mf.index(best_rip)
-                b = betas_m[best_rip]
-                lo = np.percentile(boots_m[:, idx_f], 2.5)
-                hi = np.percentile(boots_m[:, idx_f], 97.5)
-                tex_val, _ = fmt_beta(b, lo, hi)
-                rip_cells.append(tex_val)
-            else:
-                rip_cells.append("--")
-        rip_cells.append("")
-        tex_rows.append(" & ".join(rip_cells) + " \\\\")
-
-        dauc_cells = ["ripple block $\\Delta$AUC"]
-        base_auc = model_results["base"][3]
-        curv_auc = model_results["+curv"][3]
-        for mname, _ in model_configs:
-            _, _, _, aucm = model_results[mname]
-            if mname == "+ripple":
-                dauc_cells.append(f"$+{aucm - base_auc:.3f}$")
-            elif mname == "+curv,ripple":
-                dauc_cells.append(f"$+{aucm - curv_auc:.3f}$")
-            else:
-                dauc_cells.append("--")
-        dauc_cells.append("")
-        tex_rows.append(" & ".join(dauc_cells) + " \\\\")
-
-        auc_cells = ["AUC"]
-        for mname, _ in model_configs:
-            _, _, _, aucm = model_results[mname]
-            auc_cells.append(f"{aucm:.3f}")
-        auc_cells.append("")
-        tex_rows.append(" & ".join(auc_cells) + " \\\\")
+        tex_rows.append("\\midrule")
+        for rf, is_best in ripple_show:
+            label = RIPPLE_DISPLAY[rf]
+            rip_cells = [label]
+            for mname, _ in model_configs:
+                b, lo, hi = get_beta_ci(mname, rf)
+                if b is not None:
+                    tex_val, _ = fmt_beta(b, lo, hi)
+                    rip_cells.append(tex_val)
+                else:
+                    rip_cells.append("--")
+            tex_rows.append(" & ".join(rip_cells) + " \\\\")
 
         tex_rows.append("\\bottomrule")
         tex_rows.append("\\end{tabular}")
@@ -268,11 +276,11 @@ def main():
         "\\centering\n"
         "\\caption{Full model: standardised $\\beta$ from nested logistic regressions "
         "(FP vs.\\ TN, off-circuit population). "
-        "FP $=$ off-circuit $|$NIE$|$ above per-combo in-circuit median; "
-        "TN $=$ off-circuit below. "
-        "Base model includes $\\mathrm{orth}_b$ and $\\mathrm{along}_s$ "
-        "(except Gaussian). "
-        "Best ripple metric (largest $|\\beta|$) shown per strategy. "
+        "Base model includes $\\mathrm{orth}_b$ and $\\mathrm{along}_s$. "
+        "Per-strategy best curvature metric. "
+        "Best ripple (largest $|\\beta|$) and $\\mathrm{ripple}_\\mathrm{xint}$ "
+        "(cross-subspace interference, sign-flip across regimes) shown per strategy. "
+        "Final column drops $\\mathrm{along}$ to isolate curv$+$ripple complementarity. "
         "* $=$ 95\\% cluster-bootstrap CI excludes 0.}\n"
         "\\label{tab:full-model-fptn}\n"
         "\\small\n\n"

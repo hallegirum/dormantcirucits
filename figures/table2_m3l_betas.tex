@@ -1,88 +1,78 @@
 \begin{table}[t]
 \centering
-\caption{M3L: FP vs.\ TN logistic regression (off-circuit population). FP $=$ off-circuit components with $|$NIE$|$ above per-combo median of in-circuit $|$NIE$|$; TN $=$ off-circuit below threshold. Standardised $\beta$ from base model ($\mathrm{orth}_b$, $\mathrm{along}_s$) $+$ one curvature feature at a time. * $=$ 95\% cluster-bootstrap CI excludes 0.}
+\caption{FP vs.\ TN nested logistic regression (off-circuit population). Swap regimes: base model (orth, along) $\to$ $+$curvature shows curvature absorbing along/orth variance. Push/Gaussian regimes: curvature alone $\to$ $+$orth $\to$ $+$along $\to$ $+$orth,along shows along absorbing curvature. Per-strategy best curvature metric. Standardised $\beta$; * $=$ 95\% cluster-bootstrap CI excludes 0.}
 \label{tab:m3l-curv}
 \small
 
 \medskip
-\textbf{swap (within)} ($n=936$, FP$=156$, TN$=780$)
+\textbf{swap (within)} ($n=936$, FP$=156$, TN$=780$; curv $=$ downstream curv.)
 
-\begin{tabular}{l r r r r}
+\begin{tabular}{l r r }
 \toprule
- & base & $+$local & $+$downstream & $+$excess \\
+ & base & $+$downstream curv. \\
 \midrule
-AUC & 0.818 & 0.822 & 0.877 & 0.857 \\
-$\mathrm{orth}_b(\delta)$ & $+0.30$ & $+0.43$ & $+0.10$ & $+0.49$* \\
-$\mathrm{along}_s(\delta)$ & $+1.14$* & $+1.22$* & $+0.71$* & $+1.13$* \\
-local curvature & -- & $-0.38$* & -- & -- \\
-downstream curv. & -- & -- & $+1.44$* & -- \\
-excess curv. & -- & -- & -- & $-0.93$* \\
+AUC & 0.818 & 0.877 \\
+$\mathrm{orth}_b(\delta)$ & $+0.30$ & $+0.10$ \\
+$\mathrm{along}_s(\delta)$ & $+1.14$^* & $+0.71$^* \\
+downstream curv. & -- & $+1.44$^* \\
 \bottomrule
 \end{tabular}
 
 \medskip
-\textbf{swap (cross)} ($n=4878$, FP$=1594$, TN$=3284$)
+\textbf{swap (cross)} ($n=4878$, FP$=1594$, TN$=3284$; curv $=$ downstream curv.)
 
-\begin{tabular}{l r r r r}
+\begin{tabular}{l r r }
 \toprule
- & base & $+$local & $+$downstream & $+$excess \\
+ & base & $+$downstream curv. \\
 \midrule
-AUC & 0.882 & 0.889 & 0.937 & 0.910 \\
-$\mathrm{orth}_b(\delta)$ & $+1.12$* & $+1.36$* & $+1.04$* & $+1.66$* \\
-$\mathrm{along}_s(\delta)$ & $+1.51$* & $+1.66$* & $+1.51$* & $+2.05$* \\
-$\mathrm{along}_t(\delta)$ & $-0.26$ & $-0.14$ & $-0.59$ & $-0.24$ \\
-local curvature & -- & $-0.47$* & -- & -- \\
-downstream curv. & -- & -- & $+1.74$* & -- \\
-excess curv. & -- & -- & -- & $-1.04$* \\
+AUC & 0.882 & 0.937 \\
+$\mathrm{orth}_b(\delta)$ & $+1.12$^* & $+1.04$^* \\
+$\mathrm{along}_s(\delta)$ & $+1.51$^* & $+1.51$^* \\
+$\mathrm{along}_t(\delta)$ & $-0.26$ & $-0.59$ \\
+downstream curv. & -- & $+1.74$^* \\
 \bottomrule
 \end{tabular}
 
 \medskip
-\textbf{push (within)} ($n=2808$, FP$=420$, TN$=2388$)
+\textbf{push (within)} ($n=2808$, FP$=420$, TN$=2388$; curv $=$ local curvature)
 
-\begin{tabular}{l r r r r}
+\begin{tabular}{l r r r r }
 \toprule
- & base & $+$local & $+$downstream & $+$excess \\
+ & local curvature & $+$orth & $+$along & $+$orth,along \\
 \midrule
-AUC & 0.922 & 0.921 & 0.922 & 0.921 \\
-$\mathrm{orth}_b(\delta)$ & $+0.79$* & $+0.77$* & $+0.87$* & $+0.85$* \\
-$\mathrm{along}_s(\delta)$ & $+1.57$* & $+1.36$* & $+1.42$* & $+1.78$* \\
-local curvature & -- & $+0.24$ & -- & -- \\
-downstream curv. & -- & -- & $+0.44$* & -- \\
-excess curv. & -- & -- & -- & $-0.32$ \\
+AUC & 0.869 & 0.903 & 0.912 & 0.921 \\
+local curv. & $+1.55$^* & $+1.14$^* & $+0.26$ & $+0.24$ \\
+$\mathrm{orth}_b(\delta)$ & -- & $+1.18$^* & -- & $+0.77$^* \\
+$\mathrm{along}_s(\delta)$ & -- & -- & $+1.76$^* & $+1.36$^* \\
 \bottomrule
 \end{tabular}
 
 \medskip
-\textbf{push (cross)} ($n=4878$, FP$=642$, TN$=4236$)
+\textbf{push (cross)} ($n=4878$, FP$=642$, TN$=4236$; curv $=$ local curvature)
 
-\begin{tabular}{l r r r r}
+\begin{tabular}{l r r r r }
 \toprule
- & base & $+$local & $+$downstream & $+$excess \\
+ & local curvature & $+$orth & $+$along & $+$orth,along \\
 \midrule
-AUC & 0.924 & 0.924 & 0.927 & 0.927 \\
-$\mathrm{orth}_b(\delta)$ & $+0.56$* & $+0.56$* & $+0.54$* & $+0.53$* \\
-$\mathrm{along}_s(\delta)$ & $+1.50$* & $+1.49$* & $+1.56$* & $+1.75$* \\
-$\mathrm{along}_t(\delta)$ & $+0.23$ & $+0.23$ & $+0.20$ & $+0.21$ \\
-local curvature & -- & $+0.01$ & -- & -- \\
-downstream curv. & -- & -- & $+0.22$ & -- \\
-excess curv. & -- & -- & -- & $-0.27$ \\
+AUC & 0.844 & 0.889 & 0.920 & 0.924 \\
+local curv. & $+1.46$^* & $+1.07$^* & $-0.07$ & $+0.01$ \\
+$\mathrm{orth}_b(\delta)$ & -- & $+1.20$^* & -- & $+0.56$^* \\
+$\mathrm{along}_s(\delta)$ & -- & -- & $+1.88$^* & $+1.49$^* \\
+$\mathrm{along}_t(\delta)$ & -- & -- & $+0.23$ & $+0.23$ \\
 \bottomrule
 \end{tabular}
 
 \medskip
-\textbf{Gauss. push} ($n=2808$, FP$=173$, TN$=2635$)
+\textbf{Gauss.\ push} ($n=2808$, FP$=173$, TN$=2635$; curv $=$ downstream curv.)
 
-\begin{tabular}{l r r r r}
+\begin{tabular}{l r r r r }
 \toprule
- & base & $+$local & $+$downstream & $+$excess \\
+ & downstream curv. & $+$orth & $+$along & $+$orth,along \\
 \midrule
-AUC & 0.961 & 0.962 & 0.972 & 0.965 \\
-$\mathrm{orth}_b(\delta)$ & $+0.97$* & $+0.96$* & $+1.03$* & $+0.99$* \\
-$\mathrm{along}_s(\delta)$ & $+1.49$* & $+1.66$* & $+1.20$* & $+1.76$* \\
-local curvature & -- & $-0.30$ & -- & -- \\
-downstream curv. & -- & -- & $+0.70$* & -- \\
-excess curv. & -- & -- & -- & $-0.72$* \\
+AUC & 0.859 & 0.956 & 0.952 & 0.972 \\
+downstream curv. & $+1.43$^* & $+1.02$^* & $+0.72$^* & $+0.70$^* \\
+$\mathrm{orth}_b(\delta)$ & -- & $+1.62$^* & -- & $+1.03$^* \\
+$\mathrm{along}_s(\delta)$ & -- & -- & $+1.92$^* & $+1.20$^* \\
 \bottomrule
 \end{tabular}
 

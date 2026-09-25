@@ -180,12 +180,13 @@ def main():
         Patch(facecolor=COLORS["curv"], edgecolor="white", label="curvature"),
         Patch(facecolor=COLORS["ripple"], edgecolor="white", label="ripple block"),
     ]
-    ax.legend(handles=legend_elements, fontsize=8.5, loc="upper left", framealpha=0.9)
-
-    ax.text(0.98, 1.0,
-            "A: orth → +curv → +ripple\nB: orth → +ripple → +curv",
+    ax.text(0.98, 0.98,
+            "A: orth → +curv → +ripple\nB: orth → +ripple → +curv\n(no along in either path)",
             transform=ax.transAxes, fontsize=8, ha="right", va="top",
             bbox=dict(boxstyle="round,pad=0.4", fc="#f0f0f0", ec="#cccccc", alpha=0.9))
+
+    ax.legend(handles=legend_elements, fontsize=8.5, loc="center right",
+              framealpha=0.9, bbox_to_anchor=(0.72, 0.85))
 
     ax.set_ylabel("McFadden’s pseudo-R²", fontsize=10)
     ax.set_ylim(-0.08, max(d["total"] for d in all_data.values()) + 0.06)
@@ -194,7 +195,7 @@ def main():
     ax.spines["right"].set_visible(False)
     ax.spines["bottom"].set_visible(False)
     ax.set_title("Incremental variance: regime-dependent complementarity (FP vs TP, matched sample)",
-                 fontsize=10.5, pad=10)
+                 fontsize=10.5, pad=14)
 
     fig.tight_layout()
     fig.savefig(args.out, dpi=200, bbox_inches="tight")

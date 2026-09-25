@@ -102,11 +102,11 @@ for idx, regime in enumerate(PANEL_ORDER):
 
         ax.scatter(np.log10(np.array(db_other) + 0.1),
                    np.log10(np.array(dk_other) + 0.1),
-                   c=COL_K_OTHER, s=6, alpha=0.15, edgecolors="none",
+                   c=COL_K_OTHER, s=12, alpha=0.3, edgecolors="none",
                    rasterized=True, zorder=2, label=f"$K$ $\\neq$ target ({n_other})")
         ax.scatter(np.log10(np.array(db_target) + 0.1),
                    np.log10(np.array(dk_target) + 0.1),
-                   c=COL_K_TARGET, s=6, alpha=0.15, edgecolors="none",
+                   c=COL_K_TARGET, s=12, alpha=0.3, edgecolors="none",
                    rasterized=True, zorder=3, label=f"$K$ = target ({n_target}, {pct_target:.0f}%)")
 
         handles = [
@@ -129,7 +129,8 @@ for idx, regime in enumerate(PANEL_ORDER):
         db_arr = np.array(db_all)
         dk_arr = np.array(dk_all)
         ax.hexbin(np.log10(db_arr + 0.1), np.log10(dk_arr + 0.1),
-                  gridsize=30, cmap="YlOrRd", mincnt=1, norm=LogNorm())
+                  gridsize=30, cmap="BuPu", mincnt=1, norm=LogNorm(),
+                  edgecolors="face", linewidths=0.2)
 
     ax.plot([-1, 3], [-1, 3], "k--", lw=0.8, alpha=0.5)
     ax.axvline(0, color="#bbb", ls=":", lw=0.6)
@@ -154,4 +155,5 @@ for idx, regime in enumerate(PANEL_ORDER):
 os.makedirs(OUT_DIR, exist_ok=True)
 out = os.path.join(OUT_DIR, "fig_tp_dk_by_strategy.pdf")
 fig.savefig(out, dpi=300, bbox_inches="tight")
+fig.savefig(out.replace(".pdf", ".png"), dpi=200, bbox_inches="tight")
 print(f"Saved {out}")

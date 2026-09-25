@@ -137,6 +137,16 @@ def main():
         ax.axvline(x_thresh, color="grey", ls="--", lw=1.2,
                    label=f"orth only ({auc_orth:.2f})", zorder=3)
 
+        # Univariate curv boundary: horizontal line at y = -b/w1
+        lr_curv = LogisticRegression(max_iter=2000, C=10.0)
+        lr_curv.fit(X[:, 1:], y)
+        auc_curv = roc_auc_score(y, lr_curv.predict_proba(X[:, 1:])[:, 1])
+        w1c = lr_curv.coef_[0][0]
+        bc = lr_curv.intercept_[0]
+        y_thresh = -bc / w1c if abs(w1c) > 1e-6 else 0
+        ax.axhline(y_thresh, color="#2ca02c", ls=":", lw=1.4,
+                   label=f"curv only ({auc_curv:.2f})", zorder=3)
+
         ax.set_xlim(x_lo, x_hi)
         ax.set_ylim(y_lo, y_hi)
         ax.set_title(blabel, fontsize=10)
@@ -156,7 +166,7 @@ def main():
                 fontfamily="monospace",
                 bbox=dict(boxstyle="round,pad=0.3", fc="white", alpha=0.8))
 
-    fig.suptitle("Suppression effect: orth + local curvature in FP-vs-TP (moderate |NIE|)",
+    fig.suptitle("Complentarity of orth + local curvature in FP-vs-TP (moderate |NIE|)",
                  fontsize=12, y=1.03)
     fig.tight_layout()
     fig.savefig(args.out, dpi=200, bbox_inches="tight")

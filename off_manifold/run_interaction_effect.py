@@ -85,7 +85,8 @@ def site_labels(grid, d):
 def pick_push_unit(grid, poly_mem, arg):
     """The push site X for the mediation rows. --push-site:
       'auto'    first grid MLP site labelled 'shared' by poly_membership (the
-                shared-circuit MLP — the hypothesised recruiter);
+                shared-circuit MLP — the hypothesised recruiter); falls back to
+                MLP at layer 0 when no 'shared' labels exist (GPT-2 IOI);
       a site_id exact match against the grid's units."""
     units = {t.flatten()[0].id: t.flatten()[0] for t in grid.values()}
     if arg != "auto":
@@ -99,8 +100,13 @@ def pick_push_unit(grid, poly_mem, arg):
     shared = [u for uid, u in units.items() if poly_mem.get(uid) == "shared"]
     if shared:
         return shared[0]
-    raise SystemExit("--push-site auto needs poly_membership 'shared' labels (poly case); "
-                     "pass an explicit site_id for tracr/ioi.")
+    mlp0 = [(uid, u) for uid, u in units.items()
+            if "mlp" in u.component_type and int(u.layer) == 0]
+    if mlp0:
+        print(f"[push] no 'shared' labels; falling back to MLP layer 0: {mlp0[0][0]}")
+        return mlp0[0][1]
+    raise SystemExit("--push-site auto: no shared-labelled or MLP-layer-0 site in grid; "
+                     "pass an explicit site_id.")
 
 
 def _summary(rows):
@@ -185,7 +191,7 @@ def directed_sweep(prep, grid, gt, mem, home, clouds, X, args, mode="full"):
 # --------------------------------------------------------------------------- #
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--case", default="poly", help="'poly', 'ioi', or a tracr case id")
+    ap.add_argument("--case", default="poly", help="'poly', 'ioi', 'gpt2-ioi', or a tracr case id")
     ap.add_argument("--poly-comb", default="cases_0+1")
     ap.add_argument("--target-pos", type=int, default=-1)
     ap.add_argument("--step", default="0", choices=["0", "full", "both", "within-push"],

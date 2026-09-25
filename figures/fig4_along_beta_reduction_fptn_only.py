@@ -23,7 +23,14 @@ BUCKET_LABELS = {
     "STR_push_within": "push\n(within)", "STR_push_cross": "push\n(cross)",
     "Gaussian_push": "Gaussian\npush",
 }
-CURV_FEAT = "gap_frac"
+CURV_MAP = {
+    "STR_swap_within": "gap_frac",
+    "STR_swap_cross":  "gap_frac",
+    "STR_push_within": "local_gap_frac",
+    "STR_push_cross":  "local_gap_frac",
+    "Gaussian_push":   "gap_frac",
+}
+CURV_LABELS = {"gap_frac": "dwnstrm curv", "local_gap_frac": "local curv"}
 
 
 def _strat_bucket(row):
@@ -78,13 +85,16 @@ def main():
     x = np.arange(len(BUCKETS))
     along_base, along_curv, curv_beta = [], [], []
 
+    curv_used = []
     for bk in BUCKETS:
+        curv_feat = CURV_MAP[bk]
+        curv_used.append(curv_feat)
         pool = build_fptn_population(df, bk)
         is_cross = "cross" in bk
         base_feats = ["orth_base", "along_nonbase_max"]
         if is_cross:
             base_feats.append("along_target")
-        required = base_feats + [CURV_FEAT]
+        required = base_feats + [curv_feat]
         pool = pool.dropna(subset=required + ["label", "combo"])
         pool = zscore(pool, required)
         for f in required:
@@ -93,24 +103,28 @@ def main():
         betas_b = fit_model(pool, base_feats)
         along_base.append(betas_b["along_nonbase_max"])
 
-        betas_c = fit_model(pool, base_feats + [CURV_FEAT])
+        betas_c = fit_model(pool, base_feats + [curv_feat])
         along_curv.append(betas_c["along_nonbase_max"])
-        curv_beta.append(betas_c[CURV_FEAT])
+        curv_beta.append(betas_c[curv_feat])
 
     fig, ax = plt.subplots(figsize=(8, 5))
     ax.plot(x, along_base, color="#C44E52", marker="o", ls="-", lw=2.5,
             markersize=9, zorder=4, label=r"$\mathrm{along}_s$ (base)")
     ax.plot(x, along_curv, color="#9467BD", marker="s", ls="--", lw=2.0,
-            markersize=8, zorder=4, label=r"$\mathrm{along}_s$ (+dwnstrm curv)")
+            markersize=8, zorder=4, label=r"$\mathrm{along}_s$ (+best curv)")
     ax.plot(x, curv_beta, color="#55A868", marker="D", ls="-", lw=2.0,
-            markersize=7, zorder=3, label=r"downstream curvature $\beta$")
+            markersize=7, zorder=3, label=r"curvature $\beta$ (per-strategy best)")
     ax.fill_between(x, along_base, along_curv, color="#C44E52", alpha=0.12, zorder=1)
 
     ax.axhline(0, color="grey", ls="-", lw=0.5, zorder=0)
     ax.set_xticks(x)
     ax.set_xticklabels([BUCKET_LABELS[bk] for bk in BUCKETS], fontsize=9)
+    for xi, cf in enumerate(curv_used):
+        tag = "L" if cf == "local_gap_frac" else "D"
+        ax.text(xi, ax.get_ylim()[0] - 0.02, f"[{tag}]",
+                ha="center", va="top", fontsize=7, color="grey")
     ax.set_ylabel(r"$\beta$ (standardised)", fontsize=10)
-    ax.set_title(r"$\mathrm{along}_s$ suppression by downstream curvature — FP vs TN", fontsize=11, pad=8)
+    ax.set_title(r"$\mathrm{along}_s$ suppression by curvature — FP vs TN", fontsize=11, pad=8)
     ax.legend(fontsize=9, loc="upper left", framealpha=0.9)
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)

@@ -1,30 +1,44 @@
 
-swap (within) (n=936, FP=156, TN=780, AUC=0.910)
-  $\mathrm{orth}_b(\delta)$: +0.25 [-0.13, +0.56]
-  $\mathrm{along}_s(\delta)$: +0.39 [+0.18, +0.81]*
-      downstream curv.: +1.47 [+0.98, +2.35]*
-  best ripple (r_xint_in): +1.04 [+0.41, +1.98]*
+swap (within) (n=936, FP=156, TN=780, AUC=0.908, curv=downstream curv.)
+                          base       +curv     +ripple   +curv,rip    c+r(-al)
+------------------------------------------------------------------------------
+         orth_b(d)       +0.32       +0.09      +0.45*       +0.30      +0.39*
+        along_s(d)      +0.87*      +0.56*      +0.60*      +0.34*          --
+      dwnstrm_curv          --      +1.70*          --      +1.48*      +1.62*
+  r_xint_in (best)          --          --      +0.63*      +1.04*      +1.11*
 
-swap (cross) (n=4878, FP=1594, TN=3284, AUC=0.952)
-  $\mathrm{orth}_b(\delta)$: +1.03 [+0.70, +1.38]*
-  $\mathrm{along}_s(\delta)$: +0.51 [+0.27, +0.84]*
-      downstream curv.: +1.69 [+1.34, +2.10]*
-  best ripple (r_xint_in): +1.88 [+1.00, +2.76]*
+swap (cross) (n=4878, FP=1594, TN=3284, AUC=0.953, curv=downstream curv.)
+                          base       +curv     +ripple   +curv,rip    c+r(-al)
+------------------------------------------------------------------------------
+         orth_b(d)      +1.07*      +1.01*      +1.08*      +1.05*      +1.33*
+        along_s(d)      +1.70*      +2.29*      +1.35*      +2.10*          --
+        along_t(d)       -0.60       -1.51       -0.64      -1.57*          --
+      dwnstrm_curv          --      +1.94*          --      +1.68*      +1.76*
+  r_xint_in (best)          --          --      +1.85*      +1.91*      +1.97*
 
-push (within) (n=2808, FP=420, TN=2388, AUC=0.943)
-  $\mathrm{orth}_b(\delta)$: +0.81 [+0.45, +1.26]*
-  $\mathrm{along}_s(\delta)$: +1.44 [+1.07, +2.02]*
-      downstream curv.: +0.69 [+0.42, +0.99]*
-    best ripple (r_in): +1.08 [+0.59, +1.69]*
+push (within) (n=2808, FP=420, TN=2388, AUC=0.931, curv=local curvature)
+                          base       +curv     +ripple   +curv,rip    c+r(-al)
+------------------------------------------------------------------------------
+         orth_b(d)      +0.72*      +0.71*      +0.83*      +0.82*      +1.05*
+        along_s(d)      +1.40*      +1.29*      +1.29*      +1.28*          --
+        local_curv          --       +0.15          --       +0.01      +0.73*
+       r_in (best)          --          --      +1.04*      +1.04*      +1.13*
+         r_xint_in          --          --      -1.00*      -1.00*      -1.04*
 
-push (cross) (n=4878, FP=642, TN=4236, AUC=0.940)
-  $\mathrm{orth}_b(\delta)$: +0.75 [+0.55, +0.95]*
-  $\mathrm{along}_s(\delta)$: +1.07 [+0.87, +1.43]*
-      downstream curv.: +0.30 [-0.01, +0.50]
-    best ripple (r_in): +1.44 [+0.92, +2.00]*
+push (cross) (n=4878, FP=642, TN=4236, AUC=0.941, curv=local curvature)
+                          base       +curv     +ripple   +curv,rip    c+r(-al)
+------------------------------------------------------------------------------
+         orth_b(d)      +0.56*      +0.56*      +0.66*      +0.66*      +0.94*
+        along_s(d)      +1.47*      +1.45*      +1.12*      +1.29*          --
+        along_t(d)       -0.12       -0.12       +0.04       -0.00          --
+        local_curv          --       +0.01          --       -0.19      +0.55*
+       r_in (best)          --          --      +1.37*      +1.40*      +1.48*
+         r_xint_in          --          --      -1.05*      -1.06*      -1.09*
 
-Gauss.\ push (n=2808, FP=173, TN=2635, AUC=0.959)
-  $\mathrm{orth}_b(\delta)$: +1.32 [+1.01, +2.45]*
-  $\mathrm{along}_s(\delta)$: ---
-      downstream curv.: +0.99 [+0.48, +1.99]*
-    best ripple (r_in): +0.77 [-0.53, +1.61]
+Gauss.\ push (n=2808, FP=173, TN=2635, AUC=0.972, curv=downstream curv.)
+                          base       +curv     +ripple   +curv,rip    c+r(-al)
+------------------------------------------------------------------------------
+         orth_b(d)      +1.16*      +1.21*      +1.08*      +1.15*      +1.32*
+        along_s(d)      +1.04*       +0.66      +1.03*       +0.67          --
+      dwnstrm_curv          --      +0.68*          --      +0.70*      +0.99*
+  r_xint_in (best)          --          --       -0.78       -0.79       -0.65

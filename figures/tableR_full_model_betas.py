@@ -36,9 +36,9 @@ RIPPLE_DISPLAY = {
 }
 
 BASE_FEATS_DISPLAY = [
-    ("orth_base",     r"$\mathrm{orth}_b(\delta)$"),
-    ("along_target",  r"$\mathrm{along}_s(\delta)$"),
-    ("local_gap_frac", "local curvature"),
+    ("orth_base",         r"$\mathrm{orth}_b(\delta)$"),
+    ("along_nonbase_max", r"$\mathrm{along}_s(\delta)$"),
+    ("local_gap_frac",    "local curvature"),
 ]
 
 
@@ -102,7 +102,10 @@ def main():
 
     for bkey, blabel in BUCKETS:
         pool = build_moderate_band(df, bkey)
-        base_feats = ["orth_base", "along_target"] if bkey != "Gaussian_push" else ["orth_base"]
+        is_cross = "cross" in bkey
+        base_feats = ["orth_base", "along_nonbase_max"]
+        if is_cross:
+            base_feats.append("along_target")
         all_feats = base_feats + ["local_gap_frac"] + RIPPLE_ALL
         pool = zscore(pool, all_feats)
 
@@ -153,7 +156,14 @@ def main():
         # --- TXT output ---
         txt_lines.append(f"\n{blabel} (n={len(y)}, FP={n_fp}, TP={n_tp}, "
                          f"AUC={auc:.3f} [{auc_lo:.3f}, {auc_hi:.3f}])")
-        for feat, dname in BASE_FEATS_DISPLAY:
+        display_feats_txt = [
+            ("orth_base",         r"$\mathrm{orth}_b(\delta)$"),
+            ("along_nonbase_max", r"$\mathrm{along}_s(\delta)$"),
+        ]
+        if is_cross:
+            display_feats_txt.append(("along_target", r"$\mathrm{along}_t(\delta)$"))
+        display_feats_txt.append(("local_gap_frac", "local curvature"))
+        for feat, dname in display_feats_txt:
             if feat not in betas:
                 txt_lines.append(f"  {dname:>20s}: ---")
                 continue
@@ -175,20 +185,22 @@ def main():
         # Header row for this strategy block
         tex_rows.append(f"\\medskip\n\\textbf{{{tex_label}}} "
                         f"($n={len(y)}$, FP$={n_fp}$, TP$={n_tp}$)\n")
-        tex_rows.append("\\begin{tabular}{l r r r r r}")
+        tex_rows.append("\\begin{tabular}{l r r r r r r}")
         tex_rows.append("\\toprule")
 
         best_rip_label = RIPPLE_DISPLAY[best_rip]
+        no_along_feats = ["orth_base", "local_gap_frac"] + RIPPLE_ALL
         tex_rows.append(
-            f" & base & $+$curv & $+$ripple & $+$curv,ripple & AUC \\\\")
+            f" & base & $+$curv & $+$ripple & $+$curv,ripple"
+            f" & curv$+$rip$^\\dagger$ & AUC \\\\")
         tex_rows.append("\\midrule")
 
-        # We need 4 models: base (orth[+along]), +curv, +ripple_block, full
         model_configs = [
             ("base", base_feats),
             ("+curv", base_feats + ["local_gap_frac"]),
             ("+ripple", base_feats + RIPPLE_ALL),
             ("+curv,ripple", all_feats),
+            ("curv+rip", no_along_feats),
         ]
 
         # Fit all 4 models
@@ -218,8 +230,15 @@ def main():
             boots_m = np.array(boots_m)
             model_results[mname] = (betas_m, boots_m, mfeats, aucm)
 
-        # Print rows for each feature
-        for feat, dname in BASE_FEATS_DISPLAY:
+        display_feats_tex = [
+            ("orth_base",         r"$\mathrm{orth}_b(\delta)$"),
+            ("along_nonbase_max", r"$\mathrm{along}_s(\delta)$"),
+        ]
+        if is_cross:
+            display_feats_tex.append(("along_target", r"$\mathrm{along}_t(\delta)$"))
+        display_feats_tex.append(("local_gap_frac", "local curvature"))
+
+        for feat, dname in display_feats_tex:
             if feat not in betas:
                 continue
             cells = [dname]
@@ -292,8 +311,9 @@ def main():
         "\\centering\n"
         "\\caption{Full model: standardised $\\beta$ from nested logistic regressions "
         "on the moderate-$|$NIE$|$ band (FP vs.\\ TP). "
-        "Base model includes $\\mathrm{orth}_b$ and $\\mathrm{along}_s$ "
-        "(except Gaussian, which lacks $\\mathrm{along}_s$). "
+        "Base model includes $\\mathrm{orth}_b$ and $\\mathrm{along}_s$. "
+        "$\\dagger$ curv$+$rip = $\\mathrm{orth}_b$ + curvature + ripple "
+        "\\emph{without} $\\mathrm{along}_s$. "
         "Best ripple metric (largest $|\\beta|$) shown per strategy. "
         "Matched sample (ripple-available rows only). "
         "* $=$ 95\\% cluster-bootstrap CI excludes 0.}\n"

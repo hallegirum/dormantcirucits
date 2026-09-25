@@ -233,6 +233,8 @@ class PrepareData:
             return self._generate_poly()
         if c == "ioi":
             return self._generate_ioi()
+        if c in ("gpt2-ioi", "gpt2_ioi"):
+            return self._generate_gpt2_ioi()
         return self._generate_tracr()
 
     # ----------------------- tracr cases (18, etc.) ----------------------- #
@@ -327,6 +329,40 @@ class PrepareData:
             # fit a clean manifold per task (create_directed_pairs / per-task clouds).
             poly_membership=(poly_membership(corr_mapping, n_tasks)),
             pool=pool, tasks=sorted(pool.keys()),
+        )
+
+    # ------------------- GPT-2 small + IOI (Wang et al.) -------------------- #
+    def _generate_gpt2_ioi(self):
+        """GPT-2-small on the Indirect Object Identification task. The model is
+        loaded directly via TransformerLens (no InterpBench), and the Wang et al.
+        2022 circuit provides ground-truth labels. Templates (ABBA/BABA) serve as
+        the task axis, so the directed sweep produces within-template and
+        cross-template scans matching the poly_bench design."""
+        from gpt2_ioi import (
+            load_gpt2_ioi_model, build_gpt2_ioi_pool, build_gpt2_ioi_pipeline,
+            gpt2_ioi_hl_ll_corr, gpt2_ioi_home_tasks,
+        )
+
+        model = load_gpt2_ioi_model(device=self.device)
+        _attach_hf_config(model)
+        pipeline = build_gpt2_ioi_pipeline(model, device=self.device)
+        causal_model, pool = build_gpt2_ioi_pool(model, n=self.n, seed=self.seed)
+        hl_ll_corr = gpt2_ioi_hl_ll_corr()
+        home = gpt2_ioi_home_tasks(model)
+
+        cf_dataset = create_ioi_counterfactual_dataset(
+            pool, n=self.n, seed=self.seed, context_var="template_type")
+
+        task = Task(name="interpbench", causal_model=causal_model,
+                    intervention_variable="result", template=None)
+
+        return dict(
+            task=task, pipeline=pipeline, causal_model=causal_model,
+            hl_ll_corr=hl_ll_corr, cf_dataset=cf_dataset,
+            manifold_cvars=["template_type"], intervention_variable="result",
+            n_ctx=int(model.cfg.n_ctx), n_layers=int(model.cfg.n_layers),
+            n_heads=int(model.cfg.n_heads),
+            poly_membership=home, pool=pool, tasks=sorted(pool.keys()),
         )
 
 

@@ -1,8 +1,7 @@
 """Figure: TP geometric landscape.
 
 (a) d_base vs d_K hexbin — where does the endpoint sit between base and K?
-(b) d_base vs along_base hexbin — distance from base vs alignment to base
-(c) d_base/d_K ratio histogram
+(b) d_base/d_K ratio histogram
 """
 import json, os, warnings
 import numpy as np
@@ -10,7 +9,6 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
-from scipy.stats import spearmanr
 
 warnings.filterwarnings("ignore")
 
@@ -44,76 +42,67 @@ def identify_base(r):
 
 tps = load(TP_FILE)
 
-d_base = []; d_K = []; along_base = []
+d_base = []; d_K = []
 for r in tps:
     db = r.get("dist_base")
     dk = r.get("dist_K")
     if db is None or dk is None:
         continue
-    abt = r.get("along_by_task") or {}
-    base_tid = identify_base(r)
-    if base_tid is None:
-        continue
-    ab = abt.get(base_tid, 0)
     d_base.append(db)
     d_K.append(dk)
-    along_base.append(ab)
 
 d_base = np.array(d_base)
 d_K = np.array(d_K)
-along_base = np.array(along_base)
 ratio = d_base / (d_K + 1e-9)
 
-fig, axes = plt.subplots(1, 3, figsize=(15, 4.5), constrained_layout=True)
+fig, axes = plt.subplots(1, 2, figsize=(10, 4.5), constrained_layout=True)
 
 # (a) d_base vs d_K
 ax = axes[0]
-ax.hexbin(np.log10(d_base + 0.1), np.log10(d_K + 0.1), gridsize=40,
-          cmap="YlOrRd", mincnt=1, norm=LogNorm())
-ax.plot([-1, 3], [-1, 3], 'k--', lw=0.8, alpha=0.5, label=r"$d_\mathrm{base} = d_K$")
+hb = ax.hexbin(np.log10(d_base + 0.1), np.log10(d_K + 0.1), gridsize=35,
+               cmap="BuPu", mincnt=1, norm=LogNorm(), edgecolors="face",
+               linewidths=0.2)
+fig.colorbar(hb, ax=ax, shrink=0.75, label="count")
+ax.plot([-1, 3], [-1, 3], 'k--', lw=1.0, alpha=0.6, label=r"$d_\mathrm{base} = d_K$")
 ax.axvline(0, color="#bbb", ls=":", lw=0.6)
 ax.axhline(0, color="#bbb", ls=":", lw=0.6)
 ax.set_xlabel(r"$\log_{10}(d_\mathrm{base})$", fontsize=10)
 ax.set_ylabel(r"$\log_{10}(d_K)$", fontsize=10)
-ax.set_title("(a)  TP endpoints: base vs K distance", fontsize=10)
+ax.set_title(f"(a)  TP endpoints: base vs $K$ distance ($n$={len(d_base)})",
+             fontsize=10)
 ax.legend(fontsize=8, loc="upper left")
-ax.text(0.3, 1.8, "near base,\nfar from K", fontsize=8, color="#666", ha="center")
-ax.text(1.8, 0.3, "near K,\nfar from base", fontsize=8, color="#666", ha="center")
+ax.text(0.25, 1.7, "closer to\nbase task", fontsize=8, color="#555",
+        ha="center", style="italic")
+ax.text(1.7, 0.2, "closer to\ntask $K$", fontsize=8, color="#555",
+        ha="center", style="italic")
+ax.spines["top"].set_visible(False)
+ax.spines["right"].set_visible(False)
 
-# (b) d_base vs along_base
+# (b) ratio distribution
 ax = axes[1]
-ax.hexbin(np.log10(d_base + 0.1), along_base, gridsize=40,
-          cmap="YlOrRd", mincnt=1, norm=LogNorm())
-ax.axvline(0, color="#bbb", ls=":", lw=0.6)
-ax.axhline(0, color="#bbb", ls="-", lw=0.6)
-ax.set_xlabel(r"$\log_{10}(d_\mathrm{base})$", fontsize=10)
-ax.set_ylabel(r"$\mathrm{along}_\mathrm{base}(\delta)$", fontsize=10)
-rho, _ = spearmanr(along_base, d_base)
-ax.set_title(f"(b)  Distance from base vs alignment to base\n"
-             rf"Spearman $\rho$ = {rho:.2f}", fontsize=10)
-
-# (c) ratio distribution
-ax = axes[2]
 log_ratio = np.clip(np.log10(ratio + 1e-9), -2, 3)
-ax.hist(log_ratio, bins=60, color="#2a78d6", alpha=0.7, edgecolor="none")
+ax.hist(log_ratio, bins=60, color="#7b4ea3", alpha=0.75, edgecolor="white",
+        linewidth=0.3)
 ax.axvline(0, color="black", ls="--", lw=1, label=r"$d_\mathrm{base} = d_K$")
 ax.set_xlabel(r"$\log_{10}(d_\mathrm{base} / d_K)$", fontsize=10)
 ax.set_ylabel("count", fontsize=10)
-ax.set_title(r"(c)  Ratio $d_\mathrm{base}/d_K$", fontsize=10)
+ax.set_title(r"(b)  Ratio $d_\mathrm{base}/d_K$", fontsize=10)
 ax.legend(fontsize=8)
 
 lt = (ratio < 1).sum()
 gt = (ratio >= 1).sum()
-ax.text(-1.0, ax.get_ylim()[1] * 0.8,
+ax.text(-1.0, ax.get_ylim()[1] * 0.85,
         f"closer to base\n{lt} ({100 * lt / len(ratio):.0f}%)",
-        fontsize=8, ha="center", color="#2a78d6")
-ax.text(1.5, ax.get_ylim()[1] * 0.8,
-        f"closer to K\n{gt} ({100 * gt / len(ratio):.0f}%)",
-        fontsize=8, ha="center", color="#eb6834")
+        fontsize=9, ha="center", color="#7b4ea3", fontweight="bold")
+ax.text(1.5, ax.get_ylim()[1] * 0.85,
+        f"closer to $K$\n{gt} ({100 * gt / len(ratio):.0f}%)",
+        fontsize=9, ha="center", color="#eb6834", fontweight="bold")
+ax.spines["top"].set_visible(False)
+ax.spines["right"].set_visible(False)
 
 os.makedirs(OUT_DIR, exist_ok=True)
 out = os.path.join(OUT_DIR, "fig_tp_landscape.pdf")
 fig.savefig(out, dpi=300, bbox_inches="tight")
+fig.savefig(out.replace(".pdf", ".png"), dpi=200, bbox_inches="tight")
 print(f"Saved {out}")
 print(f"TPs plotted: {len(d_base)}")
-print(f"Spearman(along_base, d_base) = {rho:.3f}")

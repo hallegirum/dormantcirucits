@@ -1,0 +1,217 @@
+\subsection{Detectors of Dormancy}
+
+The previous section characterised the mechanism of dormancy: which geometric and curvature instruments drive a non-circuit component across the TN-to-FP boundary and make it appear active under a given causal intervention. That analysis identifies what \emph{creates} dormant components. A practical detector, however, must solve a different problem. In causal mediation analysis and intervention-based circuit discovery more broadly, the goal is to distinguish the real components and pathways responsible for a task from those that appear to be so but are not. Both populations have passed the same $|\mathrm{NIE}|$ threshold, both look active to the causal method, and the question is whether the geometric and curvature signatures of the intervention can separate the genuine from the impostor. We frame this as an FP-versus-TP classification, restricting to the moderate-$|\mathrm{NIE}|$ band --- the lower half of the above-threshold pool --- where the overlap between false positives and true positives is greatest, and where instruments that go beyond mechanism to detection can be identified.
+
+\paragraph{Borrowed and epotic dormancy.}
+Not all false positives are created equal. A \emph{borrowed} false positive is off the base-task circuit but is a member of another task's circuit: the intervention recruits a genuine component of a different task, and the resulting causal effect is a side-effect of engaging that component's real wiring. An \emph{epotic} false positive belongs to no task's circuit; its high $|\mathrm{NIE}|$ is a purely non-aligned artifact with no underlying task structure to draw on. In the push and Gaussian regimes, where the shared MLP routes the intervention through task-aligned subspaces, borrowed components constitute the majority of false positives (62--87\%), whereas in the distributive swap regimes the split is more balanced (33--43\%). Both subpopulations receive similar $\mathrm{along}_s(\delta)$ projections --- the MLP writes to task-directed subspaces regardless of what the receiving component is --- but they end up in very different places. We measure $d_K$, the Mahalanobis distance of the intervened representation to the cloud of the task $K$ that the displacement is most aligned with. Borrowed false positives land near $K$'s manifold ($d_K \approx 3$), comparable to true positives, confirming that the routing genuinely delivered them to a task representation. Epotic false positives, despite their similar $\mathrm{along}_s$, land far from any task manifold ($d_K \approx 10$--$12$): the displacement had a task-directed component but the component lacked the wiring to translate it into task-manifold membership. This distinction --- between dormancy that hijacks real task structure and dormancy that arises from unstructured nonlinear distortion --- shapes the detection signatures we examine in the remainder of this section.
+
+\paragraph{Experimental setup.}
+The polysemantic benchmark comprises four modular-arithmetic tasks on natural domains --- weekday advancement (``What day is $n$ days after Monday?''), month advancement, age addition, and alphabet incrementing --- each with a distinct cyclic or linear structure. Eleven transformer models are trained on all $\binom{4}{2} + \binom{4}{3} + \binom{4}{4} = 11$ possible two-, three-, and four-task combinations using the SIIT loss, which isolates each attention head and MLP layer to a specified task while the MLP layers additionally serve as shared task routers across tasks. This yields a ground-truth circuit for each task in each model, providing the testbed for evaluating which instruments separate genuine from dormant components. We apply five causal intervention strategies: structured replacement at the input (STR swap) and structured push at the MLP site (STR push), each in within-task and cross-task variants, along with Gaussian noise push at the intervention site.
+
+For each strategy, we fit univariate and multivariate $\ell_2$-regularised logistic regressions with the instruments as predictors of the FP-versus-TP label, where the positive class is FP (dormant) and the negative class is TP (in-circuit). All predictors are $z$-scored within each model--task combination so that betas reflect within-combination effect sizes rather than cross-combination scale differences. Confidence intervals are obtained by cluster bootstrapping at the combination level ($B = 500$), resampling entire model--task combinations rather than individual observations to account for the non-independence of components within the same model. A beta is significant when the 95\% bootstrap CI excludes zero. Because all predictors are standardised, beta magnitudes are directly comparable across instruments: a positive beta indicates that higher values predict dormancy, a negative beta that higher values predict genuine in-circuit membership. We report AUC as the aggregate discrimination measure. The nested-beta analysis uses $C = 1.0$ with balanced class weights; the full-model regressions and $R^{2}$ decompositions use $C = 10.0$ without reweighting.
+
+
+\subsubsection{The Inverted Geometry of Detection}
+
+We first investigate whether the geometric divergence metrics that characterise the mechanism of dormancy also serve as detectors. In the FP-versus-TN analysis, $\mathrm{orth}_b(\delta)$, the component of the intervention displacement that is orthogonal to the base-task manifold, was a positive predictor of false positives: components that diverged further from their base manifold were more likely to become dormant. This is consistent with the standard assumption in the literature that out-of-distribution corruption --- the kind induced by Gaussian noise or structured replacement --- is what drives dormancy.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth]{Thesis/figures/results/fig2_orth_nie_scatter.pdf}
+    \caption{$\mathrm{orth}_b(\delta)$ vs.\ $|\mathrm{NIE}|$ across classification populations. Arrows show the direction of the median shift: from TN to FP, $\mathrm{orth}_b$ increases (divergence drives dormancy); from TP to FP, $\mathrm{orth}_b$ \emph{decreases} (genuine components are more divergent than dormant ones).}
+    \label{fig:orth-nie}
+\end{figure}
+
+Figure~\ref{fig:orth-nie} reveals that this relationship inverts when we move to the detection problem. The arrows show the direction of the median shift in $\mathrm{orth}_b$ across the three populations: from TN to FP, $\mathrm{orth}_b$ increases, reproducing the mechanism result. But from TP to FP, $\mathrm{orth}_b$ \emph{decreases} --- true in-circuit components are more divergent from the base manifold than the dormant components that mimic them. This inversion is confirmed in the regression: Table~\ref{tab:full-model} shows $\mathrm{orth}_b$ entering with a negative beta across every strategy, significantly so in the push regimes.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth]{Thesis/figures/results/fig_standalone_auc_fptp.jpeg}
+    \caption{FP vs.\ TP standalone AUC for each instrument family across the five strategies.}
+    \label{fig:fptp-auc}
+\end{figure}
+
+The counterintuitiveness of this result dissolves once we consider what makes a component genuinely part of a circuit. Components that are actually involved in the computation are the most ``active'' on the causal subspaces related to the output --- the shift from the clean to the counterfactual on these subspaces is large enough to change the readout, which means they have high $\mathrm{orth}_b$ because the intervention genuinely displaces their representation away from the base manifold. Dormant components, by contrast, achieve their high $|\mathrm{NIE}|$ not through this kind of displacement on the causally relevant subspaces but through the displacement leading to gate-crossing across the nonlinearity boundaries of the model. Their divergence from the base manifold is lower than that of true in-circuit components precisely because the source of their deceptive causal effect is nonlinear distortion rather than genuine computational engagement.
+
+Critically, $\mathrm{along}_s(\delta)$ does \emph{not} show the same inversion. In the base model, $\mathrm{along}_s$ enters with a positive significant beta in most regimes (Table~\ref{tab:full-model}), indicating that dormant components project less strongly onto non-base task subspaces than true positives. This asymmetry between $\mathrm{orth}_b$ (general divergence, inverted) and $\mathrm{along}_s$ (task-directed divergence, not inverted) shows that divergence along the specific cross-task axis that recruits components is still aligned with dormancy: true in-circuit components leave their base manifold more broadly, while dormant components leave it in a targeted manner that $\mathrm{along}_s$ and curvature are able to distinguish, albeit from different viewpoints. We note that we have not exhaustively verified whether other measures of divergence beyond $\mathrm{orth}_b$ show the same inversion; we leave this to Appendix~\ref{app:div-measures}.
+
+
+\begin{table}[H]
+\centering
+\caption{Full model: standardised $\beta$ from nested logistic regressions on the moderate-$|$NIE$|$ band (FP vs.\ TP). Base model includes $\mathrm{orth}_b$ and $\mathrm{along}_s$. $\dagger$ curv$+$rip = $\mathrm{orth}_b$ + curvature + ripple \emph{without} $\mathrm{along}_s$. Best ripple metric (largest $|\beta|$) shown per strategy. * $=$ 95\% cluster-bootstrap CI excludes 0.}
+\label{tab:full-model}
+\small
+
+\medskip
+\textbf{swap (within)} ($n=153$, FP$=95$, TP$=58$)
+
+\begin{tabular*}{\linewidth}{@{\extracolsep{\fill}}lrrrrr@{}}
+\toprule
+ & base & $+$curv & $+$ripple & $+$curv,rip & curv$+$rip$^\dagger$ \\
+\midrule
+$\mathrm{orth}_b(\delta)$
+    & $-0.46$ & $-1.11^{*}$ & $-1.18^{*}$ & $-2.00^{*}$ & $-2.21^{*}$ \\
+$\mathrm{along}_s(\delta)$
+    & $+1.10^{*}$ & $+0.78$ & $+1.22^{*}$ & $+0.90^{*}$ & -- \\
+local curvature
+    & -- & $+1.43^{*}$ & -- & $+1.67^{*}$ & $+1.99^{*}$ \\
+\midrule
+$\mathrm{ripple}_{\mathrm{xint}}$
+    & -- & -- & $-2.90^{*}$ & $-3.01^{*}$ & $-2.92^{*}$ \\
+AUC
+    & 0.801 & 0.841 & 0.953 & 0.960 & 0.942 \\
+\bottomrule
+\end{tabular*}
+
+\medskip
+\textbf{swap (cross)} ($n=1176$, FP$=881$, TP$=295$)
+
+\begin{tabular*}{\linewidth}{@{\extracolsep{\fill}}lrrrrr@{}}
+\toprule
+ & base & $+$curv & $+$ripple & $+$curv,rip & curv$+$rip$^\dagger$ \\
+\midrule
+$\mathrm{orth}_b(\delta)$
+    & $-0.91^{*}$ & $-0.98^{*}$ & $-0.88^{*}$ & $-0.95^{*}$ & $-0.77^{*}$ \\
+$\mathrm{along}_s(\delta)$
+    & $+1.94^{*}$ & $+1.91^{*}$ & $+2.59$ & $+2.45$ & -- \\
+$\mathrm{along}_t(\delta)$
+    & $-1.05$ & $-1.50$ & $-1.56$ & $-1.78$ & -- \\
+local curvature
+    & -- & $+1.07^{*}$ & -- & $+0.79^{*}$ & $+1.17^{*}$ \\
+\midrule
+$\mathrm{ripple}_{\mathrm{in}}$
+    & -- & -- & $-1.81^{*}$ & $-1.48^{*}$ & $-1.12^{*}$ \\
+AUC
+    & 0.728 & 0.775 & 0.818 & 0.838 & 0.831 \\
+\bottomrule
+\end{tabular*}
+
+\medskip
+\textbf{push (within)} ($n=384$, FP$=290$, TP$=94$)
+
+\begin{tabular*}{\linewidth}{@{\extracolsep{\fill}}lrrrrr@{}}
+\toprule
+ & base & $+$curv & $+$ripple & $+$curv,rip & curv$+$rip$^\dagger$ \\
+\midrule
+$\mathrm{orth}_b(\delta)$
+    & $-1.09^{*}$ & $-1.03^{*}$ & $-0.72^{*}$ & $-0.67^{*}$ & $-0.56^{*}$ \\
+$\mathrm{along}_s(\delta)$
+    & $+1.55^{*}$ & $+0.90^{*}$ & $+1.93^{*}$ & $+1.14$ & -- \\
+local curvature
+    & -- & $+0.78$ & -- & $+0.96$ & $+1.77^{*}$ \\
+\midrule
+$\mathrm{ripple}_{\mathrm{in}}$
+    & -- & -- & $-1.32^{*}$ & $-1.30^{*}$ & $-1.23^{*}$ \\
+AUC
+    & 0.846 & 0.858 & 0.878 & 0.887 & 0.877 \\
+\bottomrule
+\end{tabular*}
+
+\medskip
+\textbf{push (cross)} ($n=636$, FP$=457$, TP$=179$)
+
+\begin{tabular*}{\linewidth}{@{\extracolsep{\fill}}lrrrrr@{}}
+\toprule
+ & base & $+$curv & $+$ripple & $+$curv,rip & curv$+$rip$^\dagger$ \\
+\midrule
+$\mathrm{orth}_b(\delta)$
+    & $-1.43^{*}$ & $-1.18^{*}$ & $-1.39^{*}$ & $-1.13^{*}$ & $-1.07^{*}$ \\
+$\mathrm{along}_s(\delta)$
+    & $+1.37^{*}$ & $+0.33$ & $+1.72^{*}$ & $+0.55$ & -- \\
+$\mathrm{along}_t(\delta)$
+    & $-0.05$ & $+0.08$ & $-0.36$ & $-0.36$ & -- \\
+local curvature
+    & -- & $+1.22^{*}$ & -- & $+1.65^{*}$ & $+1.79^{*}$ \\
+\midrule
+$\mathrm{ripple}_{\mathrm{in}}$
+    & -- & -- & $-1.05^{*}$ & $-1.03^{*}$ & $-1.03^{*}$ \\
+AUC
+    & 0.831 & 0.851 & 0.843 & 0.871 & 0.871 \\
+\bottomrule
+\end{tabular*}
+
+\medskip
+\textbf{Gauss.\ push} ($n=258$, FP$=145$, TP$=113$)
+
+\begin{tabular*}{\linewidth}{@{\extracolsep{\fill}}lrrrrr@{}}
+\toprule
+ & base & $+$curv & $+$ripple & $+$curv,rip & curv$+$rip$^\dagger$ \\
+\midrule
+$\mathrm{orth}_b(\delta)$
+    & $-0.75^{*}$ & $-0.90^{*}$ & $+0.48$ & $-0.41$ & $-0.41$ \\
+$\mathrm{along}_s(\delta)$
+    & $+1.03^{*}$ & $+0.64^{*}$ & $+1.78^{*}$ & $+0.63$ & -- \\
+local curvature
+    & -- & $+1.02^{*}$ & -- & $+3.85^{*}$ & $+4.36^{*}$ \\
+\midrule
+$\mathrm{ripple}_{\mathrm{in}}$
+    & -- & -- & $-3.50^{*}$ & $-3.83$ & $-3.77$ \\
+AUC
+    & 0.726 & 0.764 & 0.927 & 0.971 & 0.968 \\
+\bottomrule
+\end{tabular*}
+
+\end{table}
+
+
+\subsubsection{Curvature as the Dominant Detector}
+
+We now examine how curvature captures this detection signal and, in particular, which variant of curvature achieves it. Local curvature measures the gap between the actual change in a component's activation function and the change predicted by the Jacobian at the clean state --- the first-order Taylor approximation. For piecewise-linear activations such as ReLU, this gap is exactly zero when the intervention stays within the same affine region and becomes non-zero only when the pre-activation crosses the zero boundary into a different activation regime. The gap therefore directly reports gate-crossing events at the component's own nonlinearity. Downstream curvature, by contrast, measures the analogous residual for the full map from the component's activation to the output logits: the difference between the actual $\mathrm{NIE}$ and the first-order gradient-based attribution at the clean state. This residual integrates all nonlinear effects accumulated as the perturbation propagates through every downstream nonlinearity from the intervention site to the readout. A component whose $\mathrm{NIE}$ is well-approximated by the clean-state gradient has low downstream curvature; a component whose $\mathrm{NIE}$ depends on gate-crossing events at downstream sites has high downstream curvature.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth]{Thesis/figures/results/fig_fptp_curv_comparison_bars.pdf}
+    \caption{Standardised $\beta$ of each curvature variant when added to the base model ($\mathrm{orth}_b + \mathrm{along}_s$) in the FP vs.\ TP regression, with 95\% cluster-bootstrap CIs. Local curvature is consistently the strongest and most significant predictor; downstream curvature is near zero and non-significant in most regimes. * indicates 95\% CI excludes zero.}
+    \label{fig:fptp-curv-bars}
+\end{figure}
+
+Figure~\ref{fig:fptp-curv-bars} shows the standardised betas of each curvature variant when added individually to the base model. Local curvature is the strongest predictor across all five regimes, with significant positive betas throughout. Downstream curvature is near zero and non-significant in three of five strategies, and even where significant its beta is substantially smaller. The positive sign of local curvature means that dormant components exhibit more gate-crossing at their own activation boundaries than genuine in-circuit components --- their high $|\mathrm{NIE}|$ is manufactured by crossing into a different affine region of the activation function rather than being captured by the natural-run gradient.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth]{Thesis/figures/results/figR_complementarity_bars.pdf}
+    \caption{AUC of instrument combinations for FP vs.\ TP classification. Orth$+$curv provides a strong base across regimes; the full model (orth$+$curv$+$ripple) achieves the highest AUC in most strategies.}
+    \label{fig:fptp-comp}
+\end{figure}
+
+The reason downstream curvature fails as a detector while local curvature succeeds follows from the fact that both true positives and dormant components can propagate gate-crossing behaviour downstream, but for different reasons. A true in-circuit component, when corrupted, gives a different signal on the causally relevant subspaces for the output and can thereby cause downstream components to cross their nonlinearity boundaries --- similar to the reasoning for why $\mathrm{orth}_b$ is higher in TPs. For dormant components, as we have seen in the mechanism analysis, it is precisely this downstream gate-crossing --- components shifting from non-active on the natural run to active on the intervened run --- that reverses the output and creates the deception that the component at the intervention site is within the task circuit. Since both populations generate downstream gate-crossing, the accumulated nonlinear residual from the intervention site to the readout cannot discriminate between them. The significance of excess curvature --- the difference between local and downstream curvature, significant in four of five regimes (Figure~\ref{fig:fptp-curv-bars}) --- further confirms this: the detection-relevant signal resides in the \emph{excess} of gate-crossing at the component's own nonlinearity over what propagates downstream, exactly the portion that is specific to the local artifactual process rather than the shared downstream propagation. Local curvature isolates this gate-crossing at the component itself, which is the specific signature of the artifactual process that manufactures dormant $|\mathrm{NIE}|$.
+
+An important nuance emerges in how curvature and $\mathrm{orth}_b$ interact. Table~\ref{tab:full-model} shows that adding curvature to the regression makes $\mathrm{orth}_b$ \emph{more} negative: in swap within, $\mathrm{orth}_b$ moves from non-significant ($-0.46$) to significant ($-1.11^{*}$) when local curvature is added, and strengthens further to $-2.00^{*}$ in the full model. Once we condition on the curvature effect --- removing the variance explained by gate-crossing --- TPs are even more divergent from the base manifold than dormant components, because dormant components' divergence is concentrated in the specific subspace of gate-crossing, and TPs' divergence extends more broadly across the causally relevant subspaces. In the swap regime, the converse also holds: $\mathrm{orth}_b$ enhances curvature's explanatory power. Figure~\ref{fig:fptp-comp} shows that $\mathrm{orth}+\mathrm{curv}$ substantially exceeds either alone in the swap strategies. We attribute this to the distributive nature of swap interventions, which replace the full input and therefore lack the targeted MLP-routed structure of push interventions. In this less targeted setting, there is additional variance in the FP-versus-TP distinction that is captured by $\mathrm{orth}_b$ once we condition on the local gate-crossing.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth]{Thesis/figures/results/fig_suppression_scatter.pdf}
+    \caption{Suppression scatter: $\mathrm{orth}_b$ vs.\ local curvature with three decision boundaries --- orth-only (dashed), curv-only (dotted), and joint (solid) --- illustrating the complementary roles of the two instruments.}
+    \label{fig:suppression}
+\end{figure}
+
+The suppression scatter (Figure~\ref{fig:suppression}) visualises this interplay: the joint decision boundary achieves better separation than either instrument alone, with curvature providing a dimension of discrimination that $\mathrm{orth}_b$ is blind to and vice versa.
+
+The absorption of $\mathrm{along}_s$ by curvature is also notable. In the base model, $\mathrm{along}_s$ is significant across most regimes, indicating that dormant components do point towards other task subspaces less than in-circuit components --- it is not the case that along is uninformative as a detector. However, when curvature is added, $\mathrm{along}_s$ diminishes substantially, most strikingly in the push regimes where along drops from significant to non-significant (Table~\ref{tab:full-model}). This is surprising precisely in the push regimes, where the MLP routing structure recruits components from other tasks and along was the dominant mechanism in the FP-versus-TN analysis. The absorption is \emph{not} explained by correlation between along and curvature: Figure~\ref{fig:along-curv-fptp} shows that the two metrics are weakly correlated across all regimes, in contrast to the high correlation that explained the redundancy in the FP-versus-TN push decomposition.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth]{Thesis/figures/results/fig5_along_vs_curv_scatter_fptp.jpeg}
+    \caption{$\mathrm{along}_s(\delta)$ vs.\ local curvature in the FP vs.\ TP population. Weak correlations across all regimes confirm that the absorption of $\mathrm{along}_s$ by curvature is not driven by collinearity.}
+    \label{fig:along-curv-fptp}
+\end{figure}
+
+Instead, the absorption reflects a structural property of the detection problem. Even when the MLP writes to the subspaces of other-task components, dormancy requires that this writing leads to gate-crossing within those components in order to move them from the non-active to the active regime and change the output. The difference from the mechanism decomposition is that in TPs, the same MLP routing occurs --- true in-circuit components also receive writes from the shared MLP onto task subspaces --- but without the gate-crossing signature that characterises the artifactual effect. In the mechanism analysis, along was sufficient because the question was what makes a harmless component \emph{become} dormant, and task recruitment through the MLP was the answer. In the detection analysis, the question is what distinguishes dormant from genuine among components that all exhibit high causal effects, and here the task-recruitment signal is shared between the two populations.
+
+The orth--curvature interaction, the absorption of along, and the failure of downstream curvature all point to a broader structural property of the detection problem. An instrument whose mechanistic role is to make a harmless component look as though it participates in the computation --- such as $\mathrm{orth}_b$, downstream curvature, and to a lesser extent $\mathrm{along}_s$ --- is likely to also be present in components that genuinely participate in the computation, because what makes something \emph{look} like it contributes is inherently also a property of things that \emph{do} contribute. Local curvature stands apart: it captures the specific artifactual process --- the crossing of activation boundaries that manufactures a causal effect not captured by the clean-state gradient --- that is characteristic of dormancy but not of genuine computation.
+
+
+\subsubsection{On the Complementarity of Curvature and Ripple}
+
+Ripple exhibits the same sign inversion from mechanism to detection as $\mathrm{orth}_b$. In the FP-versus-TN analysis, ripple's sign depended on the intervention regime, flipping between swap and push as the propagation structure changed. In the FP-versus-TP analysis, ripple is uniformly negative across all strategies (Table~\ref{tab:full-model}). The reasoning parallels $\mathrm{orth}_b$: a true in-circuit component interacts heavily with other in-circuit components and, when intervened upon, displaces them off their task manifolds, contributing to the inversion of the output. A dormant component, despite its high $|\mathrm{NIE}|$, does not have this genuine coupling to the circuit, and so its intervention propagates less distortion to the in-circuit partners. This uniformly negative sign, regardless of intervention strategy, reflects that the detection question is about the quality of the causal connection rather than the propagation structure of the intervention.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth]{Thesis/figures/results/fig_fptp_incremental_r2_waterfall.jpeg}
+    \caption{Incremental $R^{2}$ decomposition for FP vs.\ TP across four entry orderings (A--D). $R^{2}$ above $0.2$--$0.4$ is considered strong.}
+    \label{fig:fptp-waterfall}
+\end{figure}
+
+Figure~\ref{fig:fptp-waterfall} decomposes the incremental $R^{2}$ contributions and reveals how the complementarity between curvature and ripple varies across regimes. In the swap strategies, ripple contributes the larger share of explained variance and entering curvature first boosts ripple's contribution, similar to the pattern observed with $\mathrm{orth}_b$ --- in the distributive swap setting, conditioning on the local gate-crossing exposes the coupling signal that ripple captures. In the push regimes, curvature and ripple are more symmetrically complementary: both contribute substantial incremental $R^{2}$ regardless of entry order, with neither absorbing the other. They capture orthogonal axes of the detection problem --- curvature measures the locally induced gate-crossing artifact at the component, while ripple measures the wider effect of the intervention on the functional circuit. In the Gaussian regime, this complementarity is most extreme: the total explained variance is high ($R^{2} = 0.64$), with ripple and curvature each contributing substantially and neither dominating unconditionally. This near-symmetry indicates that each instrument captures a qualitatively distinct aspect of what makes a dormant component different from a genuine one: the artifactual source of the causal effect (curvature) and the absence of genuine coupling to the circuit (ripple).
+
+Taken together, the results of this section reveal a structural asymmetry in the dormancy problem: the geometric signatures that make a harmless component \emph{appear} to be part of the circuit --- broad off-manifold divergence, task-subspace alignment --- are inherently also present in components that genuinely participate in the computation, and often more so, which is why $\mathrm{orth}_b$ inverts and $\mathrm{along}_s$ is largely absorbed. Curvature recovers the artifactual portion of this shared signal by isolating the gate-crossing that manufactures a causal effect not captured by the clean-state gradient, and ripple complements it by detecting the absence of functional coupling to the rest of the circuit. Their combination achieves joint AUCs of $0.84$--$0.97$ across intervention strategies, demonstrating that dormancy, while deceptive to standard causal methods, leaves a detectable and regime-robust signature in the curvature and interaction structure of the model.

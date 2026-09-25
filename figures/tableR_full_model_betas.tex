@@ -1,85 +1,88 @@
 \begin{table}[t]
 \centering
-\caption{Full model: standardised $\beta$ from nested logistic regressions on the moderate-$|$NIE$|$ band (FP vs.\ TP). Base model includes $\mathrm{orth}_b$ and $\mathrm{along}_s$ (except Gaussian, which lacks $\mathrm{along}_s$). Best ripple metric (largest $|\beta|$) shown per strategy. Matched sample (ripple-available rows only). * $=$ 95\% cluster-bootstrap CI excludes 0.}
+\caption{Full model: standardised $\beta$ from nested logistic regressions on the moderate-$|$NIE$|$ band (FP vs.\ TP). Base model includes $\mathrm{orth}_b$ and $\mathrm{along}_s$. $\dagger$ curv$+$rip = $\mathrm{orth}_b$ + curvature + ripple \emph{without} $\mathrm{along}_s$. Best ripple metric (largest $|\beta|$) shown per strategy. Matched sample (ripple-available rows only). * $=$ 95\% cluster-bootstrap CI excludes 0.}
 \label{tab:full-model}
 \small
 
 \medskip
 \textbf{swap (within)} ($n=153$, FP$=95$, TP$=58$)
 
-\begin{tabular}{l r r r r r}
+\begin{tabular}{l r r r r r r}
 \toprule
- & base & $+$curv & $+$ripple & $+$curv,ripple & AUC \\
+ & base & $+$curv & $+$ripple & $+$curv,ripple & curv$+$rip$^\dagger$ & AUC \\
 \midrule
-$\mathrm{orth}_b(\delta)$ & $-0.57$ & $-1.22$* & $-1.24$* & $-2.18$* &  \\
-$\mathrm{along}_s(\delta)$ & $+0.92$* & $+0.65$* & $+1.04$* & $+0.86$* &  \\
-local curvature & -- & $+1.50$* & -- & $+1.92$* &  \\
-$\mathrm{ripple}_\mathrm{xint}$ & -- & -- & $-3.26$* & $-3.30$* &  \\
-ripple block $\Delta$AUC & -- & -- & $+0.192$ & $+0.148$ &  \\
-AUC & 0.756 & 0.814 & 0.948 & 0.961 &  \\
+$\mathrm{orth}_b(\delta)$ & $-0.46$ & $-1.11$* & $-1.18$* & $-2.00$* & $-2.21$* &  \\
+$\mathrm{along}_s(\delta)$ & $+1.10$* & $+0.78$ & $+1.22$* & $+0.90$* & -- &  \\
+local curvature & -- & $+1.43$* & -- & $+1.67$* & $+1.99$* &  \\
+$\mathrm{ripple}_\mathrm{xint}$ & -- & -- & $-2.90$* & $-3.01$* & $-2.92$* &  \\
+ripple block $\Delta$AUC & -- & -- & $+0.152$ & $+0.119$ & -- &  \\
+AUC & 0.801 & 0.841 & 0.953 & 0.960 & 0.942 &  \\
 \bottomrule
 \end{tabular}
 
 \medskip
 \textbf{swap (cross)} ($n=1176$, FP$=881$, TP$=295$)
 
-\begin{tabular}{l r r r r r}
+\begin{tabular}{l r r r r r r}
 \toprule
- & base & $+$curv & $+$ripple & $+$curv,ripple & AUC \\
+ & base & $+$curv & $+$ripple & $+$curv,ripple & curv$+$rip$^\dagger$ & AUC \\
 \midrule
-$\mathrm{orth}_b(\delta)$ & $-0.89$* & $-0.96$* & $-0.87$* & $-0.95$* &  \\
-$\mathrm{along}_s(\delta)$ & $+0.84$* & $+0.37$* & $+0.97$* & $+0.61$* &  \\
-local curvature & -- & $+1.08$* & -- & $+0.81$* &  \\
-$\mathrm{ripple}_\mathrm{in}$ & -- & -- & $-1.80$* & $-1.45$* &  \\
-ripple block $\Delta$AUC & -- & -- & $+0.091$ & $+0.066$ &  \\
-AUC & 0.724 & 0.771 & 0.816 & 0.837 &  \\
+$\mathrm{orth}_b(\delta)$ & $-0.91$* & $-0.98$* & $-0.88$* & $-0.95$* & $-0.77$* &  \\
+$\mathrm{along}_s(\delta)$ & $+1.94$* & $+1.91$* & $+2.59$ & $+2.45$ & -- &  \\
+$\mathrm{along}_t(\delta)$ & $-1.05$ & $-1.50$ & $-1.56$ & $-1.78$ & -- &  \\
+local curvature & -- & $+1.07$* & -- & $+0.79$* & $+1.17$* &  \\
+$\mathrm{ripple}_\mathrm{in}$ & -- & -- & $-1.81$* & $-1.48$* & $-1.12$* &  \\
+ripple block $\Delta$AUC & -- & -- & $+0.090$ & $+0.063$ & -- &  \\
+AUC & 0.728 & 0.775 & 0.818 & 0.838 & 0.831 &  \\
 \bottomrule
 \end{tabular}
 
 \medskip
 \textbf{push (within)} ($n=384$, FP$=290$, TP$=94$)
 
-\begin{tabular}{l r r r r r}
+\begin{tabular}{l r r r r r r}
 \toprule
- & base & $+$curv & $+$ripple & $+$curv,ripple & AUC \\
+ & base & $+$curv & $+$ripple & $+$curv,ripple & curv$+$rip$^\dagger$ & AUC \\
 \midrule
-$\mathrm{orth}_b(\delta)$ & $-1.24$* & $-1.10$* & $-0.93$* & $-0.76$* &  \\
-$\mathrm{along}_s(\delta)$ & $+1.51$* & $+0.78$* & $+1.96$* & $+0.99$ &  \\
-local curvature & -- & $+0.88$* & -- & $+1.07$ &  \\
-$\mathrm{ripple}_\mathrm{in}$ & -- & -- & $-1.20$* & $-1.25$* &  \\
-ripple block $\Delta$AUC & -- & -- & $+0.030$ & $+0.029$ &  \\
-AUC & 0.842 & 0.856 & 0.871 & 0.885 &  \\
+$\mathrm{orth}_b(\delta)$ & $-1.09$* & $-1.03$* & $-0.72$* & $-0.67$* & $-0.56$* &  \\
+$\mathrm{along}_s(\delta)$ & $+1.55$* & $+0.90$* & $+1.93$* & $+1.14$ & -- &  \\
+local curvature & -- & $+0.78$ & -- & $+0.96$ & $+1.77$* &  \\
+$\mathrm{ripple}_\mathrm{in}$ & -- & -- & $-1.32$* & $-1.30$* & $-1.23$* &  \\
+ripple block $\Delta$AUC & -- & -- & $+0.032$ & $+0.029$ & -- &  \\
+AUC & 0.846 & 0.858 & 0.878 & 0.887 & 0.877 &  \\
 \bottomrule
 \end{tabular}
 
 \medskip
 \textbf{push (cross)} ($n=636$, FP$=457$, TP$=179$)
 
-\begin{tabular}{l r r r r r}
+\begin{tabular}{l r r r r r r}
 \toprule
- & base & $+$curv & $+$ripple & $+$curv,ripple & AUC \\
+ & base & $+$curv & $+$ripple & $+$curv,ripple & curv$+$rip$^\dagger$ & AUC \\
 \midrule
-$\mathrm{orth}_b(\delta)$ & $-1.33$* & $-1.15$* & $-1.30$* & $-1.10$* &  \\
-$\mathrm{along}_s(\delta)$ & $+1.25$* & $+0.37$ & $+1.28$* & $+0.14$ &  \\
-local curvature & -- & $+1.27$* & -- & $+1.70$* &  \\
-$\mathrm{ripple}_\mathrm{in}$ & -- & -- & $-1.04$* & $-1.02$* &  \\
-ripple block $\Delta$AUC & -- & -- & $+0.008$ & $+0.019$ &  \\
-AUC & 0.827 & 0.851 & 0.835 & 0.870 &  \\
+$\mathrm{orth}_b(\delta)$ & $-1.43$* & $-1.18$* & $-1.39$* & $-1.13$* & $-1.07$* &  \\
+$\mathrm{along}_s(\delta)$ & $+1.37$* & $+0.33$ & $+1.72$* & $+0.55$ & -- &  \\
+$\mathrm{along}_t(\delta)$ & $-0.05$ & $+0.08$ & $-0.36$ & $-0.36$ & -- &  \\
+local curvature & -- & $+1.22$* & -- & $+1.65$* & $+1.79$* &  \\
+$\mathrm{ripple}_\mathrm{in}$ & -- & -- & $-1.05$* & $-1.03$* & $-1.03$* &  \\
+ripple block $\Delta$AUC & -- & -- & $+0.012$ & $+0.019$ & -- &  \\
+AUC & 0.831 & 0.851 & 0.843 & 0.871 & 0.871 &  \\
 \bottomrule
 \end{tabular}
 
 \medskip
 \textbf{Gauss.\ push} ($n=258$, FP$=145$, TP$=113$)
 
-\begin{tabular}{l r r r r r}
+\begin{tabular}{l r r r r r r}
 \toprule
- & base & $+$curv & $+$ripple & $+$curv,ripple & AUC \\
+ & base & $+$curv & $+$ripple & $+$curv,ripple & curv$+$rip$^\dagger$ & AUC \\
 \midrule
-$\mathrm{orth}_b(\delta)$ & $-0.25$ & $-0.75$* & $+0.78$* & $-0.41$ &  \\
-local curvature & -- & $+1.41$* & -- & $+4.36$* &  \\
-$\mathrm{ripple}_\mathrm{in}$ & -- & -- & $-2.90$* & $-3.77$ &  \\
-ripple block $\Delta$AUC & -- & -- & $+0.306$ & $+0.235$ &  \\
-AUC & 0.530 & 0.732 & 0.837 & 0.968 &  \\
+$\mathrm{orth}_b(\delta)$ & $-0.75$* & $-0.90$* & $+0.48$ & $-0.41$ & $-0.41$ &  \\
+$\mathrm{along}_s(\delta)$ & $+1.03$* & $+0.64$* & $+1.78$* & $+0.63$ & -- &  \\
+local curvature & -- & $+1.02$* & -- & $+3.85$* & $+4.36$* &  \\
+$\mathrm{ripple}_\mathrm{in}$ & -- & -- & $-3.50$* & $-3.83$ & $-3.77$ &  \\
+ripple block $\Delta$AUC & -- & -- & $+0.201$ & $+0.207$ & -- &  \\
+AUC & 0.726 & 0.764 & 0.927 & 0.971 & 0.968 &  \\
 \bottomrule
 \end{tabular}
 

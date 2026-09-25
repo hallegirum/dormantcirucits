@@ -270,10 +270,17 @@ def make_counterfactual(prep: dict, strategy: str, *, base_task: Any = None,
     cf_denoise = [_swapped(ex) for ex in pairs]
 
     if positions is None:
-        try:
-            positions = poly_target_positions(pairs)
-        except Exception:
-            positions = -1
+        first_inp = pairs[0].get("input") or pairs[0] if pairs else {}
+        if "pos_end" in first_inp:
+            positions = torch.tensor([
+                int((ex.get("input") or ex).get("pos_end", -1))
+                for ex in pairs
+            ], dtype=torch.long)
+        else:
+            try:
+                positions = poly_target_positions(pairs)
+            except Exception:
+                positions = -1
 
     kind = "push" if (push_site is not None or strategy == "Gaussian") else "swap"
     if strategy == "Gaussian" and kind == "swap":
